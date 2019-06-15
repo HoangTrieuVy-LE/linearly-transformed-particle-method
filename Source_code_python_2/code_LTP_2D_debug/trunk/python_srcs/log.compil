@@ -1,0 +1,930 @@
+running build_ext
+running build_src
+build_src
+building extension "_calculsfor_f90" sources
+f2py options: []
+f2py:> build/src.linux-x86_64-2.7/_calculsfor_f90module.c
+Reading fortran codes...
+	Reading file '../../trunk/fortran_srcs/calculsfortran_rec.f90' (format:free)
+	Reading file '../../trunk/fortran_srcs/calculsfortran_ini.f90' (format:free)
+	Reading file '../../trunk/fortran_srcs/calculs_2D.f90' (format:free)
+Post-processing...
+	Block: _calculsfor_f90
+			Block: calculsfor_rec_modf90
+				Block: set_phi_radial
+				Block: set_degre_spline
+				Block: set_hx_hy
+				Block: set_grille
+				Block: phi
+				Block: derivative_phi
+				Block: second_derivative_phi
+				Block: phi_2d
+				Block: grad_phi_2d
+				Block: hess_phi_2d
+				Block: phi_2d_h
+				Block: grad_phi_2d_h
+				Block: hess_phi_2d_h
+				Block: rec_ltp_at_coordinate
+				Block: rec_ltp_grad_at_coordinate
+				Block: rec_ltp_hess_at_coordinate
+				Block: rec_ltp
+				Block: rec_ltp_v2
+				Block: rec_ltp_on_convolution_grid
+				Block: rec_ltp_phi_support_non_compact
+				Block: rec_sansdepot
+				Block: rec_sp
+				Block: rec_sp_at_coordinate
+				Block: rec_sp_grad_at_coordinate
+				Block: rec_sp_hess_at_coordinate
+				Block: grad_convolution
+				Block: hess_convolution
+				Block: diffusion_field_ltp
+				Block: diffusion_field_sp
+				Block: diffusion_field_barenblatt_sp
+				Block: diffusion_field_barenblatt
+				Block: diffusion_field_jacobian_barenblatt
+				Block: diffusion_field_barenblatt_convolution
+				Block: alloc_ro
+				Block: dealloc_ro
+			Block: calculsfor_ini_modf90
+				Block: set_num_rhoini
+				Block: rhoini
+				Block: initialize_spline
+				Block: set_param_remap
+				Block: remap
+				Block: alloc_vect
+				Block: dealloc_vect
+			Block: calculsfor_var_modf90
+				Block: set_flow_params
+				Block: adev
+				Block: dadev
+				Block: compute_u_part
+				Block: compute_expo_mat
+				Block: compute_expo_mat_order
+				Block: invmat2d
+				Block: update_d_diffusion
+				Block: update_d
+				Block: update_d_schemes
+				Block: update_d_schemes_diffusion_barenblatt
+				Block: update_d_hybrid_diffusion_barenblatt
+				Block: update_d_convolution_method_diffusion_barenblatt
+				Block: move_particles
+				Block: move_particles_test
+				Block: number_from_pos
+				Block: tab_cardinal_particles
+				Block: update_d_finite_differences
+				Block: quadrature_pts_trapezoidal_method
+Post-processing (stage 2)...
+	Block: _calculsfor_f90
+		Block: unknown_interface
+			Block: calculsfor_rec_modf90
+				Block: set_phi_radial
+				Block: set_degre_spline
+				Block: set_hx_hy
+				Block: set_grille
+				Block: phi
+				Block: derivative_phi
+				Block: second_derivative_phi
+				Block: phi_2d
+				Block: grad_phi_2d
+				Block: hess_phi_2d
+				Block: phi_2d_h
+				Block: grad_phi_2d_h
+				Block: hess_phi_2d_h
+				Block: rec_ltp_at_coordinate
+				Block: rec_ltp_grad_at_coordinate
+				Block: rec_ltp_hess_at_coordinate
+				Block: rec_ltp
+				Block: rec_ltp_v2
+				Block: rec_ltp_on_convolution_grid
+				Block: rec_ltp_phi_support_non_compact
+				Block: rec_sansdepot
+				Block: rec_sp
+				Block: rec_sp_at_coordinate
+				Block: rec_sp_grad_at_coordinate
+				Block: rec_sp_hess_at_coordinate
+				Block: grad_convolution
+				Block: hess_convolution
+				Block: diffusion_field_ltp
+				Block: diffusion_field_sp
+				Block: diffusion_field_barenblatt_sp
+				Block: diffusion_field_barenblatt
+				Block: diffusion_field_jacobian_barenblatt
+				Block: diffusion_field_barenblatt_convolution
+				Block: alloc_ro
+				Block: dealloc_ro
+			Block: calculsfor_ini_modf90
+				Block: set_num_rhoini
+				Block: rhoini
+				Block: initialize_spline
+				Block: set_param_remap
+				Block: remap
+				Block: alloc_vect
+				Block: dealloc_vect
+			Block: calculsfor_var_modf90
+				Block: set_flow_params
+				Block: adev
+				Block: dadev
+				Block: compute_u_part
+				Block: compute_expo_mat
+				Block: compute_expo_mat_order
+				Block: invmat2d
+				Block: update_d_diffusion
+				Block: update_d
+				Block: update_d_schemes
+				Block: update_d_schemes_diffusion_barenblatt
+				Block: update_d_hybrid_diffusion_barenblatt
+				Block: update_d_convolution_method_diffusion_barenblatt
+				Block: move_particles
+				Block: move_particles_test
+				Block: number_from_pos
+				Block: tab_cardinal_particles
+				Block: update_d_finite_differences
+				Block: quadrature_pts_trapezoidal_method
+Building modules...
+	Building module "_calculsfor_f90"...
+		Constructing F90 module support for "calculsfor_rec_modf90"...
+		  Variables: hx hy xg yg cst_int_phi_exp degre_spline nxg phi_radial radius_phi ro nyg
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+			Constructing wrapper function "calculsfor_rec_modf90.set_phi_radial"...
+			  set_phi_radial(bool_radial)
+			Constructing wrapper function "calculsfor_rec_modf90.set_degre_spline"...
+			  set_degre_spline(p)
+			Constructing wrapper function "calculsfor_rec_modf90.set_hx_hy"...
+			  set_hx_hy(val_hx,val_hy)
+			Constructing wrapper function "calculsfor_rec_modf90.set_grille"...
+			  set_grille(vect_xg,vect_yg,[val_nxg,val_nyg])
+			Constructing wrapper function "calculsfor_rec_modf90.phi"...
+			  y = phi(x)
+			Constructing wrapper function "calculsfor_rec_modf90.derivative_phi"...
+			  deriv = derivative_phi(x)
+			Constructing wrapper function "calculsfor_rec_modf90.second_derivative_phi"...
+			  scd_deriv = second_derivative_phi(x)
+			Constructing wrapper function "calculsfor_rec_modf90.phi_2d"...
+			  phi_out = phi_2d(x,y)
+			Constructing wrapper function "calculsfor_rec_modf90.grad_phi_2d"...
+			  grad = grad_phi_2d(x,y)
+			Constructing wrapper function "calculsfor_rec_modf90.hess_phi_2d"...
+			  hess = hess_phi_2d(x,y)
+			Constructing wrapper function "calculsfor_rec_modf90.phi_2d_h"...
+			  phi_h = phi_2d_h(x,y,hx_remap,hy_remap)
+			Constructing wrapper function "calculsfor_rec_modf90.grad_phi_2d_h"...
+			  grad_h = grad_phi_2d_h(x,y,hx_remap,hy_remap)
+			Constructing wrapper function "calculsfor_rec_modf90.hess_phi_2d_h"...
+			  hess_h = hess_phi_2d_h(x,y,hx_remap,hy_remap)
+			Constructing wrapper function "calculsfor_rec_modf90.rec_ltp_at_coordinate"...
+			  rho_hn = rec_ltp_at_coordinate(xpart,m,dd,hx_remap,hy_remap,x_coord,[n_part])
+			Constructing wrapper function "calculsfor_rec_modf90.rec_ltp_grad_at_coordinate"...
+			  grad_rho_hn = rec_ltp_grad_at_coordinate(xpart,m,dd,hx_remap,hy_remap,x_coord,[n_part,print_log_in])
+			Constructing wrapper function "calculsfor_rec_modf90.rec_ltp_hess_at_coordinate"...
+			  hess_rho_hn = rec_ltp_hess_at_coordinate(xpart,m,dd,hx_remap,hy_remap,x_coord,[n_part])
+			Constructing wrapper function "calculsfor_rec_modf90.rec_ltp"...
+			  rec_ltp(xpart,m,dd,[n_part])
+			Constructing wrapper function "calculsfor_rec_modf90.rec_ltp_v2"...
+			  rec_ltp_v2(xpart,m,dd,[n_part])
+			Constructing wrapper function "calculsfor_rec_modf90.rec_ltp_on_convolution_grid"...
+			  rho_ltp_on_conv_grid = rec_ltp_on_convolution_grid(xpart,m,dd,xgrid_convol,ygrid_convol,hx_remap,hy_remap,[nqx,nqy,n_part])
+			Constructing wrapper function "calculsfor_rec_modf90.rec_ltp_phi_support_non_compact"...
+			  rec_ltp_phi_support_non_compact(xpart,m,dd,[n_part])
+			Constructing wrapper function "calculsfor_rec_modf90.rec_sansdepot"...
+			  rec_sansdepot(xpart,m,dd,[n_part])
+			Constructing wrapper function "calculsfor_rec_modf90.rec_sp"...
+			  rec_sp(xpart,m,epsi,[n_part])
+			Constructing wrapper function "calculsfor_rec_modf90.rec_sp_at_coordinate"...
+			  rho = rec_sp_at_coordinate(xpart,m,epsi,x_coord,[n_part])
+			Constructing wrapper function "calculsfor_rec_modf90.rec_sp_grad_at_coordinate"...
+			  grad_rho = rec_sp_grad_at_coordinate(xpart,m,epsi,x_coord,[n_part])
+			Constructing wrapper function "calculsfor_rec_modf90.rec_sp_hess_at_coordinate"...
+			  hess_rho = rec_sp_hess_at_coordinate(xpart,m,epsi,x_coord,[n_part])
+			Constructing wrapper function "calculsfor_rec_modf90.grad_convolution"...
+			  grad_convol = grad_convolution(epsi,x_coord,xgrid_convol,ygrid_convol,fct_grid_convol,quadrature_pts_convol,[nqx,nqy])
+			Constructing wrapper function "calculsfor_rec_modf90.hess_convolution"...
+			  hess_convol = hess_convolution(epsi,x_coord,xgrid_convol,ygrid_convol,fct_grid_convol,quadrature_pts_convol,[nqx,nqy])
+			Constructing wrapper function "calculsfor_rec_modf90.diffusion_field_ltp"...
+			  diff_field = diffusion_field_ltp(xpart,m,dd,hx_remap,hy_remap,[n_part])
+			Constructing wrapper function "calculsfor_rec_modf90.diffusion_field_sp"...
+			  diff_field = diffusion_field_sp(xpart,m,epsi,[n_part])
+			Constructing wrapper function "calculsfor_rec_modf90.diffusion_field_barenblatt_sp"...
+			  diff_field = diffusion_field_barenblatt_sp(xpart,m,m_barenblatt,epsi,[n_part])
+			Constructing wrapper function "calculsfor_rec_modf90.diffusion_field_barenblatt"...
+			  diff_field = diffusion_field_barenblatt(xpart,m,dd,m_barenblatt,hx_remap,hy_remap,[n_part])
+			Constructing wrapper function "calculsfor_rec_modf90.diffusion_field_jacobian_barenblatt"...
+			  diff_field_jac = diffusion_field_jacobian_barenblatt(xpart,m,dd,m_barenblatt,hx_remap,hy_remap,[n_part])
+			Constructing wrapper function "calculsfor_rec_modf90.diffusion_field_barenblatt_convolution"...
+			  diff_field = diffusion_field_barenblatt_convolution(xpart,m,dd,m_barenblatt,hx_remap,hy_remap,epsi,xgrid_convol,ygrid_convol,quadrature_pts_convol,[nqx,nqy,n_part])
+			Constructing wrapper function "calculsfor_rec_modf90.alloc_ro"...
+			  alloc_ro(dimx,dimy)
+			Constructing wrapper function "calculsfor_rec_modf90.dealloc_ro"...
+			  dealloc_ro()
+		Constructing F90 module support for "calculsfor_ini_modf90"...
+		  Variables: lx2 lx1 xpart mpart num_rhoini l domaine r ly2 deg_spline ly1
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+			Constructing wrapper function "calculsfor_ini_modf90.set_num_rhoini"...
+			  set_num_rhoini(n,rr,llx1,llx2,lly1,lly2)
+			Constructing wrapper function "calculsfor_ini_modf90.rhoini"...
+			  z = rhoini(x,y)
+			Constructing wrapper function "calculsfor_ini_modf90.initialize_spline"...
+			  initialize_spline(doma,nx_part,ny_part,deg_spli)
+			Constructing wrapper function "calculsfor_ini_modf90.set_param_remap"...
+			  set_param_remap(dom,deg_s,ll)
+			Constructing wrapper function "calculsfor_ini_modf90.remap"...
+			  remap(xold,mold,dold,nx_part,ny_part,[nold])
+			Constructing wrapper function "calculsfor_ini_modf90.alloc_vect"...
+			  alloc_vect(n_part)
+			Constructing wrapper function "calculsfor_ini_modf90.dealloc_vect"...
+			  dealloc_vect()
+		Constructing F90 module support for "calculsfor_var_modf90"...
+		  Variables: alpha tmax flot
+			Constructing wrapper function "calculsfor_var_modf90.set_flow_params"...
+			  set_flow_params(f,t,a)
+		Creating wrapper for Fortran function "adev"("adev")...
+			Constructing wrapper function "calculsfor_var_modf90.adev"...
+			  u = adev(t,x,y)
+		Creating wrapper for Fortran function "dadev"("dadev")...
+			Constructing wrapper function "calculsfor_var_modf90.dadev"...
+			  m = dadev(t,x,y)
+		Creating wrapper for Fortran function "compute_u_part"("compute_u_part")...
+			Constructing wrapper function "calculsfor_var_modf90.compute_u_part"...
+			  upart = compute_u_part(xpart,t,[n_part])
+		Creating wrapper for Fortran function "compute_expo_mat"("compute_expo_mat")...
+			Constructing wrapper function "calculsfor_var_modf90.compute_expo_mat"...
+			  exp_a = compute_expo_mat(a)
+		Creating wrapper for Fortran function "compute_expo_mat_order"("compute_expo_mat_order")...
+			Constructing wrapper function "calculsfor_var_modf90.compute_expo_mat_order"...
+			  exp_a = compute_expo_mat_order(a,n)
+		Creating wrapper for Fortran function "invmat2d"("invmat2d")...
+			Constructing wrapper function "calculsfor_var_modf90.invmat2d"...
+			  inv_a = invmat2d(a)
+			Constructing wrapper function "calculsfor_var_modf90.update_d_diffusion"...
+			  indice_max_norm_dm1,norm_inf_dm1,dout = update_d_diffusion(xpart,dd,m,t,dt,time_scheme,hx_remap,hy_remap,[n_part])
+			Constructing wrapper function "calculsfor_var_modf90.update_d"...
+			  indice_max_norm_dm1,norm_inf_dm1,dout = update_d(xpart,dd,t,dt,[n_part])
+			Constructing wrapper function "calculsfor_var_modf90.update_d_schemes"...
+			  indice_max_norm_dm1,norm_inf_dm1,dout = update_d_schemes(xpart,dd,t,dt,time_scheme,[n_part])
+			Constructing wrapper function "calculsfor_var_modf90.update_d_schemes_diffusion_barenblatt"...
+			  indice_max_norm_dm1,norm_inf_dm1,dout = update_d_schemes_diffusion_barenblatt(xpart,dd,m,t,dt,time_scheme,m_barenblatt,hx_remap,hy_remap,[n_part])
+			Constructing wrapper function "calculsfor_var_modf90.update_d_hybrid_diffusion_barenblatt"...
+			  indice_max_norm_dm1,norm_inf_dm1,dout = update_d_hybrid_diffusion_barenblatt(xpart,dd,m,t,dt,m_barenblatt,epsilon_sp,hx_remap,hy_remap,[n_part])
+			Constructing wrapper function "calculsfor_var_modf90.update_d_convolution_method_diffusion_barenblatt"...
+			  indice_max_norm_dm1,norm_inf_dm1,dout = update_d_convolution_method_diffusion_barenblatt(xpart,dd,m,t,dt,m_barenblatt,epsilon_sp,hx_remap,hy_remap,xgrid_convol,ygrid_convol,quadrature_pts_convol,[nqx,nqy,n_part])
+			Constructing wrapper function "calculsfor_var_modf90.move_particles"...
+			  xnew = move_particles(xold,t,dt,time_scheme,[n_part])
+			Constructing wrapper function "calculsfor_var_modf90.move_particles_test"...
+			  xnew = move_particles_test(xold,t,dt,time_scheme,[n_part])
+		Creating wrapper for Fortran function "number_from_pos"("number_from_pos")...
+			Constructing wrapper function "calculsfor_var_modf90.number_from_pos"...
+			  part_pos = number_from_pos(x,x0,x1,[n])
+			Constructing wrapper function "calculsfor_var_modf90.tab_cardinal_particles"...
+			  tab = tab_cardinal_particles(x,hx_remap,hy_remap,[n])
+			Constructing wrapper function "calculsfor_var_modf90.update_d_finite_differences"...
+			  indice_max_norm_dm1,norm_inf_dm1,dout = update_d_finite_differences(xpart,tab,dt,hx,hy,[n_part])
+			Constructing wrapper function "calculsfor_var_modf90.quadrature_pts_trapezoidal_method"...
+			  quadrature_pts_convol = quadrature_pts_trapezoidal_method(xgrid_convol,ygrid_convol,[nqx,nqy])
+	Wrote C/API module "_calculsfor_f90" to file "build/src.linux-x86_64-2.7/_calculsfor_f90module.c"
+	Fortran 90 wrappers are saved to "build/src.linux-x86_64-2.7/_calculsfor_f90-f2pywrappers2.f90"
+  adding 'build/src.linux-x86_64-2.7/fortranobject.c' to sources.
+  adding 'build/src.linux-x86_64-2.7' to include_dirs.
+  adding 'build/src.linux-x86_64-2.7/_calculsfor_f90-f2pywrappers2.f90' to sources.
+build_src: building npy-pkg config files
+customize UnixCCompiler
+customize UnixCCompiler using build_ext
+customize Gnu95FCompiler
+Found executable /usr/bin/gfortran
+customize Gnu95FCompiler
+customize Gnu95FCompiler using build_ext
+building '_calculsfor_f90' extension
+compiling C sources
+C compiler: x86_64-linux-gnu-gcc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC
+
+compile options: '-Ibuild/src.linux-x86_64-2.7 -I/usr/lib/python2.7/dist-packages/numpy/core/include -I/usr/include/python2.7 -c'
+extra options: '-fopenmp -lgomp -g -fbounds-check'
+x86_64-linux-gnu-gcc: build/src.linux-x86_64-2.7/_calculsfor_f90module.c
+In file included from /usr/lib/python2.7/dist-packages/numpy/core/include/numpy/ndarraytypes.h:1761:0,
+                 from /usr/lib/python2.7/dist-packages/numpy/core/include/numpy/ndarrayobject.h:17,
+                 from /usr/lib/python2.7/dist-packages/numpy/core/include/numpy/arrayobject.h:4,
+                 from build/src.linux-x86_64-2.7/fortranobject.h:13,
+                 from build/src.linux-x86_64-2.7/_calculsfor_f90module.c:18:
+/usr/lib/python2.7/dist-packages/numpy/core/include/numpy/npy_1_7_deprecated_api.h:15:2: warning: #warning "Using deprecated NumPy API, disable it by " "#defining NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION" [-Wcpp]
+ #warning "Using deprecated NumPy API, disable it by " \
+  ^
+build/src.linux-x86_64-2.7/_calculsfor_f90module.c: In function ‘f2py_setup_calculsfor_rec_modf90’:
+build/src.linux-x86_64-2.7/_calculsfor_f90module.c:8471:49: warning: assignment from incompatible pointer type [enabled by default]
+   f2py_calculsfor_rec_modf90_def[i_f2py++].func = xg;
+                                                 ^
+build/src.linux-x86_64-2.7/_calculsfor_f90module.c:8472:49: warning: assignment from incompatible pointer type [enabled by default]
+   f2py_calculsfor_rec_modf90_def[i_f2py++].func = yg;
+                                                 ^
+build/src.linux-x86_64-2.7/_calculsfor_f90module.c:8478:49: warning: assignment from incompatible pointer type [enabled by default]
+   f2py_calculsfor_rec_modf90_def[i_f2py++].func = ro;
+                                                 ^
+build/src.linux-x86_64-2.7/_calculsfor_f90module.c: In function ‘f2py_setup_calculsfor_ini_modf90’:
+build/src.linux-x86_64-2.7/_calculsfor_f90module.c:8548:49: warning: assignment from incompatible pointer type [enabled by default]
+   f2py_calculsfor_ini_modf90_def[i_f2py++].func = xpart;
+                                                 ^
+build/src.linux-x86_64-2.7/_calculsfor_f90module.c:8549:49: warning: assignment from incompatible pointer type [enabled by default]
+   f2py_calculsfor_ini_modf90_def[i_f2py++].func = mpart;
+                                                 ^
+build/src.linux-x86_64-2.7/_calculsfor_f90module.c: At top level:
+build/src.linux-x86_64-2.7/_calculsfor_f90module.c:117:12: warning: ‘f2py_size’ defined but not used [-Wunused-function]
+ static int f2py_size(PyArrayObject* var, ...)
+            ^
+x86_64-linux-gnu-gcc: build/src.linux-x86_64-2.7/fortranobject.c
+In file included from /usr/lib/python2.7/dist-packages/numpy/core/include/numpy/ndarraytypes.h:1761:0,
+                 from /usr/lib/python2.7/dist-packages/numpy/core/include/numpy/ndarrayobject.h:17,
+                 from /usr/lib/python2.7/dist-packages/numpy/core/include/numpy/arrayobject.h:4,
+                 from build/src.linux-x86_64-2.7/fortranobject.h:13,
+                 from build/src.linux-x86_64-2.7/fortranobject.c:2:
+/usr/lib/python2.7/dist-packages/numpy/core/include/numpy/npy_1_7_deprecated_api.h:15:2: warning: #warning "Using deprecated NumPy API, disable it by " "#defining NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION" [-Wcpp]
+ #warning "Using deprecated NumPy API, disable it by " \
+  ^
+compiling Fortran 90 module sources
+Fortran f77 compiler: /usr/bin/gfortran -Wall -ffixed-form -fno-second-underscore -fPIC -O3 -funroll-loops
+Fortran f90 compiler: /usr/bin/gfortran -Wall -fno-second-underscore -fPIC -O3 -funroll-loops
+Fortran fix compiler: /usr/bin/gfortran -Wall -ffixed-form -fno-second-underscore -Wall -fno-second-underscore -fPIC -O3 -funroll-loops
+compile options: '-Ibuild/src.linux-x86_64-2.7 -I/usr/lib/python2.7/dist-packages/numpy/core/include -I/usr/include/python2.7 -c'
+extra options: '-Jbuild/temp.linux-x86_64-2.7/ -Ibuild/temp.linux-x86_64-2.7/'
+extra f90 options: '-fopenmp -lgomp -g -fbounds-check'
+gfortran:f90: ../../trunk/fortran_srcs/calculsfortran_rec.f90
+../../trunk/fortran_srcs/calculsfortran_rec.f90:98.12:
+
+            y = (1/sqrt(2*pi)) * exp(-(x**2) / 2.)
+            1
+Warning: Nonconforming tab character at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:204.40:
+
+        double precision                     :: pi
+                                        1
+Warning: Nonconforming tab character at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:221.1:
+
+  else
+ 1
+Warning: Nonconforming tab character at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:232.40:
+
+        double precision                      :: pi
+                                        1
+Warning: Nonconforming tab character at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:263.1:
+
+  else
+ 1
+Warning: Nonconforming tab character at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:281.1:
+
+  else
+ 1
+Warning: Nonconforming tab character at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:298.1:
+
+  else
+ 1
+Warning: Nonconforming tab character at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:318.1:
+
+  else
+ 1
+Warning: Nonconforming tab character at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:888.26:
+
+        double precision     :: dx, dy
+                          1
+Warning: Nonconforming tab character at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:918.1:
+
+  double precision       :: dx, dy
+ 1
+Warning: Nonconforming tab character at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:934.1:
+
+ subroutine diffusion_field_ltp(Xpart, M, DD, hx_remap, hy_remap, diff_field, N
+ 1
+Warning: Nonconforming tab character at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:956.1:
+
+  !$OMP PARALLEL DO shared(chunk) private(j, rho_hn, grad_rho_hn) schedule(dyna
+ 1
+Warning: Nonconforming tab character at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:964.1:
+
+     !$OMP END PARALLEL DO
+ 1
+Warning: Nonconforming tab character at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:994.89:
+
+ll rec_sp_grad_at_coordinate(grad_rho, Xpart, M, epsi, Xpart(:,j), N_part) 
+                                                                           1
+Warning: Nonconforming tab character at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:995.79:
+
+        call rec_sp_at_coordinate(rho, Xpart, M, epsi, Xpart(:,j), N_part) 
+                                                                           1
+Warning: Nonconforming tab character at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:1027.1:
+
+         do j=1,N_part                        
+ 1
+Warning: Nonconforming tab character at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:1028.1:
+
+             rho = 0.
+ 1
+Warning: Nonconforming tab character at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:1029.1:
+
+             grad_rho = 0.
+ 1
+Warning: Nonconforming tab character at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:1031.1:
+
+             call rec_sp_grad_at_coordinate(grad_rho, Xpart, M, epsi, Xpart(:,j
+ 1
+Warning: Nonconforming tab character at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:1032.1:
+
+             diff_field(1,j) = m_barenblatt * grad_rho(1)
+ 1
+Warning: Nonconforming tab character at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:1033.1:
+
+             diff_field(2,j) = m_barenblatt * grad_rho(2)
+ 1
+Warning: Nonconforming tab character at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:1034.1:
+
+         end do
+ 1
+Warning: Nonconforming tab character at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:1038.1:
+
+         do j=1,N_part                        
+ 1
+Warning: Nonconforming tab character at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:1039.1:
+
+             rho = 0.
+ 1
+Warning: Nonconforming tab character at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:1040.1:
+
+             grad_rho = 0.            
+ 1
+Warning: Nonconforming tab character at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:1041.1:
+
+             call rec_sp_at_coordinate(rho, Xpart, M, epsi, Xpart(:,j), N_part)
+ 1
+Warning: Nonconforming tab character at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:1042.1:
+
+             call rec_sp_grad_at_coordinate(grad_rho, Xpart, M, epsi, Xpart(:,j
+ 1
+Warning: Nonconforming tab character at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:1043.1:
+
+             diff_field(1,j) = m_barenblatt * rho**(m_barenblatt-2)* grad_rho(1)
+ 1
+Warning: Nonconforming tab character at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:1044.1:
+
+             diff_field(2,j) = m_barenblatt * rho**(m_barenblatt-2)* grad_rho(2
+ 1
+Warning: Nonconforming tab character at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:1045.1:
+
+         end do
+ 1
+Warning: Nonconforming tab character at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:1189.40:
+
+        integer(8)              :: j, ii, jj
+                                        1
+Warning: Unused variable 'ii' declared at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:1189.44:
+
+        integer(8)              :: j, ii, jj
+                                            1
+Warning: Unused variable 'jj' declared at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:854.49:
+
+    subroutine rec_sp_hess_at_coordinate(hess_rho, Xpart, M, epsi, X_coord, N_p
+                                                 1
+Warning: Dummy argument 'hess_rho' at (1) was declared INTENT(OUT) but was not set
+../../trunk/fortran_srcs/calculsfortran_rec.f90:834.61:
+
+        double precision, dimension (2) :: tmp_val, tmp_val_2
+                                                             1
+Warning: Unused variable 'tmp_val_2' declared at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:680.34:
+
+      integer(8)   :: qkx, qky, ik, jk
+                                  1
+Warning: Unused variable 'ik' declared at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:680.38:
+
+      integer(8)   :: qkx, qky, ik, jk
+                                      1
+Warning: Unused variable 'jk' declared at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:680.25:
+
+      integer(8)   :: qkx, qky, ik, jk
+                         1
+Warning: Unused variable 'qkx' declared at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:680.30:
+
+      integer(8)   :: qkx, qky, ik, jk
+                              1
+Warning: Unused variable 'qky' declared at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:679.38:
+
+      double precision       :: rayonk, yj, xi
+                                      1
+Warning: Unused variable 'rayonk' declared at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:457.52:
+
+        integer(8)              :: k, nb_proc, chunk
+                                                    1
+Warning: Unused variable 'chunk' declared at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:457.45:
+
+        integer(8)              :: k, nb_proc, chunk
+                                             1
+Warning: Unused variable 'nb_proc' declared at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:387.63:
+
+        integer(8)              :: k, print_log, nb_proc, chunk
+                                                               1
+Warning: Unused variable 'chunk' declared at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:387.56:
+
+        integer(8)              :: k, print_log, nb_proc, chunk
+                                                        1
+Warning: Unused variable 'nb_proc' declared at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:391.50:
+
+        double precision, dimension (2) :: tmp_val, tmp_val_2, tmp_val_3
+                                                  1
+Warning: Unused variable 'tmp_val' declared at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:391.61:
+
+        double precision, dimension (2) :: tmp_val, tmp_val_2, tmp_val_3
+                                                             1
+Warning: Unused variable 'tmp_val_2' declared at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:391.72:
+
+        double precision, dimension (2) :: tmp_val, tmp_val_2, tmp_val_3
+                                                                        1
+Warning: Unused variable 'tmp_val_3' declared at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:340.52:
+
+        integer(8)              :: k, nb_proc, chunk
+                                                    1
+Warning: Unused variable 'chunk' declared at (1)
+../../trunk/fortran_srcs/calculsfortran_rec.f90:340.45:
+
+        integer(8)              :: k, nb_proc, chunk
+                                             1
+Warning: Unused variable 'nb_proc' declared at (1)
+extra f90 options: '-fopenmp -lgomp -g -fbounds-check'
+gfortran:f90: ../../trunk/fortran_srcs/calculsfortran_ini.f90
+extra f90 options: '-fopenmp -lgomp -g -fbounds-check'
+gfortran:f90: ../../trunk/fortran_srcs/calculs_2D.f90
+../../trunk/fortran_srcs/calculs_2D.f90:4.1:
+
+          rec_ltp_at_coordinate, rec_ltp_grad_at_coordinate, &
+ 1
+Warning: Nonconforming tab character at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:5.1:
+
+          rec_ltp_hess_at_coordinate, &
+ 1
+Warning: Nonconforming tab character at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:1166.84:
+
+utine quadrature_pts_trapezoidal_method(quadrature_pts_convol, Xgrid_convol, Yg
+                                                                           1
+Warning: Unused dummy argument 'xgrid_convol' at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:1166.98:
+
+re_pts_trapezoidal_method(quadrature_pts_convol, Xgrid_convol, Ygrid_convol, nq
+                                                                           1
+Warning: Unused dummy argument 'ygrid_convol' at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:1014.57:
+
+    subroutine update_D_finite_differences(Xpart, tab, dt ,hx , hy, indice_max_
+                                                         1
+Warning: Unused dummy argument 'dt' at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:597.54:
+
+        double precision, dimension(2,2)        :: Akn, Jk, Dk, k1, k2, invJk, 
+                                                      1
+Warning: Unused variable 'akn' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:594.68:
+
+        integer(8)                              :: k, nb_proc, chunk, invertibl
+                                                                    1
+Warning: Unused variable 'chunk' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:596.57:
+
+                                                   det_Jk, det_mat, new_dt
+                                                         1
+Warning: Unused variable 'det_jk' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:596.66:
+
+                                                   det_Jk, det_mat, new_dt
+                                                                  1
+Warning: Unused variable 'det_mat' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:599.65:
+
+        double precision, dimension (4, N_part) :: diff_field_jac
+                                                                 1
+Warning: Unused variable 'diff_field_jac' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:598.78:
+
+                                                hess_convol, diff_field_tmp, mat
+                                                                           1
+Warning: Unused variable 'diff_field_tmp' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:594.80:
+
+   integer(8)                              :: k, nb_proc, chunk, invertible    
+                                                                           1
+Warning: Unused variable 'invertible' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:597.58:
+
+        double precision, dimension(2,2)        :: Akn, Jk, Dk, k1, k2, invJk, 
+                                                          1
+Warning: Unused variable 'jk' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:597.66:
+
+        double precision, dimension(2,2)        :: Akn, Jk, Dk, k1, k2, invJk, 
+                                                                  1
+Warning: Unused variable 'k1' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:597.70:
+
+        double precision, dimension(2,2)        :: Akn, Jk, Dk, k1, k2, invJk, 
+                                                                      1
+Warning: Unused variable 'k2' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:598.83:
+
+                                           hess_convol, diff_field_tmp, mat
+                                                                           1
+Warning: Unused variable 'mat' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:594.61:
+
+        integer(8)                              :: k, nb_proc, chunk, invertibl
+                                                             1
+Warning: Unused variable 'nb_proc' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:596.74:
+
+                                                   det_Jk, det_mat, new_dt
+                                                                          1
+Warning: Unused variable 'new_dt' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:578.79:
+
+subroutine update_d_convolution_method_diffusion_barenblatt(Xpart, DD, M, t, dt
+                                                                           1
+Warning: Unused dummy argument 't' at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:536.48:
+
+        double precision, dimension(2,2)  :: Akn, Jk, Dk, k1, k2, invJk, Identi
+                                                1
+Warning: Unused variable 'akn' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:534.52:
+
+        integer(8)              :: k, nb_proc, chunk, invertible        
+                                                    1
+Warning: Unused variable 'chunk' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:535.86:
+
+ble precision                  :: det_Dk, a, b, c, d, norm_inf_Dkm1, det_Jk, de
+                                                                           1
+Warning: Unused variable 'det_jk' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:535.95:
+
+sion                  :: det_Dk, a, b, c, d, norm_inf_Dkm1, det_Jk, det_mat, ne
+                                                                           1
+Warning: Unused variable 'det_mat' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:537.65:
+
+        double precision, dimension (4, N_part) :: diff_field_jac
+                                                                 1
+Warning: Unused variable 'diff_field_jac' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:536.110:
+
+(2,2)  :: Akn, Jk, Dk, k1, k2, invJk, Identity, hess_rho_hn, diff_field_tmp, mat
+                                                                           1
+Warning: Unused variable 'diff_field_tmp' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:523.24:
+
+    epsilon_SP, hx_remap, hy_remap, indice_max_norm_Dm1, Norm_inf_Dm1, Dout, N_
+                        1
+Warning: Unused dummy argument 'hx_remap' at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:523.34:
+
+    epsilon_SP, hx_remap, hy_remap, indice_max_norm_Dm1, Norm_inf_Dm1, Dout, N_
+                                  1
+Warning: Unused dummy argument 'hy_remap' at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:534.64:
+
+        integer(8)              :: k, nb_proc, chunk, invertible        
+                                                                1
+Warning: Unused variable 'invertible' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:536.52:
+
+        double precision, dimension(2,2)  :: Akn, Jk, Dk, k1, k2, invJk, Identi
+                                                    1
+Warning: Unused variable 'jk' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:536.60:
+
+        double precision, dimension(2,2)  :: Akn, Jk, Dk, k1, k2, invJk, Identi
+                                                            1
+Warning: Unused variable 'k1' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:536.64:
+
+        double precision, dimension(2,2)  :: Akn, Jk, Dk, k1, k2, invJk, Identi
+                                                                1
+Warning: Unused variable 'k2' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:536.115:
+
+  :: Akn, Jk, Dk, k1, k2, invJk, Identity, hess_rho_hn, diff_field_tmp, mat
+                                                                           1
+Warning: Unused variable 'mat' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:534.45:
+
+        integer(8)              :: k, nb_proc, chunk, invertible        
+                                             1
+Warning: Unused variable 'nb_proc' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:535.103:
+
+              :: det_Dk, a, b, c, d, norm_inf_Dkm1, det_Jk, det_mat, new_dt
+                                                                           1
+Warning: Unused variable 'new_dt' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:522.67:
+
+    subroutine update_d_hybrid_diffusion_barenblatt(Xpart, DD, M, t, dt, m_bare
+                                                                   1
+Warning: Unused dummy argument 't' at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:392.86:
+
+ble precision                  :: det_Dk, a, b, c, d, norm_inf_Dkm1, det_Jk, de
+                                                                           1
+Warning: Unused variable 'det_jk' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:394.65:
+
+        double precision, dimension (4, N_part) :: diff_field_jac               
+                                                                 1
+Warning: Unused variable 'diff_field_jac' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:393.105:
+
+nsion(2,2)  :: Jk, Dk, k1, k2, invJk, Identity, hess_rho_hn, diff_field_tmp, mat
+                                                                           1
+Warning: Unused variable 'diff_field_tmp' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:396.72:
+
+        double precision, dimension(2,2)                  ::  indice_max
+                                                                        1
+Warning: Unused variable 'indice_max' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:393.47:
+
+        double precision, dimension(2,2)  :: Jk, Dk, k1, k2, invJk, Identity, h
+                                               1
+Warning: Unused variable 'jk' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:393.55:
+
+        double precision, dimension(2,2)  :: Jk, Dk, k1, k2, invJk, Identity, h
+                                                       1
+Warning: Unused variable 'k1' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:393.59:
+
+        double precision, dimension(2,2)  :: Jk, Dk, k1, k2, invJk, Identity, h
+                                                           1
+Warning: Unused variable 'k2' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:380.68:
+
+    subroutine update_D_schemes_diffusion_barenblatt(Xpart, DD, M, t, dt, time_
+                                                                    1
+Warning: Unused dummy argument 't' at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:324.48:
+
+        double precision, dimension(2,2)  :: Akn, Jk, Dk, k1, k2, invJk
+                                                1
+Warning: Unused variable 'akn' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:324.64:
+
+        double precision, dimension(2,2)  :: Akn, Jk, Dk, k1, k2, invJk
+                                                                1
+Warning: Unused variable 'k2' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:178.86:
+
+ble precision                  :: det_Dk, a, b, c, d, norm_inf_Dkm1, det_Jk, de
+                                                                           1
+Warning: Unused variable 'det_jk' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:178.95:
+
+sion                  :: det_Dk, a, b, c, d, norm_inf_Dkm1, det_Jk, det_mat, ne
+                                                                           1
+Warning: Unused variable 'det_mat' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:184.72:
+
+        double precision, dimension(2,2)                  ::  indice_max
+                                                                        1
+Warning: Unused variable 'indice_max' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:177.48:
+
+        integer(8)              :: k, invertible        
+                                                1
+Warning: Unused variable 'invertible' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:181.47:
+
+        double precision, dimension(2,2)  :: Jk, Dk, k1, k2, invJk, Identity, h
+                                               1
+Warning: Unused variable 'jk' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:181.55:
+
+        double precision, dimension(2,2)  :: Jk, Dk, k1, k2, invJk, Identity, h
+                                                       1
+Warning: Unused variable 'k1' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:181.59:
+
+        double precision, dimension(2,2)  :: Jk, Dk, k1, k2, invJk, Identity, h
+                                                           1
+Warning: Unused variable 'k2' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:178.103:
+
+              :: det_Dk, a, b, c, d, norm_inf_Dkm1, det_Jk, det_mat, new_dt
+                                                                           1
+Warning: Unused variable 'new_dt' declared at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:166.49:
+
+    subroutine update_d_diffusion(Xpart, DD, M, t, dt, time_scheme, hx_remap, h
+                                                 1
+Warning: Unused dummy argument 't' at (1)
+../../trunk/fortran_srcs/calculs_2D.f90:129.47:
+
+        double precision                 :: det        
+                                               1
+Warning: Unused variable 'det' declared at (1)
+compiling Fortran sources
+Fortran f77 compiler: /usr/bin/gfortran -Wall -ffixed-form -fno-second-underscore -fPIC -O3 -funroll-loops
+Fortran f90 compiler: /usr/bin/gfortran -Wall -fno-second-underscore -fPIC -O3 -funroll-loops
+Fortran fix compiler: /usr/bin/gfortran -Wall -ffixed-form -fno-second-underscore -Wall -fno-second-underscore -fPIC -O3 -funroll-loops
+compile options: '-Ibuild/src.linux-x86_64-2.7 -I/usr/lib/python2.7/dist-packages/numpy/core/include -I/usr/include/python2.7 -c'
+extra options: '-Jbuild/temp.linux-x86_64-2.7/ -Ibuild/temp.linux-x86_64-2.7/'
+extra f90 options: '-fopenmp -lgomp -g -fbounds-check'
+gfortran:f90: build/src.linux-x86_64-2.7/_calculsfor_f90-f2pywrappers2.f90
+build/src.linux-x86_64-2.7/_calculsfor_f90-f2pywrappers2.f90:12.19:
+
+      integer r,i,j
+                   1
+Warning: Unused variable 'j' declared at (1)
+build/src.linux-x86_64-2.7/_calculsfor_f90-f2pywrappers2.f90:43.19:
+
+      integer r,i,j
+                   1
+Warning: Unused variable 'j' declared at (1)
+build/src.linux-x86_64-2.7/_calculsfor_f90-f2pywrappers2.f90:74.19:
+
+      integer r,i,j
+                   1
+Warning: Unused variable 'j' declared at (1)
+build/src.linux-x86_64-2.7/_calculsfor_f90-f2pywrappers2.f90:100.10:
+
+      use calculsfor_rec_modf90, only : hx
+          1
+Warning: Unused module variable 'ro' which has been explicitly imported at (1)
+build/src.linux-x86_64-2.7/_calculsfor_f90-f2pywrappers2.f90:100.10:
+
+      use calculsfor_rec_modf90, only : hx
+          1
+Warning: Unused module variable 'xg' which has been explicitly imported at (1)
+build/src.linux-x86_64-2.7/_calculsfor_f90-f2pywrappers2.f90:100.10:
+
+      use calculsfor_rec_modf90, only : hx
+          1
+Warning: Unused module variable 'yg' which has been explicitly imported at (1)
+build/src.linux-x86_64-2.7/_calculsfor_f90-f2pywrappers2.f90:174.19:
+
+      integer r,i,j
+                   1
+Warning: Unused variable 'j' declared at (1)
+build/src.linux-x86_64-2.7/_calculsfor_f90-f2pywrappers2.f90:205.19:
+
+      integer r,i,j
+                   1
+Warning: Unused variable 'j' declared at (1)
+build/src.linux-x86_64-2.7/_calculsfor_f90-f2pywrappers2.f90:231.10:
+
+      use calculsfor_ini_modf90, only : lx2
+          1
+Warning: Unused module variable 'mpart' which has been explicitly imported at (1)
+build/src.linux-x86_64-2.7/_calculsfor_f90-f2pywrappers2.f90:231.10:
+
+      use calculsfor_ini_modf90, only : lx2
+          1
+Warning: Unused module variable 'xpart' which has been explicitly imported at (1)
+/usr/bin/gfortran -Wall -Wall -shared build/temp.linux-x86_64-2.7/build/src.linux-x86_64-2.7/_calculsfor_f90module.o build/temp.linux-x86_64-2.7/build/src.linux-x86_64-2.7/fortranobject.o build/temp.linux-x86_64-2.7/code_LTP_2D_debug/trunk/fortran_srcs/calculsfortran_rec.o build/temp.linux-x86_64-2.7/code_LTP_2D_debug/trunk/fortran_srcs/calculsfortran_ini.o build/temp.linux-x86_64-2.7/code_LTP_2D_debug/trunk/fortran_srcs/calculs_2D.o build/temp.linux-x86_64-2.7/build/src.linux-x86_64-2.7/_calculsfor_f90-f2pywrappers2.o -lgfortran -o _calculsfor_f90.so -fopenmp

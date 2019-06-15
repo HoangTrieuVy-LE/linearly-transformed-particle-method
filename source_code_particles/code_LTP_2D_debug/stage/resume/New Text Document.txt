@@ -1,0 +1,4 @@
+Code_LTP_2D_diffusion(data)
+1. Initialize_2D with initialize_avec_python function
+Input: Sx,Sy,Nx,Ny,rhoini
+Output: X(coord), M 

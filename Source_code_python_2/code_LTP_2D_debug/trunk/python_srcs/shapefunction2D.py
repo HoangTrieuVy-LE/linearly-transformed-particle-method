@@ -1,0 +1,82 @@
+# ########### computation of the 2D-integrate ########################
+#!/usr/bin/env python
+# - * - codin: utf-8 -*-
+from __future__ import division
+import numpy  #as np
+#import scipy  #as sp
+#
+
+import math  # ou : from math import *
+import time
+#from pylab import *
+#from scipy import *
+#from scipy import integrate
+#from scipy import integrate
+import os
+
+def b3(x):
+    y = abs(x)
+    if y >= 2:
+        return 0
+    elif 1 < y < 2:
+        return (2 - y) * (2 - y) * (2 - y) / 6
+    else:
+        return (4 - 6 * y * y + 3 * y * y * y) / 6
+
+def derivative_b3(x) :
+	y = abs(x)
+	if y >= 2:
+		return 0
+	elif 1 < y < 2: # -2 < x -1 et 1 < x < 2
+		return -(x*(y-2)**2)/(2*y)
+	else: # -1 < x < 1
+		return 1/2. * x * (3*y - 4)
+
+def b3spline2d(x, y):
+    print "coucou"
+    return b3(x) * b3(y)
+    
+    
+def b3spline2d_h(x,y,hx,hy) :
+	return (1./hx)*b3(x/hx) * (1./hy)*b3(y/hy)
+
+def grad_b3spline2d(x,y) :
+	grad=numpy.zeros((2,1))
+	grad[0]=derivative_b3(x) * b3(y)
+	grad[1]=derivative_b3(y) * b3(x)
+	return grad
+	
+def grad_b3spline2d_h(x,y,hx,hy) :
+	grad_h=numpy.zeros((2,1))
+	grad_h[0]=(1./(hx*hy))*(1/hx) * grad_b3spline2d(x/hx,y/hy)[0]
+	grad_h[1]=(1./(hx*hy))*(1/hy) * grad_b3spline2d(x/hx,y/hy)[1]
+	return grad_h
+	
+def b1(x):
+    y = abs(x)
+    if y >= 1:
+        return 0.
+    else:
+        return 1-y
+
+def b0(x):
+    y = abs(x)
+    if y >= 1./2:
+        return 0.
+    else:
+        return 1.
+
+def exp_compact(x,y) :
+	# CHANGE THE PLACE WHERE WE DECLARE RADIUS_PHI....
+	radius_phi = 1. 	
+	if (x**2+y**2) >= 1 :
+		return 0.
+	else :
+		cst_int_phi_exp = 0.46651239317 # value of int_{B_{0,1}} {exp(-1/(1-x**2-y**2))}
+		return (1./cst_int_phi_exp) * exp(-1./(radius_phi-(x**2+y**2)))   
+	
+
+def gaussian(x,y) :
+	# CHANGE THE PLACE WHERE WE DECLARE RADIUS_PHI....	
+	return (1./(2 * np.pi)) * exp(-(x**2+y**2) / 2.)   
+	

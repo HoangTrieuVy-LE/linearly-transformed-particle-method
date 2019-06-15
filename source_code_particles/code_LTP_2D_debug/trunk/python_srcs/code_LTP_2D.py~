@@ -1,0 +1,582 @@
+#!/usr/bin/env python
+# ###########################################################################################
+# Code LTP 2D
+# dernieres modifs 09-10-15 par Frederique
+#    - ajout routines pour sous-traitance f2py de reconstruction, initialisation, remapping
+# Resolution de \partial_t rho + div(rho u) = 0 avec u donne
+
+
+#  -*- codin: utf-8 -*-
+from __future__ import division
+import numpy  #as np
+#import matplotlib.pyplot as plt
+import time
+import sys
+import os
+
+sys.path.append('./dir')
+
+#~ Tmax = None
+import config
+import data_code_LTP_2D
+
+path_to_input_file_name = sys.argv[1]
+path_to_output_file_name =  sys.argv[2]
+data_code_LTP_2D.initialize_data_parameters(path_to_input_file_name)
+
+
+import initialisation_2D
+import calculs_2D
+import shapefunction2D
+#import graphes2D
+import reconstruction_densites_2D
+import remapping_2D
+
+#~ from shapefunction2D import *
+#~ from graphes2D import *
+#~ from reconstruction_densites_2D import *
+#~ from remapping_2D import *
+#~ from initialisation_2D import *
+#~ from calculs_2D import *
+
+# for test, move later
+from _calculsfor_f90 import  calculsfor_rec_modf90
+from _calculsfor_f90 import  calculsfor_var_modf90
+
+start_code = time.clock()
+start_code_bis = time.time()
+
+#~ time.sleep(15)
+
+#~ print "name, config.epsilon = " , path_to_file_name , config.epsilon
+
+
+#=====  Initialisation ====== 
+t = config.Tini
+npic_part = 0
+
+
+	
+#----- initialisation des positions et poids -----
+
+print 'Initialisation'
+if config.redemarrage == 0:
+    #X, M = initialize_avec_f2py(Sx, Sy, Nx, Ny)
+    X, M = initialisation_2D.initialize_avec_python(config.Sx, config.Sy, config.Nx, config.Ny, config.rhoini)
+    #print 'suppression des particules vides'
+    #N, X, M = supprime_particule(X,M)
+    N=config.Nini
+    if N==config.Nini:
+        print 'pas de suppression de particules'
+    npic = 0
+else:
+    X0 = numpy.genfromtxt("out/X0.txt",delimiter=",") 
+    X1 = numpy.genfromtxt("out/X1.txt",delimiter=",") 
+    M = numpy.genfromtxt("out/M.txt",delimiter=",") 
+    N = len(M)
+    X = numpy.zeros([2, N])
+    t, npic = numpy.genfromtxt("out/data.txt",delimiter=",") 
+    print 'redemarrage a t= ', t
+    X[0, :] = X0
+    X[1, :] = X1
+
+print 'Nombre de particules N=', N 
+   
+U = numpy.zeros([2, N])
+Mini = M.copy()
+numpy.savetxt('out/Mini.txt', Mini)
+Xinif = X.copy()
+print 'somme des poids', sum(Mini)
+Nboucle = 0
+
+#----- Grille de reconstruction -----
+[Xgrille, Ygrille] = calculs_2D.make_grid_unif(config.Ix, config.Iy, config.Nmesh)
+
+
+
+# ----- Initialisation des supports -----
+D = numpy.zeros([4, N]) #matrice de deformation
+D_middle = numpy.zeros([4, N])
+D_new = numpy.zeros([4, N])
+D[0,:] = 1.  # coeff (1,1) de Dk^0
+D[3,:] = 1.  # coeff (2,2) de Dk^0
+D_middle[0,:] = 1.
+D_middle[3,:] = 1.
+D_new[0,:] = 1.
+D_new[3,:] = 1.
+# D[0,:] -> coef (1,1) de Dkn
+# D[1,:] -> coef (1,2) de Dkn
+# D[2,:] -> coef (2,1) de Dkn
+# D[3,:] -> coef (2,2) de Dkn
+#  Dk = D[:,k].reshape((2, 2)) -> matrice Dkn
+#for k in range(N) :
+	#print k , ' , ' , X[0,k] , ' , ' , X[1,k]
+### Moved to data_code_LTP_2D
+#hx_remap = (Sx[1] - Sx[0]) / float(Nx)  #  distance between particles
+#hy_remap = (Sy[1] - Sy[0]) / float(Ny)
+
+
+Save_det_Dk = numpy.zeros(N);
+delta_X = numpy.zeros(N);
+
+#~ print "config.hx_remap , config.hy_remap : " , config.hx_remap , config.hy_remap
+start1=time.clock()
+
+if config.D_method == 'implicit' :	
+	#tab=tab_cardinal_particles(X,N,hx_remap,hy_remap)
+	tab = calculsfor_var_modf90.tab_cardinal_particles(X,hx_remap,hx_remap,N)	
+	for k in range(0,N) :
+	#	print "k , tab[k][:] : " , k , tab[k]
+		print "k , X[k][:] : " , k , X[:,k]
+	print '\n\ntab_cardinal_particles : ' , tab  , 	'\n\n' 
+	print 'temps de calcul du tableau des positions des particules', time.clock() - start1 	,'\n'
+
+	#my_list=boundary_particles(tab)
+	#print "\n\nlist of boundary particles : " , my_list ,'\n'
+
+#======  Boucle en temps ===== 
+print 'Debut de la boucle en temps'
+print "time taken to complete all initialisations : " , time.time() - start_code_bis
+#while (round(t,13) < (round((Tmax -dt),13)) ) :
+while (round(t,13) < (round((config.Tmax),13)) ) :    
+
+	#copy X to compare the explosions in the particles moving (see end of the loop)	        
+    X_old = X.copy()
+    #D_old = D.copy()
+    if (config.method == 'PIC') or (config.method == 'LTPIC'):
+        U = calcule_U_PIC(X, M, D, Xgrille, Ygrille)
+	
+    # INUTILE PUISQUE RECALCULE AU MOMENT DE BOUGER LES PARTICULES DANS LA FONCTION move_particles
+    #else:
+    #    U = calcule_U_part(X, N, t)
+
+    # ----- Trace densites reconstruites et enregistrement -----
+    if (Nboucle % config.param == 0) :
+		
+        if config.method == 'LTP':
+            start2 = time.clock()
+            time1= time.time()
+            R_ltp = reconstruction_densites_2D.rec_densite_grille_unif_LTP(X, M, D, Xgrille, Ygrille)            
+            #for i in range(0,R_ltp.shape[0]) :
+			#	for j in range(0,R_ltp.shape[1]) :
+			#		print "R_ltp[i,j] = " , R_ltp[i,j]
+            #print 'temps de reconstruction de rho avec LTP', time.clock() - start2 
+            #for k in range(0,N) : 
+				#R_ltp_part=calculsfor_rec_modf90.rec_ltp_at_coordinate(X, M, D, hx_remap, hy_remap, X[:,k], N)
+				#sol = barenblatt(X[0,k],X[1,k],t)
+				#print  " k , sol , R_ltp_part " , k , sol , R_ltp_part 
+            print 'temps de reconstruction de rho avec LTP ' , time.time() - time1
+            npicf_ltp =  npic
+            #graphes2D.fait_series_dessins(Xgrille, Ygrille, R_ltp, npicf_ltp, t, 'LTP')    
+            #if Nboucle == 0 :    
+				#solution=compute_solution(Xgrille,Ygrille, t) #= initial profile because reverse swirling velocity field respects u(0,x) = u(Tmax,x)
+				#print "\n\nerror(solution, R_ltp) at t =  " , t , 'is : ' , error(solution ,R_ltp)
+                        
+            #indic_y=int(len(Ygrille)/2)
+            #rep1d_plot(Xgrille, indic_y, R_ltp, npic, t, label='Density_LTP_1D')    	
+            R_method = R_ltp
+
+        if (config.method =='part') or (config.trace_particules == 'oui'):
+            print "trace particles : "
+            #graphes2D.traceparticules(X, t, npic)
+
+        if (config.method =='SP'):
+            start3 = time.clock()
+            R_sp = reconstruction_densites_2D.rec_densite_grille_unif_sp(X, M, config.epsilon, Xgrille, Ygrille)
+            print 'temps de reconstruction de rho avec SP', time.clock() - start3 
+            npicf_sp = npic
+            #graphes2D.fait_series_dessins(Xgrille, Ygrille, R_sp, npicf_sp, t, 'SP')      
+            R_method = R_sp
+                  
+        if (config.draw_sol == 'oui' ) :
+            solution=calculs_2D.compute_solution(Xgrille,Ygrille, t)            
+            #graphes2D.draw_analytical_solution(Xgrille,Ygrille,solution, npic, t, label=config.name_solution)
+            indic_y=int(len(Ygrille)/2)
+            #~ rep1d_plot(Xgrille, indic_y, solution, npic, t,name_solution+'_1D')
+            #~ relative_error=error(solution , R_ltp)
+            relative_error=calculs_2D.error(solution , R_method)
+            print "\n\nrelative L-infini error with N = " , N, ", at t =  " , t , 'is : '  , relative_error
+            
+        #------------------------------       
+        print 'Nplot = ', npic
+
+        npic += 1    
+        #plt.close("all")
+		
+    if ((Nboucle % 100) ==0) : print 't=', t # on affiche t que toutes les 100 boucles    
+    
+    #__________________________________________________________________#
+    #
+    ### SPH Method : - Compute U(t,X) with gradient_SP
+    #                - Move particles with this U(t,X)
+    #__________________________________________________________________#
+   
+    if (config.method == 'SP') :
+		diff_field = calculsfor_rec_modf90.diffusion_field_barenblatt_sp(X, M, config.m_barenblatt,config.epsilon, N)
+		X[0,:] += config.dt * (-diff_field[0,:])
+		X[1,:] += config.dt * (-diff_field[1,:])
+		Nboucle += 1
+		t += config.dt		
+    
+    #__________________________________________________________________#
+    #
+    ### LTP with direct Dk computation method (finite differences) :
+    #   - Compute flow U(t,X) with LTP reconstruction of gradient 
+    #     and move particles
+    #   - Compute the new deformation Dkn matrix with jacobian of U(t,X)
+    #     by Finite Differences
+    #__________________________________________________________________#
+    
+    if (config.D_method == 'implicit') :
+        
+				
+		### barenblatt diffusion reconstruction
+        X=move_particles_diffusion_barenblatt(X, N , M , D,config.m_barenblatt,config.hx_remap,config.hy_remap) 		
+        Nboucle += 1
+        t += config.dt
+        
+        D, Norm_inf_Dm1, indice_max_norm_Dm1 = calculs_2D.MaJ_D_FD_scheme(X, D ,tab, t, config.dt , config.hx_remap ,config.hy_remap)
+        #~ print 'max des normes des Dk', Norm_inf_Dm1
+        #~ print 'indice_max_norm_Dm1', indice_max_norm_Dm1
+        
+        if numpy.isinf(Norm_inf_Dm1) | numpy.isnan(Norm_inf_Dm1) : raise ValueError("Found Inf or NaN, Norm_inf_Dm1 = "+str(Norm_inf_Dm1)+"\n")
+    
+	#__________________________________________________________________#
+    #
+    ### LTP with incremental Dk computation method by matrix exponential
+    #   approximation of Jkn = inv(Dkn):
+    #   - Compute flow U(t,X) with LTP reconstruction of gradient 
+    #     and move particles
+    #   - Compute the new deformation Dkn matrix with jacobian of U(t,X)
+    #     by Finite Differences
+    #__________________________________________________________________#    
+    if (config.D_method == 'explicit') :
+        if (config.time_scheme == 'euler_explicit') :             
+            D_old = D.copy()
+            X_old = X.copy()
+            delta_X
+            for k in range(0,N) :
+                Save_det_Dk[k] = D_old[0,k] * D_old[3,k] - D_old[2,k] * D_old[1,k]
+            
+            D, Norm_inf_Dm1, indice_max_norm_Dm1 = calculs_2D.MaJ_D_barenblatt(D_old, X, M, t, config.dt, config.hx_remap, config.hy_remap)		
+            #~ print 'max des normes des Dk', Norm_inf_Dm1
+            #~ print 'indice_max_norm_Dm1', indice_max_norm_Dm1
+            
+            if numpy.isinf(Norm_inf_Dm1) | numpy.isnan(Norm_inf_Dm1) : raise ValueError("Found Inf or NaN, Norm_inf_Dm1 = "+str(Norm_inf_Dm1)+"\n")
+            
+            #~ if (abs(t-Tini) < 0.0000001) :
+                #~ print "special case of first iteration t = " , t
+                #~ for k in range(0,N) :
+                    #~ X[0, k] += dt * ( -grad_barenblatt(X[0,k], X[1,k])[0] )
+                    #~ X[1, k] += dt * ( -grad_barenblatt(X[0,k], X[1,k])[1] )
+            #~ else :
+                #~ diff_field = calculsfor_rec_modf90.diffusion_field_barenblatt(X, M , D_old, m_barenblatt, hx_remap, hy_remap, N)                    
+                #~ X[0, :] += dt * ( -diff_field[0,:] )
+                #~ X[1, :] += dt * ( -diff_field[1,:] )
+            
+            diff_field = calculsfor_rec_modf90.diffusion_field_barenblatt(X, M , D_old, config.m_barenblatt, config.hx_remap, config.hy_remap, N)                    
+            X[0, :] += config.dt * ( -diff_field[0,:] )
+            X[1, :] += config.dt * ( -diff_field[1,:] )
+            
+            myfile=open('./test/test.txt','a')            
+            for k in range(0,N) :
+                delta_X[k] = numpy.sqrt( (X[0,k] - X_old[0,k])**2 + (X[1,k] - X_old[1,k])**2 )
+                myfile.write(str(k)+'\t'+str(Save_det_Dk[k])+'\t'+str(X_old[0,k])+'\t'+str(X_old[1,k])+'\t'+str(delta_X[k])+'\t'+str(t)+'\n')
+            myfile.close()
+            
+            
+            t += config.dt
+            Nboucle += 1            
+        
+        if (config.time_scheme == 'middle_point') :
+            #~ print "D_method = " , config.D_method
+            #~ print "time_scheme = " , config.time_scheme
+            U = -diffusion_field_barenblatt(X, N , M , D, config.m_barenblatt, config.hx_remap, config.hy_remap)
+            X_middle = X + (config.dt/2.) * U        
+            D_old = D
+            
+            D_middle, D_new,  Norm_inf_Dm1, indice_max_norm_Dm1 = calculs_2D.MaJ_D_barenblatt_mid_scheme(D_old, X, X_middle, M, t, config.dt, config.hx_remap, config.hy_remap)
+               
+            #~ print 'max des normes des Dk', Norm_inf_Dm1
+            #~ print 'indice_max_norm_Dm1', indice_max_norm_Dm1
+            
+            if numpy.isinf(Norm_inf_Dm1) | numpy.isnan(Norm_inf_Dm1) : raise ValueError("Found Inf or NaN, Norm_inf_Dm1 = "+str(Norm_inf_Dm1)+"\n")
+            
+            U_middle = -calculs_2D.diffusion_field_barenblatt(X_middle, N , M , D_middle, config.m_barenblatt, config.hx_remap, config.hy_remap)
+            
+            X_new = X + dt * U_middle
+            
+            D = D_new
+            X = X_new
+            Nboucle += 1
+            t += config.dt
+    
+    #__________________________________________________________________#
+    #
+    ### LTP hybrid DK^n+1 is computed with Hess[\rho ^\epsilon _{LTP}]
+    #__________________________________________________________________#
+    if (config.D_method == 'hybrid') :
+        if (config.time_scheme == 'euler_explicit') :         
+            #~ print "D_method = " , config.D_method
+            D_old = D.copy()
+            D, Norm_inf_Dm1, indice_max_norm_Dm1 = calculs_2D.MaJ_D_barenblatt(D_old, X, M, t, config.dt, config.epsilon, config.epsilon)
+            
+            if numpy.isinf(Norm_inf_Dm1) | numpy.isnan(Norm_inf_Dm1) : raise ValueError("Found Inf or NaN, Norm_inf_Dm1 = "+str(Norm_inf_Dm1)+"\n")
+            
+            #~ print 'max des normes des Dk', Norm_inf_Dm1
+            #~ print 'indice_max_norm_Dm1', indice_max_norm_Dm1        
+            
+            diff_field = calculsfor_rec_modf90.diffusion_field_barenblatt(X, M , D_old, config.m_barenblatt, config.hx_remap, config.hy_remap, N)
+            X[0, :] += config.dt * ( -diff_field[0,:] )
+            X[1, :] += config.dt * ( -diff_field[1,:] )
+            t += config.dt
+            Nboucle += 1    
+            
+        if (config.time_scheme == 'middle_point') :
+            #~ print "D_method = " , config.D_method
+            #~ print "time_scheme = " , config.time_scheme
+            U = - calculs_2D.diffusion_field_barenblatt(X, N , M , D, config.m_barenblatt, config.hx_remap, config.hy_remap)
+            X_middle = X + (config.dt/2.) * U
+            D_old = D
+            
+            D_middle, D_new,  Norm_inf_Dm1, indice_max_norm_Dm1 = calculs_2D.MaJ_D_barenblatt_mid_scheme(D_old, X, X_middle, M, t, config.dt, config.epsilon, config.epsilon)
+            
+            if numpy.isinf(Norm_inf_Dm1) | numpy.isnan(Norm_inf_Dm1) : raise ValueError("Found Inf or NaN, Norm_inf_Dm1 = "+str(Norm_inf_Dm1)+"\n")
+            
+            #~ print 'max des normes des Dk', Norm_inf_Dm1
+            #~ print 'indice_max_norm_Dm1', indice_max_norm_Dm1
+            
+            U_middle = -calculs_2D.diffusion_field_barenblatt(X_middle, N , M , D_middle, config.m_barenblatt, config.hx_remap, config.hy_remap)
+            
+            X_new = X + config.dt * U_middle
+            
+            D = D_new
+            X = X_new
+            Nboucle += 1
+            t += config.dt
+        
+    
+    
+    
+    #---- trace forme particule -----
+    if  (Nboucle % config.param == 0) and (len(config.Part_suivies)>0) and ((config.method=='LTP') or (config.method == 'part_avec_suivi_vol')):
+         #  reconstruction de la forme des particules suivis
+         #dessine_forme_particule(D, M, X, h, Part_suivies, npic_part)
+         for k in config.Part_suivies:
+             Xgk, Ygk, R_k = rec_forme_particule(k, X[:,k], D[:, k], M[k], 100)
+             rep2d_contourf(Xgk, Ygk, R_k, npic, t, 'Shape_of_particle_'+str(k))
+                #plt.close("all")
+         npic_part +=1
+	
+
+    
+    #---- Mise a jour eventuelle de la grille -----
+    config.Ix, config.Iy, modif_grille = calculs_2D.MAJ_grille(X,config.Ix,config.Iy)    
+    if modif_grille == 1:
+        [Xgrille, Ygrille] = calculs_2D.make_grid_unif(config.Ix, config.Iy, config.Nmesh)
+
+    # ---- remapping -----------------------
+    if (config.method == 'LTP'):
+        if (Norm_inf_Dm1 >config.radius_remap) and (config.indic_remapping == 'yes'):
+            print '\nRemapping!\n'
+            if D_method == 'implicit' :
+                X, M, D  = remapping_avec_python_test(config.hx_remap, config.hy_remap, X, M, D, t) 
+                N = len(M)   
+                tab = calculsfor_var_modf90.tab_cardinal_particles(X,config.hx_remap,config.hx_remap,N)	
+            if D_method =='explicit' :
+                X, M, D  = remapping_avec_python_test(config.hx_remap, config.hy_remap, X, M, D, t) # remapping that also returns remapping grid step				
+                N = len(M)   
+            print 'nouveau nombre de particules', N
+
+		
+	#______________________________________________________________________#
+	#
+	#		PARTICLES MOVING EXPLOSION TEST
+	#______________________________________________________________________#
+	### We test if particles moving explode (related to dt)
+    #~ if (config.explosion == "yes") :
+        #~ X_diff = X_old - X
+        #~ explo_list=[]
+        #~ explo = False
+        #~ for k in range(0,N) :
+            #~ if ((abs(X_diff[0,k]) >= config.dx) | (abs(X_diff[1,k]) >= config.dy)) :
+                #~ explo_list.append([k, X_old[0,k], X_old[1,k], X[0,k], X[1,k], X_diff[0,k], X_diff[1,k], config.dx, config.dy])
+                #~ explo = True
+        #~ if (explo) :
+            #~ myfile=open('./out/explosion.txt','a')
+            #~ myfile.write('explosion of particles moving at t = '+str(t)+'\n')
+            #~ myfile.close()			
+            #~ N_explo = int(len(explo_list))
+            #~ X_explo_old = np.zeros([2,N_explo])
+            #~ X_explo = np.zeros([2,N_explo])
+            #~ Xini_explo = np.zeros([2,N_explo])
+            #~ for i in range(0,N_explo) : 
+                #~ X_explo_old[0,i] = explo_list[i][1]
+                #~ X_explo_old[1,i] = explo_list[i][2]
+                #~ X_explo[0,i] = explo_list[i][3]
+                #~ X_explo[1,i] = explo_list[i][4]
+                #~ Xini_explo[0,i] = Xinif[0,explo_list[i][0]]
+                #~ Xini_explo[1,i] = Xinif[1,explo_list[i][0]]
+			#~ ### draw position of particles who will explode at INTIAL TIME
+			#~ #traceparticules(Xini_explo, Tini, 10000-1+npic,show=True)
+			#~ ### draw position of particles BEFORE they explode
+			#~ #traceparticules(X_explo_old, t -dt, 10000+npic,show=True)					
+			#~ ### draw position of particles AFTER they explode
+			#~ #traceparticules(X_explo, t, 10000+npic+1,show=True)
+            #~ R_ltp_vec=np.zeros(len(explo_list))
+            #~ R_ltp_old_vec=np.zeros(len(explo_list))
+            #~ fexplo=open('./out/explosion.txt','w')
+            #~ fexplo.write('k, X_old[0,k], X_old[1,k], X[0,k], X[1,k], X_diff[0,k], X_diff[1,k], dx, dy, R_ltp_old[k], R_ltp[k]\n')
+            #~ for i in range(0,int(len(explo_list))) :
+                #~ k = explo_list[i][0]				
+                #~ #R_ltp_old_vec[i] = calculsfor_rec_modf90.rec_ltp_at_coordinate(X_old, M, D_old, hx_remap, hy_remap, X_old[:,k], int(len(X_old[0,:])))
+                #~ #R_ltp_vec[i] = calculsfor_rec_modf90.rec_ltp_at_coordinate(X, M, D, hx_remap, hy_remap, X[:,k], int(len(X[0,:])))
+                #~ explo_list[i].append(R_ltp_old_vec[i])
+                #~ explo_list[i].append(R_ltp_vec[i])
+                #~ fexplo.write(str(explo_list[i])[1:-1]+'\n')
+                #~ print k , Xinif[:,k] , barenblatt(Xinif[0,k],Xinif[1,k],Tini)
+            #~ fexplo.close()
+            #~ if (method=='LTP'):
+                #~ R_ltp_old = rec_densite_grille_unif_LTP(X_old, M, D_old, Xgrille, Ygrille)	
+                #~ fait_series_dessins(Xgrille, Ygrille, R_ltp_old, npicf_ltp+10000, t-dt, 'LTP', show=True)
+                #~ R_ltp = rec_densite_grille_unif_LTP(X, M, D, Xgrille, Ygrille)	
+                #~ fait_series_dessins(Xgrille, Ygrille, R_ltp, npicf_ltp+1+10000, t, 'LTP', show=True)                        
+            #~ if (method=='SP'):
+                #~ R_sp_old = rec_densite_grille_unif_sp(X_old, M, epsilon, Xgrille, Ygrille)				
+                #~ R_sp = rec_densite_grille_unif_sp(X, M, epsilon, Xgrille, Ygrille)				
+                #~ npicf_sp = npic				
+                #~ fait_series_dessins(Xgrille, Ygrille, R_sp_old, 30000 + npicf_sp , t-dt, 'SP')
+                #~ fait_series_dessins(Xgrille, Ygrille, R_sp, 30000 + npicf_sp +1, t, 'SP')
+            #~ traceparticules(X_old, t-dt, 20000+npic-1,show=True)
+            #~ traceparticules(X, t-dt, 20000+npic,show=True)
+            #~ 
+            #~ num_part_list = [explo_list[k][0] for k in range(0,len(explo_list))]
+            #~ 
+            #~ print "\nlist of particles that exploded : " , num_part_list , "\n"
+            #~ dessine_forme_particule(D, M, X, h, num_part_list, npic)
+            #~ 
+            #~ 
+                #~ 
+            #~ 
+			#~ #print "\ngradient and positions of exploding particles : \n" 
+			#~ #for i in range(0,int(len(explo_list))) :
+				#~ #k = explo_list[i][0]
+				#~ #grad_f = calculsfor_rec_modf90.rec_ltp_grad_at_coordinate(X_old, M, D, hx_remap, hy_remap, X_old[:,k], N,1)
+				#~ #grad_sol = grad_barenblatt(X_old[0,k], X_old[1,k],t-dt)
+				#~ #print "\nk , grad_sol, grad_f : " , k , grad_sol, grad_f , "\n"
+			#~ 
+#~ ##			X_new_test=np.zeros([2,N])
+			#~ #print "\ngradient of non-exploding particles : \n" 
+			#~ #for k in range(0,N) :
+				#~ #grad_f = calculsfor_rec_modf90.rec_ltp_grad_at_coordinate(X_old, M, D, hx_remap, hy_remap, X_old[:,k], N)
+				#~ ##X_new_test[:,k] = X_old[:,k] - 2* dt * grad_f[:]				
+				#~ #grad_sol = grad_barenblatt(X_old[0,k], X_old[1,k],t)
+				#~ #print k , grad_sol, grad_f
+			#~ 
+			#~ ### TEST GRADIENT DENSITY
+			#~ #X_test=move_particles_diffusion_barenblatt(X_old, N , M , D ,m_barenblatt,hx_remap,hy_remap)			
+			#~ #for i in range(0,int(len(explo_list))) :
+				#~ #k = explo_list[i][0]
+				#~ #print k, X_old[:,k], X[:,k], X_test[:,k], R_ltp_old, R_ltp
+			    #~ 
+            #~ raise ValueError('Explosion in particles moving see file in ./out/explosion.txt')
+
+    # ---- enregistrement des tableaux -----
+    if (config.save_data == 'oui') :
+        time_tabs=time.time()
+        numpy.savetxt('out/M.txt', M)
+        numpy.savetxt('out/X0.txt', X[0,:])
+        numpy.savetxt('out/X1.txt', X[1,:])
+        numpy.savetxt('out/data.txt', numpy.array([t, npic]))
+        #numpy.savetxt('out/Dtranspose.txt', numpy.transpose(D))
+        numpy.savetxt('out/D0.txt', D[0,:])
+        numpy.savetxt('out/D1.txt', D[1,:])
+        numpy.savetxt('out/D2.txt', D[2,:])
+        numpy.savetxt('out/D3.txt', D[3,:])
+        print "time to save data in txt files : " , time.time()-time_tabs
+        
+#===== fin de la boucle en temps ======
+
+
+
+if (config.method == 'LTP') or (config.method == 'part_avec_suivi_vol'): 
+     start4 = time.clock()     
+     #if D_method == 'explicit' : 
+		##D, Norm_inf_Dm1, indice_max_norm_Dm1 = MaJ_D(D, X, t, dt)
+		#D, Norm_inf_Dm1, indice_max_norm_Dm1 = MaJ_D_barenblatt(D, X, M, t, dt, hx_remap, hy_remap)
+ 
+#===== desssins finaux =====
+if config.animmp4 == 1:
+    nom ='Density_'+config.method+'_'
+    graphes2D.faitlefilm(nom)
+       
+#traceparticules(X,t,npic)
+
+nom = config.method+'N='+str(N)+'-Nmesh='+str(config.Nmesh) 
+
+#solution=sol_final_SW(Xgrille,Ygrille) #= initial profile because reverse swirling velocity field respects u(0,x) = u(Tmax,x)
+#draw_analytical_solution(Xgrille,Ygrille,solution, npic, t, label='Solution_SW')
+
+solution=calculs_2D.compute_solution(Xgrille,Ygrille, t) 
+
+
+if (config.method=='SP') :
+    R_sp = reconstruction_densites_2D.rec_densite_grille_unif_sp(X, M, config.epsilon, Xgrille, Ygrille) 
+    print "\nepsilon  = " , config.epsilon  
+    npicf_sp = 2000 + npic
+    #graphes2D.fait_series_dessins(Xgrille, Ygrille, R_sp, npicf_sp, t, nom)
+    relative_error=calculs_2D.error(solution , R_sp)
+    relative_error_L1=calculs_2D.error_Lp(Xgrille, Ygrille, solution , R_sp, 1)
+    relative_error_L2=calculs_2D.error_Lp(Xgrille, Ygrille, solution , R_sp, 2)
+    numpy.savetxt(str(path_to_output_file_name)+'_R_sp_mat.txt', R_sp)
+if (config.method=='LTP') :
+    R_ltp = reconstruction_densites_2D.rec_densite_grille_unif_LTP(X, M, D, Xgrille, Ygrille)
+    npicf_ltp = 3000 + npic
+    #graphes2D.fait_series_dessins(Xgrille, Ygrille, R_ltp, npicf_ltp, t, nom,show=False)
+    relative_error=calculs_2D.error(solution , R_ltp)
+    relative_error_L1=calculs_2D.error_Lp(Xgrille, Ygrille, solution , R_ltp, 1)
+    relative_error_L2=calculs_2D.error_Lp(Xgrille, Ygrille, solution , R_ltp, 2)
+    numpy.savetxt(str(path_to_output_file_name)+'_R_ltp_mat.txt', R_sp)
+    #[Xgrille, Ygrille] = make_grid_unif(Ix, Iy, Nmesh_visu3D)
+    #R_ltp = rec_densite_grille_unif_LTP(X, M, D, Xgrille, Ygrille)
+    #npicf_ltp = 5000 + npic
+    #fait_series_dessins(Xgrille, Ygrille, R_ltp, npicf_ltp, t, nom)
+    #dessin3d(Xgrille, Ygrille, R_ltp, npicf_ltp, t, label= nom)
+    
+if (config.draw_sol == 'oui' ) :
+    numpy.savetxt(str(path_to_output_file_name)+'_solution_mat.txt', solution)
+    #graphes2D.draw_analytical_solution(Xgrille,Ygrille,solution, npic, t, label=config.name_solution)
+	
+print "\nnumber of iterations : " , Nboucle
+
+print "\n\nrelative L-infini error with N = " , N, ", at t =  " , t , 'is : '  , relative_error , "\n"
+print "relative L1 error with N = " , N, ", at t =  " , t , 'is : '  , relative_error_L1 , "\n"
+print "relative L2 error with N = " , N, ", at t =  " , t , 'is : '  , relative_error_L2 , "\n"
+
+
+
+if ( not(os.path.isfile(str(path_to_output_file_name))) ) : #if the file does not exist, we create it
+    os.system("touch "+str(path_to_output_file_name))
+    myfile=open(str(path_to_output_file_name),'a')
+    myfile.write("input_file_name\tL-infinity_error\tL1_error\tL2_error\n")
+
+else :
+    myfile=open(str(path_to_output_file_name),'a')
+    
+myfile.write(str(path_to_input_file_name)+"\t"+str(float(relative_error))+"\t"+str(float(relative_error_L1))+"\t"+str(float(relative_error_L2))+"\n")
+myfile.close()
+
+    
+print "C'est fini !"
+print 'temps de simulation: ',  time.clock() - start_code
+
+print 'temps de simulation bis: ',  time.time() - start_code_bis
+# ===== A FAIRE =======
+# faire calcul de U et D par f2py ?
+# calcul de D par Differences finies
+# fusion et dedoublement de particules
+
+# ==== A DEBUGGER =====
+# remapping f2py
+# calculsfor_rec_modf90.rec_sp	
+# initializepartavecbords

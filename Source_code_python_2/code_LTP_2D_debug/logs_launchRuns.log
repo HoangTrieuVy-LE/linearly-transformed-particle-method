@@ -1,0 +1,4 @@
+launch = ./code_LTP_2D_diffusion.py data/TESTS/test_multi/data_TEST1.csv ./data/TESTS/test_multi//data_TEST1.out
+date = 2019-01-11_13:04:06
+launch = ./code_LTP_2D_diffusion.py data/TESTS/test_multi/data_TEST2.csv ./data/TESTS/test_multi//data_TEST2.out
+date = 2019-01-11_13:04:36

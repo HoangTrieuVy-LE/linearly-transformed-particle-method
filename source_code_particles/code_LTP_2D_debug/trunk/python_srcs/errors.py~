@@ -1,0 +1,43 @@
+import matplotlib
+import matplotlib.pyplot as plt
+import pylab
+import sys
+import numpy
+#file_name=sys.argv[1]
+
+#file_name="error_no_remap_D_explicit.txt"
+#data=numpy.genfromtxt(fname=file_name, names=True)
+#N=data["N"]
+#err=data["error"]
+
+matplotlib.rcParams.update({'font.size': 70})
+linestyles = ['-.', '-', '--', ':',' ']
+params = {'legend.fontsize': 50, 'legend.linewidth': 2}
+pylab.rcParams.update(params)
+plt.rc('text', usetex=True)
+fontsize_x=90
+fontsize_y=90      
+
+plt.figure(1)
+
+file_name="./out/error_no_remap_D_explicit.txt"
+data=numpy.genfromtxt(fname=file_name, names=True)
+N=data["N"]
+err=data["error"]
+
+plt.plot(N,err,marker='o',label="D  = explicit , remapping = no" )
+plt.xlabel('$k$')
+plt.ylabel('$L^{\infty}$ error')
+plt.legend()
+
+file_name="./out/error_no_remap_D_implicit.txt"
+data=numpy.genfromtxt(fname=file_name, names=True)
+N=data["N"]
+err=data["error"]
+
+plt.plot(N,err,marker='o',label="D  = implicit , remapping = no" )
+plt.xlabel('$k$')
+plt.ylabel('$L^{\infty}$ error')
+plt.legend()
+
+plt.show()
