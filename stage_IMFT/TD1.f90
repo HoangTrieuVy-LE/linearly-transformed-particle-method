@@ -2,9 +2,9 @@
 program TD1
 	implicit none
 	include 'C:\lib\MPI\Include\mpif.h'
+	! integer :: nb_procs, rank, code
 
 	! call MPI_INIT(code)
-	! integer :: nb_procs, rank, code
 	
 	! All the communicators processes
 	! MPI_COMM_WORLD
@@ -305,22 +305,49 @@ program TD1
 	!! Synchronous Sends
 	! There can be no communication before the 2 processes are ready to communicate
 	! call MPI_SSEND(values, count, msgtype, dest, tag, comm, code)
-	! integer :: rank,value,num_proc,code
-	! integer,parameter :: tag=110
+! 	integer :: rank,value,num_proc,code
+! 	integer,parameter :: tag=110
 
- ! 	call MPI_INIT(code)
- ! 	call MPI_COMM_RANK( MPI_COMM_WORLD,rank,code)
+!  	call MPI_INIT(code)
+!  	call MPI_COMM_RANK( MPI_COMM_WORLD,rank,code)
 
- ! 	! We run on 2 processes
- ! 	num_proc=mod(rank+1,2)
-
- ! 	call MPI_SEND(rank+1000,1,MPI_INTEGER,num_proc,tag, MPI_COMM_WORLD,code)
- ! 	call MPI_RECV(value,1, MPI_INTEGER, num_proc,tag, MPI_COMM_WORLD, &
- ! 	MPI_STATUS_IGNORE,code)
-
-	! print*, 'I process ', rank, ' received ', value, ' from process ', num_proc
+!  	! We run on 2 processes
+!  	num_proc=mod(rank+1,2)
 
 	
+!  	call MPI_SSEND(rank+1000,1,MPI_INTEGER,num_proc,tag, MPI_COMM_WORLD,code)
+!  	call MPI_RECV(value,1, MPI_INTEGER, num_proc,tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE,code)
+! print*, 'I process ', rank, ' received ', value, ' from process ', num_proc
+
+	!! Buffered sends
+	! call MPI_BUFFER_ATTACH(buf, typesize, code)
+	! call MPI_BSEND(values, count, msgtype, dest, tag, comm, code)
+	! call MPI_BUFFER_DETACH(buf, typesize, code)
+
+	! integer :: rank, value, num_proc, typesize, overhead,code
+	! integer, parameter :: tag = 110, nb_element = 1
+	! integer, dimension(:), allocatable :: buffer
+
+	! call MPI_INIT(code)
+
+	! call MPI_COMM_RANK(MPI_COMM_WORLD, rank, code)
+
+	! call MPI_TYPE_SIZE(MPI_INTEGER, typesize, code)
+	! ! print*, typesize
+	! overhead = int(1+(MPI_BSEND_OVERHEAD*1.)/typesize)
+	! allocate(buffer(nb_element+overhead))
+	! call MPI_BUFFER_ATTACH(buffer,typesize*(nb_element+overhead),code)
+
+	! num_proc = mod(rank+1,2)
+	! call MPI_BSEND(rank+1000, nb_element, MPI_INTEGER,num_proc, tag, MPI_COMM_WORLD,code)
+	! call MPI_RECV(value, nb_element, MPI_INTEGER, num_proc, tag, MPI_COMM_WORLD,MPI_STATUS_IGNORE, code)
+
+	! print*,'I process ', rank, ' received ', value, ' from process', num_proc
+	! call MPI_BUFFER_DETACH(buffer,typesize*(1+overhead),code)
 	
+		
+
+
 	call MPI_FINALIZE(code)
+
 END PROGRAM TD1
