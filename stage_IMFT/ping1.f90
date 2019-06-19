@@ -1,6 +1,8 @@
 program TP1 
 	implicit none
-	include 'C:\lib\MPI\Include\mpif.h'
+	include 'mpif.h'	
+	!include 'C:\lib\MPI\Include\mpif.h'
+
 	integer :: code, rank
 	integer, parameter :: nb_values=1000, tag = 110, dp = kind(1.d0)
   	integer, dimension(MPI_STATUS_SIZE) :: status
@@ -19,7 +21,7 @@ program TP1
             & f4.2,") from process 0.")'), nb_values,message(nb_values) 	
 	end if 
 
-	call MPI_FINALIZE(code)
+	call MPI_FINALIZE(code)	
 
 	
 
