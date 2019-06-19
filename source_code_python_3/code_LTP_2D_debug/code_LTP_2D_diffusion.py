@@ -293,6 +293,37 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
             
         if (config.time_scheme == 'middle_point') : 
             raise ValueError("TO DO")
+            
+    '''
+    if (config.problem == "diffusion") and (config.method == "LTP"):
+        if (config.time_scheme == "Euler_explicit") :
+        start = time.time()
+        # t start at 0        
+        print("t = ", t)
+        
+        # Coordinates at time t
+        X_old = X.copy()
+        
+        # Deformation Matrix D at time t
+        D_old = D.copy()
+        
+        # TODO, which functions, which block in fortran module?
+        # Initial Idea
+        # Input: X_old, D_lod, M_old,         
+            
+            
+        # Update Deformation Matrix D at time t+dt
+        D= Df2py.copy()
+        
+        
+        
+        t += config.dt
+        npic += 1
+        Nboucle += 1
+        end = time.time()
+        print( "Global Time Execution", end - start)
+
+   '''
         
         
     if (config.method == 'analytic_debug') :		    
