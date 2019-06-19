@@ -1,7 +1,7 @@
 ! TD MPI
 program TD1
 	implicit none
-	include 'C:\lib\MPI\Include\mpif.h'
+	include 'mpif.h'
 	! integer :: nb_procs, rank, code
 
 	! call MPI_INIT(code)
@@ -344,6 +344,7 @@ program TD1
 
 	! print*,'I process ', rank, ' received ', value, ' from process', num_proc
 	! call MPI_BUFFER_DETACH(buffer,typesize*(1+overhead),code)
+	
 	
 		
 

@@ -25,7 +25,8 @@ outputs_dir = sys.argv[2]
 if (not(os.path.isdir(str(outputs_dir)))) :
     os.makedirs(str(outputs_dir))
 
-input_files_list = glob.glob(str(inputs_dir)+'\*.csv')
+
+input_files_list = glob.glob(str(inputs_dir)+'/*.csv')
 
 
 print (input_files_list)
