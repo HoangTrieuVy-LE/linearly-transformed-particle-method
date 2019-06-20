@@ -311,7 +311,7 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
         D_old = D.copy()
         
         # TODO, which functions, which block in fortran module?
-        # Initial Idea
+        # Initial Idea: Run program file named "tri_casier_method in form of a fortran program?"
         # Input: X_old, D_lod, M_old,         
         # Output: U_new (U), Df2py
         # U,Df2py = tri

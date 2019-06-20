@@ -24,27 +24,54 @@ use calculsfor_ini_modf90
 
 implicit none 
 ! DECLARATIONS for MPI
-	! TODO
+	integer :: rank
+	integer :: nb_proc
+	integer :: code, i
 	integer :: nbdims = 2 !find in config to simply later
-
-	integer :: nb_proc,i,code
-
 	integer, dimension(nbdims): dims
 	logical, dimension(nbdims): periods
 	integer, dimension(nbdims): coords
 	logical :: reorder = .true.
 
 
-call MPI_INIT( code )
-call mpi_comm_size(mpi_comm_world,nb_proc,code)
+	integer, parameter :: nb_neighbours_2D = 8
+	integer, parmeter :: nb_neighbours_3D = 26
+
 ! DECLARATION for necessary input data: domain, Xg, Yg, tables of particles, Xpart?, Xcoord?,etc... TODO 
 
 contains
 	
+	subroutine environnement_initialisation
+		call MPI_INIT( code )
+		call MPI_COMM_SIZE(MPI_COMM_WORLD,nb_proc,code)
+    	call MPI_COMM_RANK(MPI_COMM_WORLD, rank, code)
+	end subroutine environnement_initialisation
+
+
 	subroutine adaptation_block_processor
 	! TODO Divide the domain depending on the number of processor
+	
 
 	end subroutine_block_processor
+
+	subroutine topology_initialisation*
+  		!************
+    	!Creation of the Cartesian topology
+    	!************
+		dims(:) = 0.
+		call MPI_DIMS_CREATE(nb_proc, ndims, dims, code)
+		periods(:) = .false.
+		call MPI_CARTE_CREATE(MPI_COMM_WORLD, ndims, dims, periods, reorder,comm2d,code)
+		
+	 	if (rank == 0) then
+			write (*,'(A)')'------------------------------------------'
+			write (*,'(A,i4,A)')'LTP supported by MPI with ',nb_proc,'processes'
+			write (*,'(A,i4,A,i4,A)') 'Dimension for the topology: ', &
+            						dims(1), ' along x, ', dims(2), ' along  y'			
+			write (*,'(A,i4,A,i4)''Domain coords: xmin=, xmax=, ymin, ymax='
+			write (*,'(A)')'------------------------------------------'
+		end if
+	end subroutine topology_initialisation
 
 	subroutine mpi_2d_spatial_decomposition
 
@@ -65,7 +92,7 @@ contains
 		! todo in 3d, maximum 26 neighbor block around
 	
 		! create the cartesian topology
-		! todo
+		! TODO
 
 		call mpi_dims_create(nb_proc,nbdims,dims,code) 
 		! dims has ndims size specifying the number of nodes in each dimension
@@ -136,5 +163,9 @@ contains
 		!  todo add general case dims(3)>1  !
 		!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	end subroutine mpi_2d_spatial_decomposition
-call MPI_FINALIZE(code)
+
+	subroutine 	environnement_finalization
+		call MPI_FINALIZE(code)
+	end subroutine environnement_finalization
+
 end module MPI_2D_spatialisation_modf90

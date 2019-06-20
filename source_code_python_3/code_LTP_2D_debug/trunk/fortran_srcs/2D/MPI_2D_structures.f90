@@ -21,6 +21,9 @@ implicit none
 ! TODO
 
 
+! TODO derived particle dataypes
+type(PARTYPE), dimension(:,:), allocatable :: PARTICLES
+
 contains
 
 

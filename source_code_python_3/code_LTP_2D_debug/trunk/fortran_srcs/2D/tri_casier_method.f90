@@ -15,8 +15,19 @@ use MPI_2D_structures_modf90
 use PARTICLE_2D_modf90
 
 implicit none
-s
+
 ! DECLARATIONS TODO
+
+
+
+
+! call environnement_initialisation
+! call mpi_2d_spatial_decomposition
+! call adaptation_block_processor
+
+
+
+
 
 contains
 	
@@ -31,7 +42,8 @@ contains
 	subroutine table_particle_overlap
 	end subroutine table_particle_overlap
 
-
+	
+	
 	subroutine main
 	!-------------------------------------------------------------------!
 	!!!LOOP ON PARTICLES INSIDE BLOCK AND THE OTHERS IN OVERLAP TABLES!!!
