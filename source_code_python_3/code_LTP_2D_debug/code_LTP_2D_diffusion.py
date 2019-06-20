@@ -36,6 +36,8 @@ data_code_LTP_2D.initialize_data_parameters(path_to_input_file_name)
 from _calculsfor_f90 import  calculsfor_rec_modf90
 from _calculsfor_f90 import  calculsfor_var_modf90
 
+from _calculsfor_f90 import  tri_casier_modf90
+
 start_code = time.clock()
 start_code_bis = time.time()
 
@@ -273,6 +275,7 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
                                     
             # update deformations of particles 
             tmp = time.time()
+            # Time scheme euler explicit
             update_d_scheme = 1
             indice_max_norm_Dm1, Norm_inf_Dm1, Df2py  = calculsfor_var_modf90.update_d_diffusion(X_old, D_old, M, t, config.dt, update_d_scheme, config.hy_remap, config.hy_remap, N)            
             print("time for D = " , time.time() - tmp)
@@ -310,12 +313,15 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
         # TODO, which functions, which block in fortran module?
         # Initial Idea
         # Input: X_old, D_lod, M_old,         
-            
+        # Output: U_new (U), Df2py
+        # U,Df2py = tri
+         
+        # Update all new particles position
+        # X[0,:] += config.dt*U[0,:]
+        # X[1,:] += config.dt*U[1,:]
             
         # Update Deformation Matrix D at time t+dt
         D= Df2py.copy()
-        
-        
         
         t += config.dt
         npic += 1

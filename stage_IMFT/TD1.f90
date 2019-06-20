@@ -1,7 +1,7 @@
 ! TD MPI
 program TD1
 	implicit none
-	include 'mpif.h'
+	use mpi
 	! integer :: nb_procs, rank, code
 
 	! call MPI_INIT(code)

@@ -173,7 +173,8 @@ contains
         double precision, intent(out)                             :: Norm_inf_Dm1
         integer(8), intent(out)                         :: indice_max_norm_Dm1
         double precision, dimension (4, N_part), intent(out)      :: Dout
-                            
+            
+                
         integer(8)              :: k, invertible        
         double precision                  :: det_Dk, a, b, c, d, norm_inf_Dkm1, det_Jk, det_mat, new_dt
         double precision                  :: rho_hn
