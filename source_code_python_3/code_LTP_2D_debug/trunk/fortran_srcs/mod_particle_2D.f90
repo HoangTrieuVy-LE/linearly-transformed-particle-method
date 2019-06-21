@@ -19,16 +19,47 @@ implicit none
 	! TODO  
 
 
-type PARTYPE
+
+type PARTTYPE
+
 !Stored particle informations
+
+!0. Coordinates
+real(kind=8) :: Xp
+real(kind=8) :: Yp
+
 !1. Velocity of k-th particle U[1,k],U[2,k]
-!2. Deformation Matrix of k-th particle Dk: TODO find eigenvalues, eigenvector???? 
-end type PARTYPE
+real(kind=8) :: Upx
+real(kind=8) :: Upy
+ 
+
+!2. Deformation Matrix of k-th particle Dk: TODO find eigenvalues, eigenvector????
+real(kind=8) :: Dp1 
+real(kind=8) :: Dp2
+real(kind=8) :: Dp3
+real(kind=8) :: Dp4
+
+!3. Poids
+real(kind=8) :: Mp
+
+!4. Rho
+real(kind=8) :: Rhop
+
+!5. Particle dentity
+integer :: ID
+integer :: PROC_ID
+
+end type PARTTYPE
 
 contains
+!- Particle structure
+!type(PARTTYPE), dimension(:,:), allocatable :: PART
+
+
 
 	subroutine MPI_PART_TYPE
 	
+
 	end subroutine MPI_PART_TYPE
 
 end module PARTICLE_2D_modf90

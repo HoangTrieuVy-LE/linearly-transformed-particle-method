@@ -412,36 +412,13 @@
       end subroutine f2pyinitparticle_2d_modf90
 
       
-      subroutine f2pyinitmpi_2d_spatialisation_modf90(f2pysetupfunc)
-      use mpi_2d_spatialisation_modf90, only : code
-      use mpi_2d_spatialisation_modf90, only : i
-      use mpi_2d_spatialisation_modf90, only : nb_proc
-      use mpi_2d_spatialisation_modf90, only : dims
-      use mpi_2d_spatialisation_modf90, only : coords
-      use mpi_2d_spatialisation_modf90, only : periods
-      use mpi_2d_spatialisation_modf90, only : nbdims
-      use mpi_2d_spatialisation_modf90, only : dimension
-      use mpi_2d_spatialisation_modf90, only : reorder
-      use mpi_2d_spatialisation_modf90, only : mpi_2d_spatial_decomposit&
-     &ion
-      external f2pysetupfunc
-      call f2pysetupfunc(code,i,nb_proc,dims,coords,periods,nbdims,dimen&
-     &sion,reorder,mpi_2d_spatial_decomposition)
-      end subroutine f2pyinitmpi_2d_spatialisation_modf90
-
-      
       subroutine f2pyinitmpi_2d_structures_modf90(f2pysetupfunc)
       use mpi_2d_structures_modf90, only : overlap_criterion
       use mpi_2d_structures_modf90, only : particle_numerotation
+      use mpi_2d_structures_modf90, only : particle_screening
       external f2pysetupfunc
-      call f2pysetupfunc(overlap_criterion,particle_numerotation)
+      call f2pysetupfunc(overlap_criterion,particle_numerotation,particl&
+     &e_screening)
       end subroutine f2pyinitmpi_2d_structures_modf90
-
-      
-      subroutine f2pyinittri_casier_modf90(f2pysetupfunc)
-      use tri_casier_modf90, only : main
-      external f2pysetupfunc
-      call f2pysetupfunc(main)
-      end subroutine f2pyinittri_casier_modf90
 
 

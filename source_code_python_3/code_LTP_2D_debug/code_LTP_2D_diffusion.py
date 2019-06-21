@@ -14,6 +14,7 @@ import sys
 import os
 
 sys.path.append('./trunk/python_srcs/')
+sys.path.append('./trunk/fortran_srcs/')
 
 
 import config
@@ -36,7 +37,6 @@ data_code_LTP_2D.initialize_data_parameters(path_to_input_file_name)
 from _calculsfor_f90 import  calculsfor_rec_modf90
 from _calculsfor_f90 import  calculsfor_var_modf90
 
-from _calculsfor_f90 import  tri_casier_modf90
 
 start_code = time.clock()
 start_code_bis = time.time()
@@ -69,7 +69,6 @@ else:
     #~ print 'redemarrage a t= ', t
     X[0, :] = X0
     X[1, :] = X1
-
 #~ print 'Nombre de particules N=', N 
 
 
@@ -218,7 +217,7 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
             
             #------------------------------       
 
-        if (config.save_data == 'oui') :
+        if (config.save_data == 'oui') : 
             numpy.savetxt(str(path_to_output_file_name)+'_t='+str(t)+'_solution.txt', solution)
             numpy.savetxt(str(path_to_output_file_name)+'_t='+str(t)+'_R_'+str(config.method)+'D_method'+str(config.D_method)+'_mat.txt', R_method)
             numpy.savetxt(str(path_to_output_file_name)+'_t='+str(t)+'_Xgrille.txt', Xgrille)
@@ -260,6 +259,8 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
         if (config.time_scheme == 'middle_point') : 
             raise ValueError("TO DO")
             # HERE
+            
+    '''
     if (config.problem == "diffusion") and (config.method == 'LTP') :
         if (config.time_scheme == 'euler_explicit') : 
             start = time.time()
@@ -296,6 +297,19 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
             
         if (config.time_scheme == 'middle_point') : 
             raise ValueError("TO DO")
+    '''            
+            
+    if (config.problem == "diffusion") and (config.method == "LTP"):
+        cmd = 'cd trunk/fortran_srcs/'   
+        print ("launch : " , cmd )
+        os.system(str(cmd))
+        
+        cmd = 'mpif90 trunk/fortran_srcs/test.f90 -o outfile'
+        os.system(str(cmd))
+        print ("launch : " , cmd )
+        cmd = 'mpiexec -n 4 ./outfile'
+        os.system(str(cmd))
+
             
     '''
     if (config.problem == "diffusion") and (config.method == "LTP"):
@@ -312,8 +326,8 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
         
         # TODO, which functions, which block in fortran module?
         # Initial Idea: Run program file named "tri_casier_method in form of a fortran program?"
-        # Input: X_old, D_lod, M_old,         
-        # Output: U_new (U), Df2py
+        # Input: X_old, D_lod, M_old         
+        # Output: X_new (U), Df2py
         # U,Df2py = tri
          
         # Update all new particles position

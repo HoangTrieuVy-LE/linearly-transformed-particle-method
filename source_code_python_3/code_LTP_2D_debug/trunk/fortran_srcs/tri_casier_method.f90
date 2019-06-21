@@ -8,9 +8,7 @@
 
 module tri_casier_modf90
 
-!import module, TODO decide which module would be necessary
 
-use MPI_2D_spatialisation_modf90
 use MPI_2D_structures_modf90
 use PARTICLE_2D_modf90
 
@@ -18,16 +16,10 @@ implicit none
 
 ! DECLARATIONS TODO
 
-
-
-
+! setup
 ! call environnement_initialisation
 ! call mpi_2d_spatial_decomposition
 ! call adaptation_block_processor
-
-
-
-
 
 contains
 	
@@ -36,15 +28,8 @@ contains
 	! table_particle_inside = TODO
 	! table_particle_overlap = TODO
 
-	subroutine table_particle_inside
-	end subroutine table_particle_inside
-
-	subroutine table_particle_overlap
-	end subroutine table_particle_overlap
-
 	
-	
-	subroutine main
+	subroutine block_loop
 	!-------------------------------------------------------------------!
 	!!!LOOP ON PARTICLES INSIDE BLOCK AND THE OTHERS IN OVERLAP TABLES!!!
 	!-------------------------------------------------------------------! 
@@ -63,7 +48,6 @@ contains
 	! TODO
 	! Remake step define the two "table_particle_inside" and "table_particle_overlap"	
 	
-	end subroutine main
-
+	end subroutine block_loop
 
 end module tri_casier_modf90

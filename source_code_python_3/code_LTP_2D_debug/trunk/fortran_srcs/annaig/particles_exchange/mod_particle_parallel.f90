@@ -15,18 +15,24 @@ type PARTTYPE
  real(kind=8) :: UP
  real(kind=8) :: VP
  real(kind=8) :: WP
+
+
  real(kind=8) :: UP_NM1
  real(kind=8) :: VP_NM1
  real(kind=8) :: WP_NM1
+
  real(kind=8) :: UP_NM2
  real(kind=8) :: VP_NM2
  real(kind=8) :: WP_NM2
+
  real(kind=8) :: UFAP
  real(kind=8) :: VFAP
  real(kind=8) :: WFAP
+
  real(kind=8) :: UFAP_NM1
  real(kind=8) :: VFAP_NM1
  real(kind=8) :: WFAP_NM1
+
  real(kind=8) :: UFAP_NM2
  real(kind=8) :: VFAP_NM2
  real(kind=8) :: WFAP_NM2
