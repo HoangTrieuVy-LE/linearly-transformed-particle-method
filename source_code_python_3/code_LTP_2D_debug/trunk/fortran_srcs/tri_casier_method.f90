@@ -26,8 +26,14 @@ contains
 	! For each processor, define "table_particle_inside" and "table_particle_overlap"
 	
 	! table_particle_inside = TODO
+	
+	! REALLY NEED TO CLARIFY
+	! type(PARTTYPE), dimension (:), allocatable :: table_particle_inside
+	! table_particle_overlap(NPmax) 
 	! table_particle_overlap = TODO
-
+	! type(PARTTYPE), dimension (:,:), allocatable :: table_particle_overlap
+	! table_particle_overlap(NPmax, nb_neighbours)
+	! Which is a table would show overlap particlesin each neighbour.
 	
 	subroutine block_loop
 	!-------------------------------------------------------------------!

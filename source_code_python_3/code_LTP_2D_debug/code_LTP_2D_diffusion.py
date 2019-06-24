@@ -172,14 +172,13 @@ if config.D_method == 'implicit' :
 D_old = D.copy()
 X_old = X.copy()                
 
+#Nx, Ny 
 sizefile = open("trunk/fortran_srcs/size.data",'w')
 sizefile.write(str(config.Nx)+'\n')
 sizefile.write(str(config.Ny))
 sizefile.close()
 
-print(D)
-
-
+# Coordinates, Deformation Matrix D, and matrix M
 X.T.tofile('trunk/fortran_srcs/coords4fortran.bin')
 D.T.tofile('trunk/fortran_srcs/deformmatrix4fortran.bin')  
 M.T.tofile('trunk/fortran_srcs/matrixM4fortran.bin')                      

@@ -25,7 +25,24 @@ module mpi_2d_structures_modf90
 	!type(PARTTYPE), dimension(:,:), allocatable                      :: PARTICLES
 
 	contains
-
+		subroutine initiation_overlap
+		! index of particles which stay on the same processor
+		! index of overlap particles 
+		! numbers of overlaps in each direction for each processor
+		
+		! At the beginning, we initialize a VIDE overlap particle table and a PLEIN inside_particlestable
+		! array of particle inside a domain
+		! array of overlap particle of a domain 
+		end subroutine initiation_overlap
+	
+	
+		subroutine particles_counting
+		
+		end subroutine particles_counting
+	
+		
+		
+		
 		subroutine overlap_criterion()
 		!particle_k,eigenvector_1,eigenvector_2
 		! Check a particle if it satifies overlap_criterion
@@ -91,6 +108,9 @@ module mpi_2d_structures_modf90
 			! Yes: append to table_particle_inside
 			! No : append to table_particle_overlap
 		end subroutine
+		
+		
+		
 
 
 end module mpi_2d_structures_modf90

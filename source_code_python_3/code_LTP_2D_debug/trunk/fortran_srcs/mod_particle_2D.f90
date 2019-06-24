@@ -51,14 +51,38 @@ integer :: PROC_ID
 
 end type PARTTYPE
 
-contains
+
+! NDOUBLE 
+integer :: NDOUBLE = 28 + 2500*11
+
+
 !- Particle structure
-!type(PARTTYPE), dimension(:,:), allocatable :: PART
+type(PARTTYPE), dimension(:,:), allocatable :: PART
 
 
+contains
 
 	subroutine MPI_PART_TYPE
-	
+
+    integer, dimension(0:1) ::  oldtypes, blockcounts, offsets(0:1)
+!    integer(kind=MPI_OFFSET_KIND) :: extent
+    integer :: extent
+
+!   Setup description of the NDOUBLE MPI_DOUBLE_PRECISION fields in PARTTYPE  
+    offsets(0) = 0 
+    oldtypes(0) = MPI_DOUBLE_PRECISION
+    blockcounts(0) = NDOUBLE
+
+!  Setup description of the NINTEGER MPI_INTEGER fields in PARTYPE
+!  Need to first figure offset by getting size of MPI_DOUBLE_PRECISION 
+    call MPI_TYPE_EXTENT(MPI_DOUBLE_PRECISION, extent, ierr) 
+    offsets(1) = NDOUBLE * extent 
+    oldtypes(1) = MPI_INTEGER 
+    blockcounts(1) = NINTEGER 
+
+!  Now define structured type and commit it  
+    call MPI_TYPE_STRUCT(2, blockcounts, offsets, oldtypes, MPI_PARTICLETYPE, ierr) 
+    call MPI_TYPE_COMMIT(MPI_PARTICLETYPE, ierr) 
 
 	end subroutine MPI_PART_TYPE
 
