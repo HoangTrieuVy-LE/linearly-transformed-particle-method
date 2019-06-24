@@ -14,11 +14,16 @@ import sys
 import os
 
 sys.path.append('./trunk/python_srcs/')
-sys.path.append('./trunk/fortran_srcs/')
 
 
 import config
 import data_code_LTP_2D
+
+path_to_input_file_name = sys.argv[1]
+path_to_output_file_name =  sys.argv[2]
+data_code_LTP_2D.initialize_data_parameters(path_to_input_file_name)
+
+
 import initialisation_2D
 import calculs_2D
 import shapefunction2D
@@ -28,18 +33,13 @@ import remapping_2D
 import barenblatt_fcts
 import diffusion_fcts
 
-
-path_to_input_file_name = sys.argv[1]
-path_to_output_file_name =  sys.argv[2]
-data_code_LTP_2D.initialize_data_parameters(path_to_input_file_name)
-
 # for test, move later
 from _calculsfor_f90 import  calculsfor_rec_modf90
 from _calculsfor_f90 import  calculsfor_var_modf90
 
-
 start_code = time.clock()
 start_code_bis = time.time()
+
 
 #=====  Initialisation ====== 
 t = config.Tini
@@ -49,7 +49,7 @@ npic_part = 0
 	
 #----- initialisation des positions et poids -----
 
-print ('Initialisation')
+print 'Initialisation'
 if config.redemarrage == 0:
     #X, M = initialize_avec_f2py(Sx, Sy, Nx, Ny)    
     X, M = initialisation_2D.initialize_avec_python(config.Sx, config.Sy, config.Nx, config.Ny, config.rhoini)
@@ -69,6 +69,7 @@ else:
     #~ print 'redemarrage a t= ', t
     X[0, :] = X0
     X[1, :] = X1
+
 #~ print 'Nombre de particules N=', N 
 
 
@@ -88,9 +89,6 @@ Nboucle = 0
 
 #----- Grille de reconstruction -----
 [Xgrille, Ygrille] = calculs_2D.make_grid_unif(config.Ix, config.Iy, config.Nmesh)
-
-
-
 
 if (config.D_method == "D_convol") :
     xg_convol_min = config.Sx[0]-abs(config.Sx[1]-config.Sx[0])/2.
@@ -159,7 +157,7 @@ graphes2D.draw_analytical_solution(Xgrille,Ygrille,solution, npic, config.Tini, 
 
 
 relative_error=calculs_2D.error(solution , R_ltp)
-print ("relative_error = " , relative_error)
+print "relative_error = " , relative_error
 
 #~ raise ValueError("STOP")
 
@@ -167,11 +165,33 @@ if config.D_method == 'implicit' :
 	#tab=tab_cardinal_particles(X,N,hx_remap,hy_remap)
 	tab = calculsfor_var_modf90.tab_cardinal_particles(X,config.hx_remap,config.hy_remap,N)	
 	
+
+
+#=========================================== DATA FORTRAN FOR LTP METHOD=======================================================
+
+D_old = D.copy()
+X_old = X.copy()                
+
+sizefile = open("trunk/fortran_srcs/size.data",'w')
+sizefile.write(str(config.Nx)+'\n')
+sizefile.write(str(config.Ny))
+sizefile.close()
+
+print(D)
+
+
+X.T.tofile('trunk/fortran_srcs/coords4fortran.bin')
+D.T.tofile('trunk/fortran_srcs/deformmatrix4fortran.bin')  
+M.T.tofile('trunk/fortran_srcs/matrixM4fortran.bin')                      
+
+
+#=========================================================================================================================================
+
 #======  Boucle en temps ===== 
 #~ print "time taken to complete all initialisations : " , time.time() - start_code_bis
 
 
-print ('Start')
+print 'Start'
 while (round(t,13) < (round((config.Tmax),13)) ) :    
 #~ while (abs(t-config.Tmax) < 0.00000001)  :    	
     if (config.method == 'PIC') or (config.method == 'LTPIC'):
@@ -191,7 +211,6 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
             #~ print 'temps de reconstruction de rho avec LTP ' , time.time() - time1
             npicf_ltp =  npic
             graphes2D.fait_series_dessins(Xgrille, Ygrille, R_ltp, npicf_ltp, t, 'LTP')    
-            print("IM HEREEEEEEE",(R_ltp))
     
             R_method = R_ltp
 
@@ -217,7 +236,7 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
             
             #------------------------------       
 
-        if (config.save_data == 'oui') : 
+        if (config.save_data == 'oui') :
             numpy.savetxt(str(path_to_output_file_name)+'_t='+str(t)+'_solution.txt', solution)
             numpy.savetxt(str(path_to_output_file_name)+'_t='+str(t)+'_R_'+str(config.method)+'D_method'+str(config.D_method)+'_mat.txt', R_method)
             numpy.savetxt(str(path_to_output_file_name)+'_t='+str(t)+'_Xgrille.txt', Xgrille)
@@ -240,7 +259,7 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
         #~ for k in range(0,N) :
             #~ print U[0,k], U[1,k]
         size = U.shape[0]*U.shape[1]
-        print( "t, error max L infty U = " , t, max(abs(U.reshape(size))))
+        print "t, error max L infty U = " , t, max(abs(U.reshape(size)))
         #~ myfile=open('./particles_sp.debug','a')
         #~ for k in range(0,N) :
             #~ myfile.write(str(k)+"\t"+str(X[0,k])+"\t"+str(X[1,k])+"\t"+str(U[0,k])+"\t"+str(U[1,k])+'\n')
@@ -259,27 +278,26 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
         if (config.time_scheme == 'middle_point') : 
             raise ValueError("TO DO")
             # HERE
-            
     '''
     if (config.problem == "diffusion") and (config.method == 'LTP') :
         if (config.time_scheme == 'euler_explicit') : 
             start = time.time()
-            print ("t = " , t)
+            print "t = " , t
             D_old = D.copy()
-            X_old = X.copy()                        
+            X_old = X.copy()                       
+            
             
             tmp = time.time()            
             U = - calculsfor_rec_modf90.diffusion_field_ltp(X, M , D_old, config.hx_remap, config.hy_remap, N)                
-            print ("time for U = " , time.time() - tmp)
+            print "time for U = " , time.time() - tmp
             X[0,:] += config.dt * U[0,:]
             X[1,:] += config.dt * U[1,:]
                                     
             # update deformations of particles 
             tmp = time.time()
-            # Time scheme euler explicit
             update_d_scheme = 1
             indice_max_norm_Dm1, Norm_inf_Dm1, Df2py  = calculsfor_var_modf90.update_d_diffusion(X_old, D_old, M, t, config.dt, update_d_scheme, config.hy_remap, config.hy_remap, N)            
-            print("time for D = " , time.time() - tmp)
+            print "time for D = " , time.time() - tmp
             D = Df2py.copy()
             indice_max_norm_Dm1 = int(indice_max_norm_Dm1 - 1) #so this array makes sense in pythonic world (not sure if useful)                                    
             #~ R_ltp = reconstruction_densites_2D.rec_densite_grille_unif_LTP(X, M, D, Xgrille, Ygrille)            
@@ -291,14 +309,44 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
             npic += 1
             Nboucle +=1
             end = time.time()
-            print( "time for one iteration = " , end - start)
+            print "time for one iteration = " , end - start
             #~ raise ValueError("STOP")
             
             
         if (config.time_scheme == 'middle_point') : 
             raise ValueError("TO DO")
-    '''            
             
+            
+    '''
+    if (config.problem == "diffusion") and (config.method == "LTP"):
+        if (config.time_scheme == 'euler_explicit') : 
+            start = time.time()
+            print "t = " , t
+           
+            
+                   
+            cmd = 'cd trunk/fortran_srcs/'   
+            print ("launch : " , cmd )
+            os.system(str(cmd))
+            
+            cmd = 'mpif90 trunk/fortran_srcs/launchfortran.f90 -o outfile '
+            os.system(str(cmd)) 
+            print ("launch : " , cmd )
+            cmd = 'mpiexec -n 1 ./outfile'
+            os.system(str(cmd))      
+                   
+            # Make no sense these 2 following lines       
+            indice_max_norm_Dm1 = 0
+            Norm_inf_Dm1= 0
+            
+            
+            t += config.dt
+            npic += 1
+            Nboucle +=1
+            end = time.time()
+            print "time for one iteration = " , end - start
+            
+    '''        
     if (config.problem == "diffusion") and (config.method == "LTP"):
         cmd = 'cd trunk/fortran_srcs/'   
         print ("launch : " , cmd )
@@ -309,7 +357,8 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
         print ("launch : " , cmd )
         cmd = 'mpiexec -n 4 ./outfile'
         os.system(str(cmd))
-
+        
+    '''
             
     '''
     if (config.problem == "diffusion") and (config.method == "LTP"):
@@ -344,7 +393,6 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
         print( "Global Time Execution", end - start)
 
    '''
-        
         
     if (config.method == 'analytic_debug') :		    
         if (config.time_scheme == 'euler_explicit') :             
@@ -394,21 +442,21 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
                     list_max_X_and_X_exact.append(absolute_error_X_and_X_ex_k)
                     count_X+=1                                        
                     
-            print ("number of particles counted for X errors : " , count_X , "\n")
-            print ("number of particles counted for D errors : " , count_D , "\n")
+            print "number of particles counted for X errors : " , count_X , "\n"
+            print "number of particles counted for D errors : " , count_D , "\n"
             
             #~ print error_particles_positions , error_particles_deformations
             
             error_particles_positions = max(list_max_X_and_X_exact) / max(list_max_X_ex)
             error_particles_deformations = max(list_max_D_and_D_exact) / max(list_max_D_ex)
             
-            print (error_particles_positions , error_particles_deformations)
+            print error_particles_positions , error_particles_deformations
             
             t += config.dt
             Nboucle += 1
             
         elif (config.time_scheme == 'middle_point') :
-            print ("H3Y")
+            print "H3Y"
             D_old = D.copy()
             X_old=X.copy()
             X, D, Norm_inf_Dm1, indice_max_norm_Dm1 = calculs_2D.update_d_and_x_middle_point_gradient_and_hessian_analytic_v2(X_old, M, N, D_old, config.m_barenblatt, t, config.dt, config.hx_remap, config.hy_remap)                            
@@ -428,7 +476,7 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
             error_particles_deformations = calculs_2D.relative_error_norm_max_all_matrices(D_exact, D)
             #~ error_particles_positions = calculs_2D.absolute_error_norm_max_all_particles(X_exact, X)
             #~ error_particles_deformations = calculs_2D.absolute_error_norm_max_all_matrices(D_exact, D)
-            print (error_particles_positions , error_particles_deformations)
+            print error_particles_positions , error_particles_deformations
             
             t += config.dt
             Nboucle += 1
@@ -473,8 +521,8 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
             D_old = D.copy()
             X_old = X.copy()         
             D, Norm_inf_Dm1, indice_max_norm_Dm1 = calculs_2D.MaJ_D_barenblatt(D_old, X_old, M, t, config.dt, config.hx_remap, config.hy_remap)
-            print ('max des normes des Dk', Norm_inf_Dm1)
-            print ('indice_max_norm_Dm1', indice_max_norm_Dm1 )           
+            print 'max des normes des Dk', Norm_inf_Dm1
+            print 'indice_max_norm_Dm1', indice_max_norm_Dm1            
             if numpy.isinf(Norm_inf_Dm1) | numpy.isnan(Norm_inf_Dm1) : raise ValueError("Found Inf or NaN. Norm_inf_Dm1 , t = "+str(Norm_inf_Dm1)+', '+str(t)+"\n")            
             
             U = - calculsfor_rec_modf90.diffusion_field_barenblatt(X, M , D_old, config.m_barenblatt, config.hx_remap, config.hy_remap, N)
@@ -498,8 +546,8 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
             D = D_new
             X = X_new
             
-            print ('max des normes des Dk', Norm_inf_Dm1)
-            print ('indice_max_norm_Dm1', indice_max_norm_Dm1)
+            print 'max des normes des Dk', Norm_inf_Dm1
+            print 'indice_max_norm_Dm1', indice_max_norm_Dm1            
             if numpy.isinf(Norm_inf_Dm1) | numpy.isnan(Norm_inf_Dm1) : raise ValueError("Found Inf or NaN. Norm_inf_Dm1 , t = "+str(Norm_inf_Dm1)+', '+str(t)+"\n")
             
             Nboucle += 1
@@ -564,31 +612,31 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
     if (config.D_method == 'D_convol') :
         X_old = X.copy()
         D_old = D.copy()
-        print ("epsilon = " , config.epsilon)
+        print "epsilon = " , config.epsilon
         #~ D, Norm_inf_Dm1, indice_max_norm_Dm1 = calculs_2D.MaJ_D_convolution_barenblatt(D, X, M, t, config.dt, config.hx_remap, config.hy_remap, config.epsilon, Xgrid_convol, Ygrid_convol, quadrature_pts_convol)
         #~ D, Norm_inf_Dm1, indice_max_norm_Dm1 = calculs_2D.MaJ_D_barenblatt(D_old, X, M, t, config.dt, config.epsilon, config.epsilon)
         D, Norm_inf_Dm1, indice_max_norm_Dm1 = calculs_2D.MaJ_D_barenblatt(D_old, X, M, t, config.dt, config.hx_remap, config.hy_remap)
-        print ('max des normes des Dk', Norm_inf_Dm1)
-        print ('indice_max_norm_Dm1', indice_max_norm_Dm1)
+        print 'max des normes des Dk', Norm_inf_Dm1
+        print 'indice_max_norm_Dm1', indice_max_norm_Dm1
         U = - calculsfor_rec_modf90.diffusion_field_barenblatt_convolution(X, M , D_old, config.m_barenblatt, config.hx_remap, config.hy_remap, config.epsilon, Xgrid_convol, Ygrid_convol, quadrature_pts_convol, len(Xgrid_convol), len(Ygrid_convol), N)
         
         X[0, :] += config.dt * U[0,:]
         X[1, :] += config.dt * U[1,:]
         for ii in range(0,N) : U_barenblatt[:,ii] = -2*barenblatt_fcts.grad_barenblatt(X[0,ii],X[1,ii],t)
         U_relative_err = calculs_2D.error(U_barenblatt, U, "L_infinity")
-        print ("U_relative_err = " , U_relative_err)
+        print "U_relative_err = " , U_relative_err
         
         for kk in range(0,N) :
-            print ("python : kk , U[0,kk] , U[1,kk] = ", kk , U[0,kk] , U[1,kk] , U_barenblatt[0,kk] , U_barenblatt[1,kk])
+            print "python : kk , U[0,kk] , U[1,kk] = ", kk , U[0,kk] , U[1,kk] , U_barenblatt[0,kk] , U_barenblatt[1,kk]
         
         rho_ltp_conv_grid = calculsfor_rec_modf90.rec_ltp_on_convolution_grid(X, M, D, Xgrid_convol, Ygrid_convol, config.hx_remap, config.hy_remap, len(Xgrid_convol), len(Ygrid_convol), N)
         for ix in range(0,len(Xgrid_convol)) :
             for jy in range(0,len(Ygrid_convol)) :
                 rho_theory[ix,jy] = barenblatt_fcts.barenblatt(Xgrid_convol[ix],Ygrid_convol[jy],t)
-                print( Xgrid_convol[ix] , Ygrid_convol[jy] , rho_theory[ix,jy] , rho_ltp_conv_grid[ix,jy])
+                print Xgrid_convol[ix] , Ygrid_convol[jy] , rho_theory[ix,jy] , rho_ltp_conv_grid[ix,jy]
         
         rho_conv_relative_err = calculs_2D.error(rho_theory, rho_ltp_conv_grid,"L_infinity")
-        print( "rho_conv_relative_err = " , rho_conv_relative_err)
+        print "rho_conv_relative_err = " , rho_conv_relative_err
         Nboucle += 1
         t += config.dt
         
@@ -617,7 +665,7 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
     # ---- remapping -----------------------
     if (config.method == 'LTP'):
         if (Norm_inf_Dm1 >config.radius_remap) and (config.indic_remapping == 'yes'):
-            print ('\nRemapping!\n')
+            print '\nRemapping!\n'
             if D_method == 'implicit' :
                 X, M, D  = remapping_avec_python_test(config.hx_remap, config.hy_remap, X, M, D, t) 
                 N = len(M)   
@@ -625,7 +673,7 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
             if D_method =='explicit' :
                 X, M, D  = remapping_avec_python_test(config.hx_remap, config.hy_remap, X, M, D, t) # remapping that also returns remapping grid step				
                 N = len(M)   
-            print ('nouveau nombre de particules', N)
+            print 'nouveau nombre de particules', N
 
     # ---- enregistrement des tableaux -----    
     #~ if ((Nboucle % int(Nboucle_total/4)) ==0) : 
@@ -640,7 +688,7 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
             numpy.savetxt(str(path_to_output_file_name)+'_t='+str(t)+'_D1.txt', D[1,:])
             numpy.savetxt(str(path_to_output_file_name)+'_t='+str(t)+'_D2.txt', D[2,:])
             numpy.savetxt(str(path_to_output_file_name)+'_t='+str(t)+'_D3.txt', D[3,:])
-            print ("time to save data in txt files : " , time.time()-time_tabs)
+            print "time to save data in txt files : " , time.time()-time_tabs
             
 #===== fin de la boucle en temps ======
 
@@ -670,7 +718,7 @@ elif (config.name_solution == 'diffusion') :
 
 if (config.method=='SP') :
     R_sp = reconstruction_densites_2D.rec_densite_grille_unif_sp(X, M, config.epsilon, Xgrille, Ygrille) 
-    print ("\nepsilon  = " , config.epsilon  )
+    print "\nepsilon  = " , config.epsilon  
     npicf_sp = 2000 + npic
     graphes2D.fait_series_dessins(Xgrille, Ygrille, R_sp, npicf_sp, t, name)
     relative_error=calculs_2D.error(solution , R_sp)
@@ -685,6 +733,7 @@ if ((config.method=='LTP') or (config.method == 'analytic_debug')):
     relative_error=calculs_2D.error(solution , R_ltp)
     relative_error_L1=calculs_2D.error_Lp(Xgrille, Ygrille, solution , R_ltp, 1)
     relative_error_L2=calculs_2D.error_Lp(Xgrille, Ygrille, solution , R_ltp, 2)
+    print(path_to_output_file_name)
     numpy.savetxt(str(path_to_output_file_name)+'_t='+str(t)+'_R_ltp_mat.txt', R_ltp)        
     numpy.savetxt(str(path_to_output_file_name)+'_t='+str(t)+'_D0.txt', D[0,:])
     numpy.savetxt(str(path_to_output_file_name)+'_t='+str(t)+'_D1.txt', D[1,:])
@@ -712,10 +761,10 @@ numpy.savetxt(str(path_to_output_file_name)+'_t='+str(t)+'_D1.txt', D[1,:])
 numpy.savetxt(str(path_to_output_file_name)+'_t='+str(t)+'_D2.txt', D[2,:])
 numpy.savetxt(str(path_to_output_file_name)+'_t='+str(t)+'_D3.txt', D[3,:])
 	
-print( "\nnumber of iterations : " , Nboucle)
-print ("\n\nrelative L-infini error with N = " , N, ", at t =  " , t , 'is : '  , relative_error , "\n")
-print( "relative L1 error with N = " , N, ", at t =  " , t , 'is : '  , relative_error_L1 , "\n")
-print( "relative L2 error with N = " , N, ", at t =  " , t , 'is : '  , relative_error_L2 , "\n")
+print "\nnumber of iterations : " , Nboucle
+print "\n\nrelative L-infini error with N = " , N, ", at t =  " , t , 'is : '  , relative_error , "\n"
+print "relative L1 error with N = " , N, ", at t =  " , t , 'is : '  , relative_error_L1 , "\n"
+print "relative L2 error with N = " , N, ", at t =  " , t , 'is : '  , relative_error_L2 , "\n"
 
 if ( not(os.path.isfile(str(path_to_output_file_name))) ) : #if the file does not exist, we create it
     os.system("touch "+str(path_to_output_file_name))
@@ -734,8 +783,8 @@ else :
 
 myfile.close()
     
-print( "\n\nWe're done!")
-print( 'simulation time: ',  time.time() - start_code_bis)
+print "\n\nWe're done!"
+print 'simulation time: ',  time.time() - start_code_bis
 
 
 
