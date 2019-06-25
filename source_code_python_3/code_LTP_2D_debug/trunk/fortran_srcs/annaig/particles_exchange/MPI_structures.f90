@@ -1,8 +1,13 @@
    module MPI_structures
 
    use DNS_DIM 
+
+
+   ! Particle type
    use PARTICLE_PARALLEL
+
    use GEOMETRIC_VARIABLE
+
    use COLLISION_VARIABLE
 
   implicit none
@@ -31,9 +36,11 @@ contains
     !*******************************************************************
     ! Neighbouring table Initiation
     NEIGHBOR(:) = MPI_PROC_NULL
-
+	
+	! forward and bakward process idenity (rank)
     NEIGHBOR(FJ) = MYID+1
     NEIGHBOR(BJ) = MYID-1
+
     if(mod(MYID+1,JPROC)==0) NEIGHBOR(FJ) = MYID+1-JPROC
     if(mod(MYID  ,JPROC)==0) NEIGHBOR(BJ) = MYID-1+JPROC
 
@@ -58,6 +65,7 @@ contains
     allocate(IND_STAY(NPMAX_LOC))
     ! Index (NPART_LOC array) of particles which leav
     allocate(IND_LEAV(NPEXCH_MAX,NB_NEIGHBORS))
+
     ! Numbers of particles leaving in each direction for each processor 
     allocate(COUNTER(NB_NEIGHBORS,0:NPROC-1))
 
@@ -75,10 +83,13 @@ contains
 
   ! Each time step
 
+   ! For MYID-th process
    COUNTER(:,MYID) = 0
-   COUNT_STAY = 0
 
+   COUNT_STAY = 0
+   
    do I = 1, NPART_LOC(IG)
+
     !!- y-component
     if(PART(I,IG)%YP > (YMESH(IEND(2))+DY)) then
       if(PART(I,IG)%ZP > ZMESH(ISTART(3)) .and. PART(I,IG)%ZP < (ZMESH(IEND(3))+DZ))then
@@ -150,9 +161,9 @@ contains
 
   end subroutine PARTICLES_COUNTING
 !!!!
+
+
   subroutine EXCHANGE_P(IG) 
-
-
     integer, intent(in) :: IG
     integer, dimension(NB_NEIGHBORS) :: OPP
     integer :: NB_PART 
@@ -265,9 +276,9 @@ subroutine PARTICLES_COUNTING_COLL(IG)
     IND_LEAV(COUNTER(BK,MYID),BK) = I
    end if
 
-
-
    end do
+
+
   ! Check bounds arrays
   if(MAXVAL(COUNTER(:,MYID)) > NPEXCH_MAX)then
     write(*,*) 'Too much particles leave processor ',MYID,'for class ',IG 
@@ -285,9 +296,10 @@ subroutine PARTICLES_COUNTING_COLL(IG)
     call MPI_BCAST(COUNTER,NB_NEIGHBORS*NPROC,MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
 
   end subroutine PARTICLES_COUNTING_COLL
-!!!!
-  subroutine EXCHANGE_P_COLL(IG,NPARRIVE) 
 
+!!!!
+
+  subroutine EXCHANGE_P_COLL(IG,NPARRIVE) 
 
     integer, intent(in) :: IG
     integer, intent(out) :: NPARRIVE
@@ -429,8 +441,8 @@ subroutine SAVE_PART_MPIIO(PARTLOC,FILENAME)
  
 end subroutine SAVE_PART_MPIIO
 
-subroutine READ_PART_MPIIO(PARTLOC,FILENAME)
 
+subroutine READ_PART_MPIIO(PARTLOC,FILENAME)
 
   type(PARTTYPE), dimension(NPMAX_LOC,NIG) :: PARTLOC
   real (kind=8), dimension(NPMAX_LOC) :: TEMP_VAR

@@ -6,21 +6,20 @@
 !> Particle model
 !--------------------------------------------------------------------------- 
 
-module PARTICLE_2D_modf90
+MODULE mod_particle_2D_modf90
 
 !import module, TODO decide which module would be necessary
-use calculsfor_rec_modf90
-use calculsfor_var_modf90
-use calculsfor_ini_modf90
 
-
-implicit none 
+IMPLICIT NONE 
 	! DECLARATIONS
 	! TODO  
 
+INCLUDE 'mpif.h'
+
+INTEGER :: code
 
 
-type PARTTYPE
+TYPE PARTTYPE
 
 !Stored particle informations
 
@@ -49,24 +48,31 @@ real(kind=8) :: Rhop
 integer :: ID
 integer :: PROC_ID
 
-end type PARTTYPE
+END TYPE PARTTYPE
 
+!integer :: NINTEGER = 2
+integer :: NINTEGER = 0
 
 ! NDOUBLE 
 integer :: NDOUBLE = 28 + 2500*11
 
+!! MPI TYPE FOR PARTICLE EXCHANGE
+integer :: MPI_PARTICLETYPE
+integer :: TAG
+
+
 
 !- Particle structure
-type(PARTTYPE), dimension(:,:), allocatable :: PART
+TYPE(PARTTYPE), dimension(:,:), allocatable :: PART
 
 
-contains
+CONTAINS
 
-	subroutine MPI_PART_TYPE
+	SUBROUTINE MPI_PART_TYPE
 
-    integer, dimension(0:1) ::  oldtypes, blockcounts, offsets(0:1)
+    INTEGER, DIMENSION(0:1) ::  oldtypes, blockcounts, offsets(0:1)
 !    integer(kind=MPI_OFFSET_KIND) :: extent
-    integer :: extent
+    INTEGER :: extent
 
 !   Setup description of the NDOUBLE MPI_DOUBLE_PRECISION fields in PARTTYPE  
     offsets(0) = 0 
@@ -75,18 +81,18 @@ contains
 
 !  Setup description of the NINTEGER MPI_INTEGER fields in PARTYPE
 !  Need to first figure offset by getting size of MPI_DOUBLE_PRECISION 
-    call MPI_TYPE_EXTENT(MPI_DOUBLE_PRECISION, extent, ierr) 
+    CALL MPI_TYPE_EXTENT(MPI_DOUBLE_PRECISION, extent, code) 
     offsets(1) = NDOUBLE * extent 
     oldtypes(1) = MPI_INTEGER 
     blockcounts(1) = NINTEGER 
 
 !  Now define structured type and commit it  
-    call MPI_TYPE_STRUCT(2, blockcounts, offsets, oldtypes, MPI_PARTICLETYPE, ierr) 
-    call MPI_TYPE_COMMIT(MPI_PARTICLETYPE, ierr) 
+    CALL MPI_TYPE_STRUCT(2, blockcounts, offsets, oldtypes, MPI_PARTICLETYPE, code) 
+    CALL MPI_TYPE_COMMIT(MPI_PARTICLETYPE, code) 
 
-	end subroutine MPI_PART_TYPE
+	END SUBROUTINE MPI_PART_TYPE
 
-end module PARTICLE_2D_modf90
+END MODULE mod_particle_2D_modf90
 
 
 

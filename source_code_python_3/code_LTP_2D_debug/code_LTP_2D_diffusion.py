@@ -324,14 +324,22 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
            
             
                    
-            cmd = 'cd trunk/fortran_srcs/'   
-            print ("launch : " , cmd )
-            os.system(str(cmd))
+#            cmd = 'cd trunk/fortran_srcs/'   
+#            print ("launch : " , cmd )
+#            os.system(str(cmd))
             
-            cmd = 'mpif90 trunk/fortran_srcs/launchfortran.f90 -o outfile '
+            cmd = 'mpif90 -fopenmp trunk/fortran_srcs/tri_casier_method.f90 -o outfile \
+                    trunk/fortran_srcs/launchfortran.o \
+                    trunk/fortran_srcs/mod_particle_2D.o \
+                    trunk/fortran_srcs/MPI_2D_spatialisation.o \
+                    trunk/fortran_srcs/MPI_2D_structures.o \
+                    trunk/fortran_srcs/calculsfortran_rec.o \
+                    trunk/fortran_srcs/calculs_2D.o \
+                    trunk/fortran_srcs/calculsfortran_ini.o '
+            #trunk/fortran_srcs/calculs_2D.o trunk/fortran_srcs/calculsfortran_ini.o 
             os.system(str(cmd)) 
-            print ("launch : " , cmd )
-            cmd = 'mpiexec -n 1 ./outfile'
+#            print ("launch : " , cmd )
+            cmd = 'mpiexec ./outfile'
             os.system(str(cmd))      
                    
             # Make no sense these 2 following lines       
@@ -343,22 +351,7 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
             npic += 1
             Nboucle +=1
             end = time.time()
-            print "time for one iteration = " , end - start
-            
-    '''        
-    if (config.problem == "diffusion") and (config.method == "LTP"):
-        cmd = 'cd trunk/fortran_srcs/'   
-        print ("launch : " , cmd )
-        os.system(str(cmd))
-        
-        cmd = 'mpif90 trunk/fortran_srcs/test.f90 -o outfile'
-        os.system(str(cmd))
-        print ("launch : " , cmd )
-        cmd = 'mpiexec -n 4 ./outfile'
-        os.system(str(cmd))
-        
-    '''
-            
+            print "time for one iteration = " , end - start       
     '''
     if (config.problem == "diffusion") and (config.method == "LTP"):
         if (config.time_scheme == "Euler_explicit") :
@@ -732,7 +725,7 @@ if ((config.method=='LTP') or (config.method == 'analytic_debug')):
     relative_error=calculs_2D.error(solution , R_ltp)
     relative_error_L1=calculs_2D.error_Lp(Xgrille, Ygrille, solution , R_ltp, 1)
     relative_error_L2=calculs_2D.error_Lp(Xgrille, Ygrille, solution , R_ltp, 2)
-    print(path_to_output_file_name)
+#    print(path_to_output_file_name)
     numpy.savetxt(str(path_to_output_file_name)+'_t='+str(t)+'_R_ltp_mat.txt', R_ltp)        
     numpy.savetxt(str(path_to_output_file_name)+'_t='+str(t)+'_D0.txt', D[0,:])
     numpy.savetxt(str(path_to_output_file_name)+'_t='+str(t)+'_D1.txt', D[1,:])

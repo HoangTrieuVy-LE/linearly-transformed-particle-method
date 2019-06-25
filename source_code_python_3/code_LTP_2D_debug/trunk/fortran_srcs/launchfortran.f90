@@ -1,4 +1,4 @@
-PROGRAM launch
+module data_launch
 	IMPLICIT NONE
 
 	include	 'mpif.h'
@@ -8,39 +8,44 @@ PROGRAM launch
 	DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:,:) :: Xparticle 
 	DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:,:) :: D_old
 	DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:)   :: M_old
+CONTAINS
 
-
+SUBROUTINE set_Nx_Ny
 	OPEN(unit = 1, FILE = 'trunk/fortran_srcs/size.data',status ='old')
 	READ(1,*) Nx
 	READ(1,*) Ny
 	CLOSE(1)
-	print*, Nx
-	print*, Ny
-	
-	ALLOCATE(Xparticle(2,Nx*Ny))
-	
+END SUBROUTINE set_Nx_Ny
+
+
+SUBROUTINE particle_coordinates_initiation
+	ALLOCATE(Xparticle(2,Nx*Ny))	
 	OPEN(unit = 2, FILE = 'trunk/fortran_srcs/coords4fortran.bin',FORM="UNFORMATTED", STATUS="UNKNOWN", ACTION="READ", ACCESS='STREAM')
 	READ(2) Xparticle
 	CLOSE(2)
-	
+END SUBROUTINE particle_coordinates_initiation	
 
 
-	
+SUBROUTINE density_initiation
 	ALLOCATE(M_old(Nx*Ny))
 	OPEN(unit = 4, FILE ='trunk/fortran_srcs/matrixM4fortran.bin',FORM="UNFORMATTED", STATUS="UNKNOWN", ACTION="READ", ACCESS='STREAM')
 	READ(4) M_old
 	CLOSE(4)
+END SUBROUTINE density_initiation
 	
-	
-	
+
+SUBROUTINE deformation_matrix_initiation	
 	ALLOCATE(D_old(4,Nx*Ny))
 	OPEN(unit= 3, FILE='trunk/fortran_srcs/deformmatrix4fortran.bin',FORM="UNFORMATTED",STATUS="UNKNOWN",ACTION="READ",ACCESS='STREAM')
 	READ(3) D_old
 	CLOSE(4)
-
+END SUBROUTINE deformation_matrix_initiation
 	
 
+SUBROUTINE dealloc_XMD
 	DEALLOCATE(M_old)
 	DEALLOCATE(D_old)
 	DEALLOCATE(Xparticle)
-END PROGRAM launch
+END SUBROUTINE dealloc_XMD
+
+END module data_launch

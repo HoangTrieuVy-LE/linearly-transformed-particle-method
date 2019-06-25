@@ -9,8 +9,10 @@ MODULE  type_params
 
   !Number of points on each dimension
   INTEGER                                   :: ntx,nty
+
   !Local grid boundary coordinates (global indexes)
   INTEGER                                   :: sx, ex, sy, ey
+
   !Number of time step iteration
   INTEGER, PARAMETER                        :: it_max=100000
 

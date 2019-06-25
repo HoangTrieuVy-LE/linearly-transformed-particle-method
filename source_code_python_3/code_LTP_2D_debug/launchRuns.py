@@ -28,17 +28,16 @@ if (not(os.path.isdir(str(outputs_dir)))) :
 input_files_list = glob.glob(str(inputs_dir)+'/*.csv')
 
 
-print (input_files_list)
+# print (input_files_list)
 
 for f_in in input_files_list :
     file_name_no_ext = f_in.split('/')[-1].split('.')[0]
     f_out = str(outputs_dir)+'/'+file_name_no_ext+'.out'
-    print(f_out)
 #    f_out = str(outputs_dir)+'/'+f_in+'.out'
 #    cmd = './code_LTP_2D_diffusion.py '+str(f_in)+' '+str(f_out)    
     cmd = 'python code_LTP_2D_diffusion.py '+str(f_in)+' '+str(f_out)    
 
-    print ("launch : " , cmd )
+#    print ("launch : " , cmd )
 #    os.system("date")
     
 #    launch_date = time.strftime("%Y-%m-%d_%H:%M:%S", time.gmtime())    

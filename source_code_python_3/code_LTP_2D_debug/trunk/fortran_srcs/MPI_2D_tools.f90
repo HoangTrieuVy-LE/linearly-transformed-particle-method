@@ -17,21 +17,12 @@ MODULE mpi_2d_structures_modf90
 	
 	! DECALARATIONS
 	! TODO
-	
-	INTEGER, PARAMETER                   :: NB_NEIGHBOURS = 8
-	INTEGER, DIMENSION(NB_NEIGHBOURS)    :: NEIGHBOURS
-	INTEGER, PARAMETER                   :: FJ=1,BJ=2,FK=3,BK=4 ! Neighbors : Forward_J, Backward_J, ... 
-  	INTEGER, PARAMETER                   :: FJBK=5,BJFK=6,BJBK=7,FJFK=8 ! Common edge neighbor
-	
-	INTEGER, DIMENSION(:,:), ALLOCATABLE :: IND_OVERLAP
-	INTEGER, DIMENSION(:,:), ALLOCATABLE :: IND_INSIDE
 
 
 	! TODO derived particle dataypes
 	type(PARTTYPE), dimension(:,:), allocatable                      :: PARTICLES
 
 	CONTAINS
-	
 		SUBROUTINE initiation_overlap
 		! index of particles which stay on the same processor
 		! index of overlap particles 
