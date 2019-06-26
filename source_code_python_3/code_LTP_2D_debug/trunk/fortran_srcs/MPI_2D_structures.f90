@@ -129,7 +129,7 @@ MODULE mpi_2d_structures_modf90
 			double precision, dimension(n)                          :: eigenvector_2
 			DOUBLE PRECISION                                        :: eigenvalue_1
 			DOUBLE PRECISION                                        :: eigenvalue_2
-			DOUBLE PRECISION, dimension(n)                          :: pointu
+			DOUBLE PRECISION, dimension(n)                          :: pointu1, pointu2,pointu3,pointu4
 
 			DOUBLE PRECISION		   :: D11,D12,D21,D22
 			
@@ -152,13 +152,48 @@ MODULE mpi_2d_structures_modf90
 			eigenvector_2 = x(2,:)
 			eigenvalue_1  = a(1,1)
 			eigenvalue_2  = a(2,2)		
-			pointu(1) = eigenvector_1(1) + eigenvector_2(1)
-			pointu(2) = eigenvector_1(2) + eigenvector_2(2)
-			if ((pointu(1)-start_x)*(pointu(2)-start_y)>0.and.(pointu(1)-end_x)*(pointu(2)-end_y)>0 )then 
+			pointu1(1) = eigenvector_1(1) + eigenvector_2(1)
+			pointu1(2) = eigenvector_1(2) + eigenvector_2(2)
+			pointu2(1) = -eigenvector_1(1)- eigenvector_2(1)
+			pointu2(2) = eigenvector_1(2) + eigenvector_2(2)
+			pointu3(1) = -eigenvector_1(1)- eigenvector_2(1)
+			pointu3(2) = -eigenvector_1(2) - eigenvector_2(2)
+			pointu4(1) = eigenvector_1(1) + eigenvector_2(1)
+			pointu4(2) = -eigenvector_1(2) - eigenvector_2(2) 
+			
+			
+			if ((pointu1(1)-start_x>0) &
+				.and.(pointu1(1)-end_x<0) &
+				.and.(pointu1(2)-start_y>0) &
+				.and.(pointu1(2)-end_y<0)) then 
 				overlap_check = .false.
 			else 
 				overlap_check = .true.
-			end if 
+			end if
+			if ((pointu2(1)-start_x>0) &
+				.and.(pointu2(1)-end_x<0) &
+				.and.(pointu2(2)-start_y>0) &
+				.and.(pointu2(2)-end_y<0)) then 
+				overlap_check = .false.
+			else 
+				overlap_check = .true.
+			end if
+			if ((pointu3(1)-start_x>0) &
+				.and.(pointu3(1)-end_x<0) &
+				.and.(pointu3(2)-start_y>0) &
+				.and.(pointu3(2)-end_y<0)) then 
+				overlap_check = .false.
+			else 
+				overlap_check = .true.
+			end if
+			if ((pointu4(1)-start_x>0) &
+				.and.(pointu4(1)-end_x<0) &
+				.and.(pointu4(2)-start_y>0) &
+				.and.(pointu4(2)-end_y<0)) then 
+				overlap_check = .false.
+			else 
+				overlap_check = .true.
+			end if
 			
 		END SUBROUTINE overlap_criterion
 
