@@ -14,15 +14,18 @@ contains
 	! x(i,j) - eigenvectors
 	!===========================================================
 	implicit none
-	integer i, j, k, n
-	double precision, parameter:: abserr=1.0e-09
-	double precision a(n,n),x(n,n)
-	double precision , b2, bar
-	double precision beta, coeff, c, s, cs, sc
 	
+	integer, intent(in):: n
+	double precision, intent(in):: abserr
+	double precision, intent(inout) :: a(n,n),x(n,n)
+
+
+	double precision ::  b2, bar
+	double precision ::beta, coeff, c, s, cs, sc
+	integer i, j, k
 	! initialize x(i,j)=0, x(i,i)=1
 	! *** the array operation x=0.0 is specific for Fortran 90/95
-	x = 0.0
+	x(:,:) = 0.
 	do i=1,n
 	  x(i,i) = 1.0
 	end do

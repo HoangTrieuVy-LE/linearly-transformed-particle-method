@@ -69,7 +69,7 @@ contains
     ! Numbers of particles leaving in each direction for each processor 
     allocate(COUNTER(NB_NEIGHBORS,0:NPROC-1))
 
-    ! Temporary array to recieve particle form another processor
+    ! Temporary array to recieve particle form another processorf
     allocate(PART_RECV(NPEXCH_MAX,NB_NEIGHBORS))
  
   end subroutine INITIATION_EXCHANGE

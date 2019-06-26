@@ -8,45 +8,99 @@
 
 
 MODULE mpi_2d_structures_modf90
-
-	IMPLICIT NONE
-	
-	! Import modules, TODO decide which module would be necessary
 	USE mod_particle_2D_modf90
-	
+	USE PACKMPI
+	USE data_launch
+	USE Jacobi_method
+	IMPLICIT NONE
 	
 	! DECALARATIONS
 	! TODO
 	
-	INTEGER, PARAMETER                   :: NB_NEIGHBOURS = 8
-	INTEGER, DIMENSION(NB_NEIGHBOURS)    :: NEIGHBOURS
-	INTEGER, PARAMETER                   :: FJ=1,BJ=2,FK=3,BK=4 ! Neighbors : Forward_J, Backward_J, ... 
-  	INTEGER, PARAMETER                   :: FJBK=5,BJFK=6,BJBK=7,FJFK=8 ! Common edge neighbor
-	
 	INTEGER, DIMENSION(:,:), ALLOCATABLE :: IND_OVERLAP
 	INTEGER, DIMENSION(:,:), ALLOCATABLE :: IND_INSIDE
-
-
+	
 	! TODO derived particle dataypes
-	type(PARTTYPE), dimension(:,:), allocatable                      :: PARTICLES
-
+	TYPE(PARTTYPE), DIMENSION(:), ALLOCATABLE :: inside_particle_table
+	TYPE(PARTTYPE), DIMENSION(:,:), ALLOCATABLE :: overlap_particle_table
+	TYPE(PARTTYPE), DIMENSION(:), ALLOCATABLE :: ALL_PARTICLES
+	
+	INTEGER                    ::     COUNTER
 	CONTAINS
-	
-		SUBROUTINE initiation_overlap
-		! index of particles which stay on the same processor
-		! index of overlap particles 
-		! numbers of overlaps in each direction for each processor
 		
-		! At the beginning, we initialize a VIDE overlap particle table and a PLEIN inside_particlestable
-		! array of particle inside a domain
-		! array of overlap particle of a domain 
-		END SUBROUTINE initiation_overlap
-	
-	
-		SUBROUTINE particles_counting
+		SUBROUTINE initiation_table
+			ALLOCATE(inside_particle_table(number_of_particles))
+			ALLOCATE(overlap_particle_table(number_of_particles,nb_neighbours))
+			ALLOCATE(ALL_PARTICLES(number_of_particles))
+		END SUBROUTINE initiation_table
 		
-		END SUBROUTINE particles_counting
+		SUBROUTINE neighbour_counter
+			nb_neighbours = 0
+			if (rank_left .ge. 0) then 
+				nb_neighbours = nb_neighbours+ 1
+			end if
+			if (rank_right .ge. 0) then 
+			nb_neighbours =nb_neighbours+ 1
+			end if
+			if (rank_up .ge. 0)then
+				nb_neighbours =nb_neighbours + 1
+			end if
+			if (rank_down .ge. 0)then
+				nb_neighbours = nb_neighbours+ 1
+			end if
+			if (rank_up_left .ge. 0)then
+				nb_neighbours = nb_neighbours+1
+			end if
+			if (rank_up_right .ge. 0)then
+				nb_neighbours =nb_neighbours+ 1
+			end if
+			if (rank_down_left .ge. 0)then 
+				nb_neighbours =nb_neighbours+ 1
+			end if
+			if (rank_down_right  .ge. 0) then 
+				nb_neighbours =nb_neighbours+ 1
+			end if		
+		END SUBROUTINE neighbour_counter
 		
+		SUBROUTINE parttype_convert
+			DO i=1,number_of_particles
+				ALL_PARTICLES(i)%Xp = Xparticle_read(1,i)
+				ALL_PARTICLES(i)%Yp = Xparticle_read(2,i)
+				ALL_PARTICLES(i)%Upx = velocity_read(1,i)
+				ALL_PARTICLES(i)%Upy = velocity_read(2,i)
+				ALL_PARTICLES(i)%Dp1 = D_read(1,i)
+				ALL_PARTICLES(i)%Dp2 = D_read(2,i)
+				ALL_PARTICLES(i)%Dp3 = D_read(3,i)
+				ALL_PARTICLES(i)%Dp4 = D_read(4,i)
+				! TODO ALL_PARTICLES(i)%Mp =
+				ALL_PARTICLES(i)%ID = i
+				ALL_PARTICLES(i)%Rhop = density_read(i)  			
+			END DO
+		
+		END SUBROUTINE parttype_convert
+		
+		SUBROUTINE particle_distribution
+			COUNTER = 0
+			!for every particle coordinates in Xparticle, assign it rightly to the right domain
+			DO i =1,number_of_particles
+				if(((ALL_PARTICLES(i)%Xp .gt. start_x ).and. (ALL_PARTICLES(i)%Xp .le. end_x))&
+				.and. ((ALL_PARTICLES(i)%Yp .gt. start_y )&
+				.and.(ALL_PARTICLES(i)%Yp .le. end_y))) THEN
+					inside_particle_table(i) = ALL_PARTICLES(i)
+					inside_particle_table(i)%PROC_ID = rank
+					COUNTER = COUNTER + 1
+				end if
+				
+			END DO
+		END SUBROUTINE particle_distribution
+		
+	
+		SUBROUTINE initiation_overlap_table
+		! Create overlap table for each process 
+		
+		END SUBROUTINE initiation_overlap_table
+
+
 		SUBROUTINE block_loop	
 		! TODO
 
@@ -55,15 +109,14 @@ MODULE mpi_2d_structures_modf90
 	
 		END SUBROUTINE block_loop	
 		
-		
-		
-		SUBROUTINE overlap_criterion()
-		!particle_k,eigenvector_1,eigenvector_2
+		SUBROUTINE overlap_criterion(particle_k,overlap_check)
 		! Check a particle if it satifies overlap_criterion
 		! Retrieve the eigenvalues and eigenvectors to determine the direction movement of particles, 	then decide it leaves the block or not
 		! Input: k-th_particle in "PARTYPE" type 
 		! Output: logical
 			IMPLICIT NONE
+			TYPE(PARTTYPE), INTENT(in) :: particle_k
+			LOGICAL, INTENT(out)       :: overlap_check
 			
 			! Initial idea
 			INTEGER, PARAMETER                                      :: n=2
@@ -71,46 +124,43 @@ MODULE mpi_2d_structures_modf90
 			DOUBLE PRECISION, PARAMETER                             :: abserr=1.0e-09
 			INTEGER i, j
 
-			! type(PARTTYPE), intent(in)   							:: particle_k
-			!double precision, dimension(n), intent(out)             :: eigenvector_1
-			!double precision, dimension(n), intent(out)             :: eigenvector_2
+
+			double precision, dimension(n)             	            :: eigenvector_1
+			double precision, dimension(n)                          :: eigenvector_2
 			DOUBLE PRECISION                                        :: eigenvalue_1
 			DOUBLE PRECISION                                        :: eigenvalue_2
-			LOGICAL                                                 :: overlap_check	
+			DOUBLE PRECISION, dimension(n)                          :: pointu
 
-			! matrix A
-  			! data (a(1,i), i=1,2) /   D11,  D12 /
-  			! data (a(2,i), i=1,2) /   D21,  D22 /
+			DOUBLE PRECISION		   :: D11,D12,D21,D22
+			
+			D11 = particle_k%Dp1
+			D12 = particle_k%Dp2
+			D21 = particle_k%Dp3
+			D22 = particle_k%Dp4
+
+			! matrix D
+  			a(1,1) = D11
+  			a(1,2) = D12
+  			a(2,1) = D21
+  			a(2,2) = D22
 
 
 			! print a header and the original matrix
-			! call Jacobi(a,x,abserr,n)
+			call Jacobi(a,x,abserr,n)
 
-			! eigenvector_1 = x(1,:) 
-			! eigenvector_2 = x(2,:)
-			! eigenvalue_1  = a(1,1)
-			! eigenvalue_2  = a(2,2)		
-			! pointu = eigenvector_1 + eigenvector_2
-			! if ((pointu(1)-start_x)*(pointu(2)-start_y)>0 .and. (pointu(1)-end_x)*(pointu(2)-end_y)>0) then 
-			! overlap_check = false
-			! else 
-			! overlap_check =true 
-			! end if 
-			
+			eigenvector_1 = x(1,:) 
+			eigenvector_2 = x(2,:)
+			eigenvalue_1  = a(1,1)
+			eigenvalue_2  = a(2,2)		
+			pointu(1) = eigenvector_1(1) + eigenvector_2(1)
+			pointu(2) = eigenvector_1(2) + eigenvector_2(2)
+			if ((pointu(1)-start_x)*(pointu(2)-start_y)>0.and.(pointu(1)-end_x)*(pointu(2)-end_y)>0 )then 
+				overlap_check = .false.
+			else 
+				overlap_check = .true.
+			end if 
 			
 		END SUBROUTINE overlap_criterion
-
-
-		SUBROUTINE particle_numerotation()
-			!Xkpart, M, DD, Nk_part,table_block_particle,table_block_overlap
-			! Give Identity particle inside block ?
-			! Input: Xk(1,:),Xk(2,:), M, DD, Nk_part
-			!double precision, dimension(2,Nk_part), intent(in)      :: Xkpart
-			!double precision, dimension(Nk_part), intent(in)        :: M
-			!double precision, dimension(4, Nk_part), intent(in)     :: DD
-			! Output: table_block_particles which has Nk particles of "PARTYPE" type.
-		END SUBROUTINE
-
 
 		SUBROUTINE particle_screening()
 			!table_block_particle

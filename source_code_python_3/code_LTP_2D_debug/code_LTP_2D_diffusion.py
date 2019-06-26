@@ -178,12 +178,19 @@ sizefile.write(str(config.Nx)+'\n')
 sizefile.write(str(config.Ny))
 sizefile.close()
 
+
+#NOTEEEE: Lx1 = mesh(1,1), Lx2 = mesh(1,2),  Ly1 = mesh(2,1) , Ly2 = mesh(2,2)
+mesh = numpy.array([config.Ix,config.Iy]) 
+print('Im here',mesh)
+mesh.T.tofile('trunk/fortran_srcs/mesh.bin')
 # Coordinates, Deformation Matrix D, and matrix M
 X.T.tofile('trunk/fortran_srcs/coords4fortran.bin')
+print(X)
 D.T.tofile('trunk/fortran_srcs/deformmatrix4fortran.bin')  
-M.T.tofile('trunk/fortran_srcs/matrixM4fortran.bin')                      
-
-
+M.T.tofile('trunk/fortran_srcs/matrixM4fortran.bin')  
+print(numpy.shape(U))                    
+U.T.tofile('trunk/fortran_srcs/velocity4fortran.bin')
+#print(M)
 #=========================================================================================================================================
 
 #======  Boucle en temps ===== 
@@ -320,9 +327,7 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
     if (config.problem == "diffusion") and (config.method == "LTP"):
         if (config.time_scheme == 'euler_explicit') : 
             start = time.time()
-            print "t = " , t
-           
-            
+            print "t = " , t   
                    
 #            cmd = 'cd trunk/fortran_srcs/'   
 #            print ("launch : " , cmd )
@@ -335,11 +340,12 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
                     trunk/fortran_srcs/MPI_2D_structures.o \
                     trunk/fortran_srcs/calculsfortran_rec.o \
                     trunk/fortran_srcs/calculs_2D.o \
-                    trunk/fortran_srcs/calculsfortran_ini.o '
-            #trunk/fortran_srcs/calculs_2D.o trunk/fortran_srcs/calculsfortran_ini.o 
+                    trunk/fortran_srcs/calculsfortran_ini.o \
+                    trunk/fortran_srcs/pack.o \
+                     trunk/fortran_srcs/jacobi_method.o   '
             os.system(str(cmd)) 
 #            print ("launch : " , cmd )
-            cmd = 'mpiexec ./outfile'
+            cmd = 'mpiexec -n 4 ./outfile'
             os.system(str(cmd))      
                    
             # Make no sense these 2 following lines       
@@ -352,40 +358,7 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
             Nboucle +=1
             end = time.time()
             print "time for one iteration = " , end - start       
-    '''
-    if (config.problem == "diffusion") and (config.method == "LTP"):
-        if (config.time_scheme == "Euler_explicit") :
-        start = time.time()
-        # t start at 0        
-        print("t = ", t)
-        
-        # Coordinates at time t
-        X_old = X.copy()
-        
-        # Deformation Matrix D at time t
-        D_old = D.copy()
-        
-        # TODO, which functions, which block in fortran module?
-        # Initial Idea: Run program file named "tri_casier_method in form of a fortran program?"
-        # Input: X_old, D_lod, M_old         
-        # Output: X_new (U), Df2py
-        # U,Df2py = tri
-         
-        # Update all new particles position
-        # X[0,:] += config.dt*U[0,:]
-        # X[1,:] += config.dt*U[1,:]
-            
-        # Update Deformation Matrix D at time t+dt
-        D= Df2py.copy()
-        
-        t += config.dt
-        npic += 1
-        Nboucle += 1
-        end = time.time()
-        print( "Global Time Execution", end - start)
 
-   '''
-        
     if (config.method == 'analytic_debug') :		    
         if (config.time_scheme == 'euler_explicit') :             
             D_old = D.copy()

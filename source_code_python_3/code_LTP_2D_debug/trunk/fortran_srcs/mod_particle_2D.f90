@@ -9,14 +9,7 @@
 MODULE mod_particle_2D_modf90
 
 !import module, TODO decide which module would be necessary
-
-IMPLICIT NONE 
-	! DECLARATIONS
-	! TODO  
-
-INCLUDE 'mpif.h'
-
-INTEGER :: code
+USE PACKMPI
 
 
 TYPE PARTTYPE
@@ -59,8 +52,6 @@ integer :: NDOUBLE = 28 + 2500*11
 !! MPI TYPE FOR PARTICLE EXCHANGE
 integer :: MPI_PARTICLETYPE
 integer :: TAG
-
-
 
 !- Particle structure
 TYPE(PARTTYPE), dimension(:,:), allocatable :: PART

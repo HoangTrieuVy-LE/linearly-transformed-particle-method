@@ -9,42 +9,10 @@
 ! IMPORT MODULE INSDE SOUBROUTINE, TODO decide which module would be necessary
 MODULE mpi_2D_spatialisation_modf90
 
-IMPLICIT NONE 
-
-
-INCLUDE 'mpif.h'
+USE PACKMPI
 USE mod_particle_2D_modf90
 
-	! DECLARATIONS for MPI
-	INTEGER                      :: rank
-
-	INTEGER                      :: nb_proc
-
-	INTEGER                      :: code, i
-
-	! COMMUNICATOR OF THE CARTESIAN TOPOLOGY
-  	INTEGER                      :: comm2d
-
-	INTEGER, PARAMETER           :: nbdims = 2 !find in config to simply later
-
-	INTEGER, DIMENSION(nbdims)   :: dims
-
-	LOGICAL, DIMENSION(nbdims)   :: periods
-
-	INTEGER, DIMENSION(nbdims)   :: coords
-
-	LOGICAL                      :: reorder = .true.
-
-	DOUBLE PRECISION             :: block_step_x, block_step_y, start_x, start_y, end_x, end_y
-
-	INTEGER, PARAMETER           :: nb_neighbours_2D = 8
-
-	INTEGER, PARAMETER           :: nb_neighbours_3D = 26
-
-	INTEGER                      :: rank_left, rank_right, rank_up, rank_down,&
- 									rank_up_left, rank_up_right, rank_down_left,&
-								 	rank_down_right
-
+IMPLICIT NONE 
 
 
 CONTAINS
@@ -74,7 +42,9 @@ CONTAINS
 		periods(:) = .false.
 		CALL MPI_CART_CREATE(MPI_COMM_WORLD, nbdims, dims, periods, reorder,comm2d,code)
 		
+		
 		IF (rank == 0) THEN
+		WRITE(*,*) 'IM HERE'
 			WRITE (*,'(A,i4,A,i4,A)') 'Dimension for the topology: ', &
 							dims(1), ' along x, ', dims(2), ' along  y'
 		END IF
@@ -95,12 +65,12 @@ CONTAINS
 		CALL mpi_cart_coords(comm2d, rank, nbdims, coords, code)		
 		
 		! Limits at X-axis
-		start_x = (coords(1)*block_step_x)/dims(1)
-		end_x =((coords(1)+1)*block_step_x)/dims(1)
+		start_x = (coords(1)*block_step_x)+Lx1
+		end_x =((coords(1)+1)*block_step_x)+Lx1
 
 		! Limits at Y-axis
-		start_y = (coords(2)*block_step_y)/dims(2)
-		end_y = ((coords(2)+1)*block_step_y)/dims(2)
+		start_y = (coords(2)*block_step_y)+Ly1
+		end_y = ((coords(2)+1)*block_step_y)+Ly1
 
 		WRITE (*,'(A,i4,A,F5.2,A,F5.2,A,F5.2,A,F5.2,A)') 'Rank in the topology: ', rank, &
          ' Local Grid Index:',  start_x, ' to', end_x, ' along x, ', &
@@ -108,10 +78,7 @@ CONTAINS
 
 	END SUBROUTINE set_block_grid
 
-
-
 	SUBROUTINE neighbour_blocks
-
 		!!!!!!!!!!!!!!!!!!!!!!!
 		!    iniialisation    !
 		!!!!!!!!!!!!!!!!!!!!!!!
@@ -182,6 +149,9 @@ CONTAINS
 		!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		!  TODO add general case dims(3)>1  !
 		!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+		
+
 	END SUBROUTINE neighbour_blocks
 
 	SUBROUTINE 	environnement_finalization

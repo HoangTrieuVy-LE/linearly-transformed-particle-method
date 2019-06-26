@@ -245,7 +245,7 @@ def initialize_data_parameters(file_name) :
         config.hx_remap = (config.Sx[1] - config.Sx[0]) / (config.Nx-1)
         config.hy_remap = (config.Sy[1] - config.Sy[0]) / (config.Ny-1)		
     
-    print ("config.hx_remap , config.hy_remap = " , config.hx_remap , config.hy_remap)
+    #print ("config.hx_remap , config.hy_remap = " , config.hx_remap , config.hy_remap)
     ### Define epsilon (shape function "size") 
     #~ h = max((Sx[1] - Sx[0]) / float(Nx-1) , (Sy[1] - Sy[0]) / float(Ny-1))
     config.h = max(config.hx_remap,config.hy_remap)
