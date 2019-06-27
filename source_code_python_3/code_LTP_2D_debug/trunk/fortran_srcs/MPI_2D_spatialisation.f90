@@ -72,9 +72,9 @@ CONTAINS
 		start_y = (coords(2)*block_step_y)+Ly1
 		end_y = ((coords(2)+1)*block_step_y)+Ly1
 
-		WRITE (*,'(A,i4,A,F5.2,A,F5.2,A,F5.2,A,F5.2,A)') 'Rank in the topology: ', rank, &
-         ' Local Grid Index:',  start_x, ' to', end_x, ' along x, ', &
-         start_y, ' to', end_y, ' along y'
+!		WRITE (*,'(A,i4,A,F5.2,A,F5.2,A,F5.2,A,F5.2,A)') 'Rank in the topology: ', rank, &
+!         ' Local Grid Index:',  start_x, ' to', end_x, ' along x, ', &
+!         start_y, ' to', end_y, ' along y'
 
 	END SUBROUTINE set_block_grid
 
@@ -95,12 +95,9 @@ CONTAINS
 
 		! TODO in 3d, maximum 26 neighbour block around
 	
-
-
 		!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		!     find neighbours - conditions     !
+		!     find neighbours - conditions    !
 		!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 	
 		! neighbour in left_right positions
 		IF (dims(1)>1) THEN
@@ -150,9 +147,9 @@ CONTAINS
 		!  TODO add general case dims(3)>1  !
 		!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-		
-
 	END SUBROUTINE neighbour_blocks
+
+
 
 	SUBROUTINE 	environnement_finalization
 		CALL MPI_FINALIZE(code)

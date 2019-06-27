@@ -21,7 +21,7 @@ USE mpi_2D_spatialisation_modf90
 
 
 IMPLICIT NONE
-	logical :: overlapcheck
+	logical :: overlapcheck ! case test
 ! DECLARATIONS TODO
 	
 	
@@ -43,10 +43,11 @@ IMPLICIT NONE
 	CALL particle_coordinates_initiation
 	!WRITE(*,*) Xparticle_read(:,2)
 	CALL density_initiation
+	!write(*,*) velocity_read(:,1:10)tion
 	!WRITE(*,*) density_read(1:10)
 	CALL deformation_matrix_initiation
 	CALL velocity_initiation
-	!write(*,*) velocity_read(:,1:10)
+
 	 
 	!-------------------------------------------------------------------!
 	!!!                         DOMAIN CREATION                       !!!
@@ -60,72 +61,56 @@ IMPLICIT NONE
 
 	call neighbour_blocks
 	call neighbour_counter
-	print*,'rank:',rank,'nb_neighbours',nb_neighbours	
+	!print*,'rank:',rank,'nb_neighbours',nb_neighbours	
 	!if (rank==3) then 	
-		!call neighbour_blocks
-		!write(*,*)'rank_left',rank_left
-		!write(*,*)'rank_right',rank_right 
-		!write(*,*)'rank_up',rank_up
-		!write(*,*)'rank_down',rank_down
-		!write(*,*)'rank_up_left',rank_up_left 
-		!write(*,*)'rank_up_right',rank_up_right
-		!write(*,*)'rank_down_left',rank_down_left 
-		!write(*,*)'rank_down_right',rank_down_right
+!		call neighbour_blocks
+!		write(*,*)'rank_left',rank_left
+!		write(*,*)'rank_right',rank_right 
+!		write(*,*)'rank_up',rank_up
+!		write(*,*)'rank_down',rank_down
+!		write(*,*)'rank_up_left',rank_up_left 
+!		write(*,*)'rank_up_right',rank_up_right
+!		write(*,*)'rank_down_left',rank_down_left 
+!		write(*,*)'rank_down_right',rank_down_right
 	!end if
 
 	!call neighbour_blocks
 
 
 	!-------------------------------------------------------------------!
-	!!!                      PARTICLES ATTRIBUTION                    !!!
+	!!!  PARTICLES ATTRIBUTION  &  OVERLAP PARTICLES LISTS CREATION   !!!
 	!-------------------------------------------------------------------!
 	call initiation_table
 	call parttype_convert
 	! write(*,*) , 'density : ', ALL_PARTICLES(1)%Rhop
-	print*, 'rank:',rank,'star_x', start_x, 'end_x', end_x, 'start_y', start_y,'end_y',end_y
+	!print*, 'rank:',rank,'star_x', start_x, 'end_x', end_x, 'start_y', start_y,'end_y',end_y
 
+
+
+! For each processor, define "table_particle_inside" and "table_particle_overlap"
 	call particle_distribution
-	write(*,*)'rank:',rank, 'COUNTER', COUNTER
+	write(*,*)'rank:',rank, 'COUNTER_inside', COUNTER_inside
+	write(*,*)'rank:',rank, 'COUNTER_overlap', COUNTER_overlap
 
-	
-	!-------------------------------------------------------------------!
-	!!!                 OVERLAP PARTICLES LISTS CREATION              !!!
-	!-------------------------------------------------------------------!
-	
-	
-	! For each processor, define "table_particle_inside" and "table_particle_overlap"
-	
-	
-	! table_particle_inside = TODO
-	! REALLY NEED TO CLARIFY
-	! type(PARTTYPE), dimension (:), allocatable :: table_particle_inside
-	! table_particle_overlap(NPmax) 
-	
-	
-	! table_particle_overlap = TODO
-	! type(PARTTYPE), dimension (:,:), allocatable :: table_particle_overlap
-	! table_particle_overlap(NPmax, nb_neighbours)
-	! Which is a table would show overlap particlesin each neighbour.
-	
+!	call overlap_criterion(ALL_PARTICLES(1),overlapcheck)
+!	print*,overlapcheck
 	
 	!-------------------------------------------------------------------!
 	!!!          FOR EVERY SUB-DOMAIN - INSIDE A PROCESS              !!!
 	!-------------------------------------------------------------------!
-	
-	
-
 	!-------------------------------------------------------------------!
 	!!!LOOP ON PARTICLES INSIDE BLOCK AND THE OTHERS IN OVERLAP TABLES!!!
 	!-------------------------------------------------------------------! 
 	
 	! TODO BLOCK LOOP
+	call block_loop
 	
 	!-------------------------------------------------------------------!
 	!!!                            UPDATE                             !!!
 	!-------------------------------------------------------------------!
 	
 	! Displacement
-	! TODO
+	call update_displacement
 	! Update all new position
 	
 	

@@ -175,7 +175,10 @@ X_old = X.copy()
 #Nx, Ny 
 sizefile = open("trunk/fortran_srcs/size.data",'w')
 sizefile.write(str(config.Nx)+'\n')
-sizefile.write(str(config.Ny))
+sizefile.write(str(config.Ny)+'\n')
+sizefile.write(str(config.hx_remap)+'\n')
+sizefile.write(str(config.hy_remap)+'\n')
+sizefile.write(str(config.dt))
 sizefile.close()
 
 

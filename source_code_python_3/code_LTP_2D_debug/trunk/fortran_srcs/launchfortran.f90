@@ -1,9 +1,10 @@
 module data_launch
 	USE PACKMPI
 	IMPLICIT NONE
-	
+	DOUBLE PRECISION                               :: dt
 	DOUBLE PRECISION , ALLOCATABLE, DIMENSION(:,:) :: mesh
 	INTEGER                                        :: Nx,Ny
+	DOUBLE PRECISION                               :: hx_remap, hy_remap
 	DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:,:)  :: Xparticle_read 
 	DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:,:)  :: D_read
 	DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:)    :: density_read 
@@ -25,6 +26,9 @@ SUBROUTINE set_Nx_Ny
 	OPEN(unit = 1, FILE = 'trunk/fortran_srcs/size.data',status ='old')
 	READ(1,*) Nx
 	READ(1,*) Ny
+	READ(1,*) hx_remap
+	READ(1,*) hy_remap
+	READ(1,*) dt
 	CLOSE(1)
 END SUBROUTINE set_Nx_Ny
 

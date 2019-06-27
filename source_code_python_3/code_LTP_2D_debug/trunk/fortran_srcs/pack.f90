@@ -36,6 +36,8 @@ IMPLICIT NONE
 								 	rank_down_right
 
 	INTEGER                      :: nb_neighbours
+	
+	
 	!INTEGER(kind=MPI_OFFSET_KIND)                 :: offset
 
 
