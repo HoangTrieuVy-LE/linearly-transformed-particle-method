@@ -44,9 +44,9 @@ CONTAINS
 		
 		
 		IF (rank == 0) THEN
-		WRITE(*,*) 'IM HERE'
-			WRITE (*,'(A,i4,A,i4,A)') 'Dimension for the topology: ', &
-							dims(1), ' along x, ', dims(2), ' along  y'
+
+!			WRITE (*,'(A,i4,A,i4,A)') 'Dimension for the topology: ', &
+!							dims(1), ' along x, ', dims(2), ' along  y'
 		END IF
 
 	END SUBROUTINE topology_initialisation

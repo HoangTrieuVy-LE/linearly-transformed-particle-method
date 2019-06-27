@@ -12,7 +12,7 @@ MODULE mod_particle_2D_modf90
 USE PACKMPI
 
 
-TYPE PARTTYPE
+type PARTTYPE
 
 !Stored particle informations
 
@@ -31,8 +31,6 @@ real(kind=8) :: Dp2
 real(kind=8) :: Dp3
 real(kind=8) :: Dp4
 
-!3. Poids
-real(kind=8) :: Mp
 
 !4. Rho
 real(kind=8) :: Rhop
@@ -42,6 +40,7 @@ integer :: ID
 integer :: PROC_ID
 
 END TYPE PARTTYPE
+
 
 !integer :: NINTEGER = 2
 integer :: NINTEGER = 0

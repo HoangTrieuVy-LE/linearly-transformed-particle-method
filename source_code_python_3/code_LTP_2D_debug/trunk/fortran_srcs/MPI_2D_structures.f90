@@ -26,16 +26,22 @@ MODULE mpi_2d_structures_modf90
 		
 
 	! TODO derived particle dataypes
-	TYPE(PARTTYPE), DIMENSION(:), ALLOCATABLE :: inside_particle_table
-	TYPE(PARTTYPE), DIMENSION(:), ALLOCATABLE :: overlap_particle_table
+
+	INTEGER, DIMENSION(:,:), ALLOCATABLE :: IND_LEAVE
+	INTEGER, DIMENSION(:), ALLOCATABLE   :: IND_INSIDE
+	INTEGER, DIMENSION(:), ALLOCATABLE   :: IND_OVERLAP
+	
 	TYPE(PARTTYPE), DIMENSION(:), ALLOCATABLE :: ALL_PARTICLES
 	
-	INTEGER                    ::     COUNTER_inside, COUNTER_overlap
+	
+	INTEGER                              :: COUNTER_inside, COUNTER_overlap
+	INTEGER, DIMENSION(:,:), ALLOCATABLE :: COUNTER_leave
 	CONTAINS
 		
 		SUBROUTINE initiation_table
-			ALLOCATE(inside_particle_table(number_of_particles))
-			ALLOCATE(overlap_particle_table(number_of_particles))
+			ALLOCATE(IND_LEAVE(number_of_particles,nb_proc))
+			ALLOCATE(IND_INSIDE(number_of_particles))
+			ALLOCATE(IND_OVERLAP(number_of_particles))
 			ALLOCATE(ALL_PARTICLES(number_of_particles))
 		END SUBROUTINE initiation_table
 		
@@ -77,9 +83,9 @@ MODULE mpi_2d_structures_modf90
 				ALL_PARTICLES(i)%Dp2 = D_read(2,i)
 				ALL_PARTICLES(i)%Dp3 = D_read(3,i)
 				ALL_PARTICLES(i)%Dp4 = D_read(4,i)
-				! TODO ALL_PARTICLES(i)%Mp =
 				ALL_PARTICLES(i)%ID = i
-				ALL_PARTICLES(i)%Rhop = density_read(i)  			
+				ALL_PARTICLES(i)%Rhop = density_read(i) 
+
 			END DO
 		
 		END SUBROUTINE parttype_convert
@@ -217,16 +223,7 @@ MODULE mpi_2d_structures_modf90
 
 		END SUBROUTINE overlap_criterion
 	
-		SUBROUTINE particle_screening()
-			!table_block_particle
-			!type(PARTYPE), dimension(:,:), allocatable, intent(in)  :: table_block_particle
-			!type(PARTYPE), dimension(:,:), allocatable, intent(out) :: table_particle_inside
-			!type(PARTYPE), dimension(:,:), allocatable, intent(out) :: table_particle_overlap
-			! Loop on ALL_PARTICLES
-			! Check overlap_criterion
-			! overlapcheck false: append to table_particle_inside
-			! overlapcheck true : TODO
-		END SUBROUTINE
+		
 		
 		SUBROUTINE particle_distribution
 			IMPLICIT NONE
@@ -237,31 +234,23 @@ MODULE mpi_2d_structures_modf90
 			position_inside = 1
 			COUNTER_inside = 0
 			COUNTER_overlap = 0
-
+			
 			!for every particle coordinates in Xparticle, assign it rightly to the right domain
 			DO i =1,number_of_particles
 				CALL overlap_criterion(ALL_PARTICLES(i),overlapcheck_1,insidecheck_1)
-				!print*, overlapcheck_1
-				
-!				if(((ALL_PARTICLES(i)%Xp > start_x ) &
-!				.and. (ALL_PARTICLES(i)%Xp <= end_x)) &
-!				.and. ((ALL_PARTICLES(i)%Yp > start_y )&
-!				.and.(ALL_PARTICLES(i)%Yp <= end_y)) &
-!				.and. (.not. overlapcheck_1) & 
-!				) 
+
 				if (insidecheck_1) then
-					inside_particle_table(position_inside) = ALL_PARTICLES(i)
-					inside_particle_table(i)%PROC_ID = rank
-					COUNTER_inside = COUNTER_inside + 1
+					IND_INSIDE(position_inside) = i
 					position_inside = position_inside +1
+					COUNTER_inside = COUNTER_inside + 1
+
 				end if
 				
 				if (overlapcheck_1) then
-					overlap_particle_table(position_overlap) = ALL_PARTICLES(i)
-					COUNTER_overlap = COUNTER_overlap + 1
+					IND_OVERLAP(position_overlap) = i
 					position_overlap = position_overlap +1
+					COUNTER_overlap = COUNTER_overlap + 1
 				end if
-				
 			END DO
 		END SUBROUTINE particle_distribution
 		
@@ -269,12 +258,8 @@ MODULE mpi_2d_structures_modf90
 		SUBROUTINE block_loop	
 		
 		IMPLICIT NONE
-		! TODO
 		! Input: X_block_k (k is rank of processor),M_block_k,D_old_block_k,hx,hy, N_part_block_k	
 		! Output: U_block_k, Df2py_block_k
-		
-		
-		
 		Npart_block = COUNTER_inside + COUNTER_overlap
 		
 		ALLOCATE(Xpart_block(2,Npart_block))
@@ -284,67 +269,122 @@ MODULE mpi_2d_structures_modf90
 		
 		
 		DO i= 1,COUNTER_inside
-			Xpart_block(1,i) = inside_particle_table(i)%Xp
-			Xpart_block(2,i) = inside_particle_table(i)%Yp
+			Xpart_block(1,i) = ALL_PARTICLES(IND_INSIDE(i))%Xp
+			Xpart_block(2,i) = ALL_PARTICLES(IND_INSIDE(i))%Yp
 		END DO
 		DO i=1,COUNTER_overlap
-			Xpart_block(1,i+COUNTER_inside) = overlap_particle_table(i)%Xp
-			Xpart_block(2,i+COUNTER_inside) = overlap_particle_table(i)%Yp
+			Xpart_block(1,i+COUNTER_inside) = ALL_PARTICLES(IND_overlap(i))%Xp
+			Xpart_block(2,i+COUNTER_inside) = ALL_PARTICLES(IND_overlap(i))%Yp
 		END DO
 		
 		
 		
 		DO i= 1,COUNTER_inside
-			Mblock(i) = inside_particle_table(i)%Mp
+			Mblock(i) = ALL_PARTICLES(IND_INSIDE(i))%Rhop
 		END DO
 		DO i=1,COUNTER_overlap
-			Mblock(i+COUNTER_inside) = overlap_particle_table(i)%Mp
+			Mblock(i+COUNTER_inside) = ALL_PARTICLES(IND_overlap(i))%Rhop
 		END DO
+
 		
+		DO i= 1,COUNTER_inside
+			Dblock(1,i) = ALL_PARTICLES(IND_INSIDE(i))%Dp1
+			Dblock(2,i) = ALL_PARTICLES(IND_INSIDE(i))%Dp2
+			Dblock(3,i) = ALL_PARTICLES(IND_INSIDE(i))%Dp3
+			Dblock(4,i) = ALL_PARTICLES(IND_INSIDE(i))%Dp4
+		END DO
+		DO i=1,COUNTER_overlap
+			Dblock(1,i+COUNTER_inside) = ALL_PARTICLES(IND_overlap(i))%Dp1
+			Dblock(2,i+COUNTER_inside) = ALL_PARTICLES(IND_overlap(i))%Dp2
+			Dblock(3,i+COUNTER_inside) = ALL_PARTICLES(IND_overlap(i))%Dp3
+			Dblock(4,i+COUNTER_inside) = ALL_PARTICLES(IND_overlap(i))%Dp4
+		END DO
 		
 		
 		DO i= 1,COUNTER_inside
-			Dblock(1,i) = inside_particle_table(i)%Dp1
-			Dblock(2,i) = inside_particle_table(i)%Dp2
-			Dblock(3,i) = inside_particle_table(i)%Dp3
-			Dblock(4,i) = inside_particle_table(i)%Dp4
+			velocity_field(1,i) = ALL_PARTICLES(IND_INSIDE(i))%Upx
+			velocity_field(2,i) = ALL_PARTICLES(IND_INSIDE(i))%Upy
 		END DO
 		DO i=1,COUNTER_overlap
-			Dblock(1,i+COUNTER_inside) = overlap_particle_table(i)%Dp1
-			Dblock(2,i+COUNTER_inside) = overlap_particle_table(i)%Dp2
-			Dblock(3,i+COUNTER_inside) = overlap_particle_table(i)%Dp3
-			Dblock(4,i+COUNTER_inside) = overlap_particle_table(i)%Dp4
+			velocity_field(1,i+COUNTER_inside) = ALL_PARTICLES(IND_overlap(i))%Upx
+			velocity_field(2,i+COUNTER_inside) = ALL_PARTICLES(IND_overlap(i))%Upy
 		END DO
 		
-		
-		DO i= 1,COUNTER_inside
-			velocity_field(1,i) = inside_particle_table(i)%Upx
-			velocity_field(2,i) = inside_particle_table(i)%Upy
-		END DO
-		DO i=1,COUNTER_overlap
-			velocity_field(1,i+COUNTER_inside) = overlap_particle_table(i)%Upx
-			velocity_field(2,i+COUNTER_inside) = overlap_particle_table(i)%Upy
-		END DO
-		
+!		print*, shape(velocity_field)
+!		print*,velocity_field(:,1:10)
+!		print*,Xpart_block(:,1:10)
+!		print*, Mblock(1:10)
+!		print*, hx_remap
 		! Velocity calculation
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!HUGE PROBLEM
+!Need to initiate all the value in new library calculsfortran_rec,init,2D
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 		call diffusion_field_ltp(Xpart_block,Mblock,Dblock,hx_remap,hy_remap,velocity_field,Npart_block)
-	
+!		print*, velocity_field
+
 		END SUBROUTINE block_loop	
 		
 		SUBROUTINE update_displacement
 			DO i=1,COUNTER_inside
-				inside_particle_table(i)%Xp = inside_particle_table(i)%Xp + velocity_field(1,i)*dt
-				inside_particle_table(i)%Yp = inside_particle_table(i)%Yp + velocity_field(2,i)*dt
+				ALL_PARTICLES(IND_INSIDE(i))%Xp = ALL_PARTICLES(IND_INSIDE(i))%Xp + velocity_field(1,i)*dt
+				ALL_PARTICLES(IND_INSIDE(i))%Yp = ALL_PARTICLES(IND_INSIDE(i))%Yp + velocity_field(2,i)*dt
 			END DO
 			DO i=1,COUNTER_overlap
-				overlap_particle_table(i)%Xp = overlap_particle_table(i)%Xp + velocity_field(1,i+COUNTER_inside)*dt
-				overlap_particle_table(i)%Yp = overlap_particle_table(i)%Yp + velocity_field(2,i+COUNTER_inside)*dt
+				ALL_PARTICLES(IND_overlap(i))%Xp = ALL_PARTICLES(IND_overlap(i))%Xp + velocity_field(1,i+COUNTER_inside)*dt
+				ALL_PARTICLES(IND_overlap(i))%Yp = ALL_PARTICLES(IND_overlap(i))%Yp + velocity_field(2,i+COUNTER_inside)*dt
 			END DO
+
 		END SUBROUTINE update_displacement
 		
-		SUBROUTINE update_table
+		SUBROUTINE update_table_block
+			IMPLICIT NONE
+			LOGICAL :: overlap_check, inside_check
+			DO i=1,COUNTER_inside
+				call overlap_criterion(ALL_PARTICLES(IND_INSIDE(i)),overlap_check,inside_check)
+							
+				if (inside_check) then
+					cycle
+					
+				else
+					if(overlap_check) then
+						IND_OVERLAP(COUNTER_overlap+1) = ALL_PARTICLES(IND_INSIDE(i))%ID
+						COUNTER_overlap = COUNTER_overlap + 1
+						
+						IND_INSIDE(i:(COUNTER_inside-1)) = IND_INSIDE((i+1):COUNTER_inside)
+						COUNTER_inside = COUNTER_inside - 1 
+					end if
+					! TODO ADD IND_LEAVE
+ 
+					
+				end if
+			END DO		
 			
-		END SUBROUTINE update_table
+			DO i=1, COUNTER_overlap
+				call overlap_criterion(ALL_PARTICLES(IND_overlap(i)),overlap_check,inside_check)
+				
+				if (overlap_check) then
+					cycle
+				else
+					if(inside_check) then
+						IND_INSIDE(COUNTER_inside+1) = ALL_PARTICLES(IND_overlap(i))%ID
+						COUNTER_inside = COUNTER_inside + 1
+						
+						IND_OVERLAP(i:(COUNTER_overlap-1)) = IND_OVERLAP((i+1):COUNTER_overlap)
+						COUNTER_overlap = COUNTER_overlap - 1
+					end if 
+				end if
+			END DO	
+			
+		END SUBROUTINE update_table_block
+
+
+
+		SUBROUTINE particle_screening()
+			! Boucle sur les IND_LEAVE of neighbours and self, and update table
+		END SUBROUTINE
 
 
 

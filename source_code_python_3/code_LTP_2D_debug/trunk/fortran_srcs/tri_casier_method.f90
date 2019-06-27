@@ -111,6 +111,9 @@ IMPLICIT NONE
 	
 	! Displacement
 	call update_displacement
+	call update_table_block
+	write(*,*)'rank:',rank, 'COUNTER_inside', COUNTER_inside
+	write(*,*)'rank:',rank, 'COUNTER_overlap', COUNTER_overlap
 	! Update all new position
 	
 	

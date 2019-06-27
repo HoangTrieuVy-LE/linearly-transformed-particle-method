@@ -4,6 +4,7 @@ USE MPI
 
 IMPLICIT NONE
 
+!MPI VARIABLES
 
 	INTEGER                      :: code
 	! DECLARATIONS for MPI
