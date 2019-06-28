@@ -1,10 +1,13 @@
 module data_launch
 	USE PACKMPI
+	USE calculsfor_rec_modf90
+
+
 	IMPLICIT NONE
 	DOUBLE PRECISION                               :: dt
 	DOUBLE PRECISION , ALLOCATABLE, DIMENSION(:,:) :: mesh
-	INTEGER                                        :: Nx,Ny
-	DOUBLE PRECISION                               :: hx_remap, hy_remap
+
+
 	DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:,:)  :: Xparticle_read 
 	DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:,:)  :: D_read
 	DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:)    :: density_read 
@@ -24,18 +27,21 @@ CONTAINS
 
 SUBROUTINE set_Nx_Ny
 	OPEN(unit = 1, FILE = 'trunk/fortran_srcs/size.data',status ='old')
-	READ(1,*) Nx
-	READ(1,*) Ny
-	READ(1,*) hx_remap
-	READ(1,*) hy_remap
+	READ(1,*) nxg
+	READ(1,*) nyg
+	READ(1,*) hx
+	READ(1,*) hy
 	READ(1,*) dt
+	READ(1,*) degre_spline
+	READ(1,*) radius_phi
+	READ(1,*) phi_radial
+
 	CLOSE(1)
 END SUBROUTINE set_Nx_Ny
 
-
 SUBROUTINE set_length_data_read
 
-	number_of_particles = Nx*Ny
+	number_of_particles = nxg*nyg
 	ALLOCATE(density_read(number_of_particles))
 	
 	ALLOCATE(Xparticle_read(2,number_of_particles))
@@ -48,15 +54,12 @@ SUBROUTINE set_length_data_read
 
 END SUBROUTINE set_length_data_read
 
-
 SUBROUTINE set_Mesh
 	OPEN(unit = 5, FILE = 'trunk/fortran_srcs/mesh.bin',FORM="UNFORMATTED",&
 	STATUS="UNKNOWN", ACTION="READ", ACCESS='STREAM')
 	READ(5) mesh
 	CLOSE(5)
 END SUBROUTINE set_Mesh
-
-
 
 SUBROUTINE density_initiation
 	!call MPI_FILE_OPEN(MPI_COMM_WORLD,'trunk/fortran_srcs/matrixM4fortran.bin',&

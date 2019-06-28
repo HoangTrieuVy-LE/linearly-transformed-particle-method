@@ -9,10 +9,8 @@
 
 MODULE mpi_2d_structures_modf90
 	USE mod_particle_2D_modf90
-	USE PACKMPI
 	USE data_launch
 	USE Jacobi_method
-	USE calculsfor_rec_modf90
 	IMPLICIT NONE
 	
 	! DECALARATIONS
@@ -27,7 +25,7 @@ MODULE mpi_2d_structures_modf90
 
 	! TODO derived particle dataypes
 
-	INTEGER, DIMENSION(:,:), ALLOCATABLE :: IND_LEAVE
+	INTEGER, DIMENSION(:), ALLOCATABLE :: IND_LEAVE
 	INTEGER, DIMENSION(:), ALLOCATABLE   :: IND_INSIDE
 	INTEGER, DIMENSION(:), ALLOCATABLE   :: IND_OVERLAP
 	
@@ -35,7 +33,7 @@ MODULE mpi_2d_structures_modf90
 	
 	
 	INTEGER                              :: COUNTER_inside, COUNTER_overlap
-	INTEGER, DIMENSION(:,:), ALLOCATABLE :: COUNTER_leave
+	INTEGER                              :: COUNTER_leave !, DIMENSION(:,:), ALLOCATABLE
 	CONTAINS
 		
 		SUBROUTINE initiation_table
@@ -234,6 +232,7 @@ MODULE mpi_2d_structures_modf90
 			position_inside = 1
 			COUNTER_inside = 0
 			COUNTER_overlap = 0
+			COUNTER_leave
 			
 			!for every particle coordinates in Xparticle, assign it rightly to the right domain
 			DO i =1,number_of_particles
@@ -314,7 +313,7 @@ MODULE mpi_2d_structures_modf90
 !		print*,velocity_field(:,1:10)
 !		print*,Xpart_block(:,1:10)
 !		print*, Mblock(1:10)
-!		print*, hx_remap
+!		print*, hx
 		! Velocity calculation
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -322,19 +321,18 @@ MODULE mpi_2d_structures_modf90
 !Need to initiate all the value in new library calculsfortran_rec,init,2D
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-		call diffusion_field_ltp(Xpart_block,Mblock,Dblock,hx_remap,hy_remap,velocity_field,Npart_block)
-!		print*, velocity_field
+		call diffusion_field_ltp(Xpart_block,Mblock,Dblock,hx,hy,velocity_field,Npart_block)
 
 		END SUBROUTINE block_loop	
 		
 		SUBROUTINE update_displacement
 			DO i=1,COUNTER_inside
-				ALL_PARTICLES(IND_INSIDE(i))%Xp = ALL_PARTICLES(IND_INSIDE(i))%Xp + velocity_field(1,i)*dt
-				ALL_PARTICLES(IND_INSIDE(i))%Yp = ALL_PARTICLES(IND_INSIDE(i))%Yp + velocity_field(2,i)*dt
+				ALL_PARTICLES(IND_INSIDE(i))%Xp = ALL_PARTICLES(IND_INSIDE(i))%Xp - velocity_field(1,i)*dt
+				ALL_PARTICLES(IND_INSIDE(i))%Yp = ALL_PARTICLES(IND_INSIDE(i))%Yp - velocity_field(2,i)*dt
 			END DO
 			DO i=1,COUNTER_overlap
-				ALL_PARTICLES(IND_overlap(i))%Xp = ALL_PARTICLES(IND_overlap(i))%Xp + velocity_field(1,i+COUNTER_inside)*dt
-				ALL_PARTICLES(IND_overlap(i))%Yp = ALL_PARTICLES(IND_overlap(i))%Yp + velocity_field(2,i+COUNTER_inside)*dt
+				ALL_PARTICLES(IND_overlap(i))%Xp = ALL_PARTICLES(IND_overlap(i))%Xp - velocity_field(1,i+COUNTER_inside)*dt
+				ALL_PARTICLES(IND_overlap(i))%Yp = ALL_PARTICLES(IND_overlap(i))%Yp - velocity_field(2,i+COUNTER_inside)*dt
 			END DO
 
 		END SUBROUTINE update_displacement
@@ -353,12 +351,15 @@ MODULE mpi_2d_structures_modf90
 						IND_OVERLAP(COUNTER_overlap+1) = ALL_PARTICLES(IND_INSIDE(i))%ID
 						COUNTER_overlap = COUNTER_overlap + 1
 						
+						IND_LEAVE(COUNTER_leave+1) = ALL_PARTICLES(IND_INSIDE(i))%ID
+						COUNTER_leave = COUNTER_leave + 1
+						
 						IND_INSIDE(i:(COUNTER_inside-1)) = IND_INSIDE((i+1):COUNTER_inside)
-						COUNTER_inside = COUNTER_inside - 1 
+						COUNTER_inside = COUNTER_inside - 1
+					else
+						IND_LEAVE(COUNTER_leave+1) = ALL_PARTICLES(IND_INSIDE(i))%ID
+						COUNTER_leave = COUNTER_leave + 1
 					end if
-					! TODO ADD IND_LEAVE
- 
-					
 				end if
 			END DO		
 			
@@ -366,18 +367,24 @@ MODULE mpi_2d_structures_modf90
 				call overlap_criterion(ALL_PARTICLES(IND_overlap(i)),overlap_check,inside_check)
 				
 				if (overlap_check) then
+					IND_LEAVE(COUNTER_leave+1) = ALL_PARTICLES(IND_OVERLAP(i))%ID
+					COUNTER_leave = COUNTER_leave + 1
 					cycle
 				else
 					if(inside_check) then
-						IND_INSIDE(COUNTER_inside+1) = ALL_PARTICLES(IND_overlap(i))%ID
+						IND_INSIDE(COUNTER_inside+1) = ALL_PARTICLES(IND_OVERLAP(i))%ID
 						COUNTER_inside = COUNTER_inside + 1
 						
 						IND_OVERLAP(i:(COUNTER_overlap-1)) = IND_OVERLAP((i+1):COUNTER_overlap)
 						COUNTER_overlap = COUNTER_overlap - 1
+					else 
+						IND_LEAVE(COUNTER_leave+1) = ALL_PARTICLES(IND_OVERLAP(i))%ID
+						COUNTER_leave = COUNTER_leave + 1
 					end if 
 				end if
-			END DO	
+			END DO
 			
+				
 		END SUBROUTINE update_table_block
 
 

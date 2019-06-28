@@ -9,7 +9,7 @@
 ! IMPORT MODULE INSDE SOUBROUTINE, TODO decide which module would be necessary
 MODULE mpi_2D_spatialisation_modf90
 
-USE PACKMPI
+USE data_launch
 USE mod_particle_2D_modf90
 
 IMPLICIT NONE 
@@ -37,7 +37,6 @@ CONTAINS
 		! Number of processes on each dimension (depends on the total number of processes)
 		dims(:) = 0
 		CALL MPI_DIMS_CREATE(nb_proc, nbdims, dims, code)
-
 		! Creation of the 2D cartesian topology (no periodicity)
 		periods(:) = .false.
 		CALL MPI_CART_CREATE(MPI_COMM_WORLD, nbdims, dims, periods, reorder,comm2d,code)

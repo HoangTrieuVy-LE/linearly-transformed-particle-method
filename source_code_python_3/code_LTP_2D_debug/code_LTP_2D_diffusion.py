@@ -172,26 +172,29 @@ if config.D_method == 'implicit' :
 D_old = D.copy()
 X_old = X.copy()                
 
-#Nx, Ny 
+#Nx, Ny, hx, hy, dt, deg_spline, radius_phi, bool_phi_radial 
 sizefile = open("trunk/fortran_srcs/size.data",'w')
 sizefile.write(str(config.Nx)+'\n')
 sizefile.write(str(config.Ny)+'\n')
 sizefile.write(str(config.hx_remap)+'\n')
 sizefile.write(str(config.hy_remap)+'\n')
-sizefile.write(str(config.dt))
+sizefile.write(str(config.dt)+'\n')
+sizefile.write(str(config.deg_spline)+'\n')
+sizefile.write(str(config.radius_phi)+'\n')
+sizefile.write(str(config.bool_phi_radial))
 sizefile.close()
 
 
 #NOTEEEE: Lx1 = mesh(1,1), Lx2 = mesh(1,2),  Ly1 = mesh(2,1) , Ly2 = mesh(2,2)
 mesh = numpy.array([config.Ix,config.Iy]) 
-print('Im here',mesh)
+#print('Im here',mesh)
 mesh.T.tofile('trunk/fortran_srcs/mesh.bin')
 # Coordinates, Deformation Matrix D, and matrix M
 X.T.tofile('trunk/fortran_srcs/coords4fortran.bin')
-print(X)
+#print(X)
 D.T.tofile('trunk/fortran_srcs/deformmatrix4fortran.bin')  
 M.T.tofile('trunk/fortran_srcs/matrixM4fortran.bin')  
-print(numpy.shape(U))                    
+#print(numpy.shape(U))                    
 U.T.tofile('trunk/fortran_srcs/velocity4fortran.bin')
 #print(M)
 #=========================================================================================================================================
@@ -331,11 +334,7 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
         if (config.time_scheme == 'euler_explicit') : 
             start = time.time()
             print "t = " , t   
-                   
-#            cmd = 'cd trunk/fortran_srcs/'   
-#            print ("launch : " , cmd )
-#            os.system(str(cmd))
-            
+                             
             cmd = 'mpif90 -fopenmp trunk/fortran_srcs/tri_casier_method.f90 -o outfile \
                     trunk/fortran_srcs/launchfortran.o \
                     trunk/fortran_srcs/mod_particle_2D.o \
@@ -350,7 +349,9 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
 #            print ("launch : " , cmd )
             cmd = 'mpiexec -n 4 ./outfile'
             os.system(str(cmd))      
-                   
+            
+            
+            
             # Make no sense these 2 following lines       
             indice_max_norm_Dm1 = 0
             Norm_inf_Dm1= 0

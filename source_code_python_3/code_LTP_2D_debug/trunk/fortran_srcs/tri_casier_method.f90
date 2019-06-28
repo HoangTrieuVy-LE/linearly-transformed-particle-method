@@ -22,6 +22,7 @@ USE mpi_2D_spatialisation_modf90
 
 IMPLICIT NONE
 	logical :: overlapcheck ! case test
+	double precision, dimension(1,nb_proc) :: matrix
 ! DECLARATIONS TODO
 	
 	
@@ -33,8 +34,6 @@ IMPLICIT NONE
 	CALL set_Nx_Ny
 	CALL set_length_data_read
 	CALL set_Mesh
-	
-
 	!WRITE(*,*) 'mesh:',mesh(:,1)	
 	!WRITE(*,*) 'Nx = ', Nx
 	!WRITE(*,*) 'Ny = ', Ny
@@ -48,7 +47,12 @@ IMPLICIT NONE
 	CALL deformation_matrix_initiation
 	CALL velocity_initiation
 
-	 
+	!-------------------------------------------------------------------!
+	!!!                    SHAPE FUNCTIONS INITIATION                 !!!
+	!-------------------------------------------------------------------!
+	!  ALREADY DONE IN PYTHON WITH DATA_CODE_LTP_2D.py line 194
+
+
 	!-------------------------------------------------------------------!
 	!!!                         DOMAIN CREATION                       !!!
 	!-------------------------------------------------------------------!
@@ -89,9 +93,10 @@ IMPLICIT NONE
 
 ! For each processor, define "table_particle_inside" and "table_particle_overlap"
 	call particle_distribution
-	write(*,*)'rank:',rank, 'COUNTER_inside', COUNTER_inside
-	write(*,*)'rank:',rank, 'COUNTER_overlap', COUNTER_overlap
-
+	if (rank==0) then
+		write(*,*)'rank:',rank, 'COUNTER_inside', COUNTER_inside
+		write(*,*)'rank:',rank, 'COUNTER_overlap', COUNTER_overlap
+	end if 
 !	call overlap_criterion(ALL_PARTICLES(1),overlapcheck)
 !	print*,overlapcheck
 	
@@ -112,8 +117,11 @@ IMPLICIT NONE
 	! Displacement
 	call update_displacement
 	call update_table_block
-	write(*,*)'rank:',rank, 'COUNTER_inside', COUNTER_inside
-	write(*,*)'rank:',rank, 'COUNTER_overlap', COUNTER_overlap
+	if (rank==0) then
+		write(*,*)'rank:',rank, 'COUNTER_inside', COUNTER_inside
+		write(*,*)'rank:',rank, 'COUNTER_overlap', COUNTER_overlap
+	end if 	
+	
 	! Update all new position
 	
 	
