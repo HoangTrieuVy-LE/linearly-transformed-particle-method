@@ -165,7 +165,7 @@ contains
     !-------------------------------------------------------    
     subroutine update_d_diffusion(Xpart, DD, M, t, dt, time_scheme, hx_remap, hy_remap, &
      indice_max_norm_Dm1, Norm_inf_Dm1, Dout, N_part)
-        integer, intent(in)                             :: N_part, time_scheme
+        integer, intent(in)                                       :: N_part, time_scheme
         double precision, dimension (2,N_part), intent(in)        :: Xpart        
         double precision, dimension (4, N_part), intent(in)       :: DD
         double precision, dimension (N_part), intent(in)          :: M
@@ -191,7 +191,7 @@ contains
         nb_proc = OMP_GET_NUM_THREADS()
         chunk = N_part / nb_proc +1
         !$OMP END PARALLEL 
-        print *, 'nb_proc , chunk' , nb_proc , chunk
+!        print *, 'nb_proc , chunk' , nb_proc , chunk
         
         Dout=0.
         Norm_inf_Dm1 = 0.

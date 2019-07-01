@@ -149,6 +149,35 @@ CONTAINS
 	END SUBROUTINE neighbour_blocks
 
 
+	SUBROUTINE neighbour_counter
+		nb_neighbours = 0
+		if (rank_left .ge. 0) then 
+			nb_neighbours = nb_neighbours+ 1
+		end if
+		if (rank_right .ge. 0) then 
+		nb_neighbours =nb_neighbours+ 1
+		end if
+		if (rank_up .ge. 0)then
+			nb_neighbours =nb_neighbours + 1
+		end if
+		if (rank_down .ge. 0)then
+			nb_neighbours = nb_neighbours+ 1
+		end if
+		if (rank_up_left .ge. 0)then
+			nb_neighbours = nb_neighbours+1
+		end if
+		if (rank_up_right .ge. 0)then
+			nb_neighbours =nb_neighbours+ 1
+		end if
+		if (rank_down_left .ge. 0)then 
+			nb_neighbours =nb_neighbours+ 1
+		end if
+		if (rank_down_right  .ge. 0) then 
+			nb_neighbours =nb_neighbours+ 1
+		end if		
+	END SUBROUTINE neighbour_counter
+
+
 
 	SUBROUTINE 	environnement_finalization
 		CALL MPI_FINALIZE(code)

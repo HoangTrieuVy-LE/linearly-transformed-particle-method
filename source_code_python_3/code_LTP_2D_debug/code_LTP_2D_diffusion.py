@@ -165,46 +165,12 @@ if config.D_method == 'implicit' :
 	#tab=tab_cardinal_particles(X,N,hx_remap,hy_remap)
 	tab = calculsfor_var_modf90.tab_cardinal_particles(X,config.hx_remap,config.hy_remap,N)	
 	
-
-
-#=========================================== DATA FORTRAN FOR LTP METHOD=======================================================
-
-D_old = D.copy()
-X_old = X.copy()                
-
-#Nx, Ny, hx, hy, dt, deg_spline, radius_phi, bool_phi_radial 
-sizefile = open("trunk/fortran_srcs/size.data",'w')
-sizefile.write(str(config.Nx)+'\n')
-sizefile.write(str(config.Ny)+'\n')
-sizefile.write(str(config.hx_remap)+'\n')
-sizefile.write(str(config.hy_remap)+'\n')
-sizefile.write(str(config.dt)+'\n')
-sizefile.write(str(config.deg_spline)+'\n')
-sizefile.write(str(config.radius_phi)+'\n')
-sizefile.write(str(config.bool_phi_radial))
-sizefile.close()
-
-
-#NOTEEEE: Lx1 = mesh(1,1), Lx2 = mesh(1,2),  Ly1 = mesh(2,1) , Ly2 = mesh(2,2)
-mesh = numpy.array([config.Ix,config.Iy]) 
-#print('Im here',mesh)
-mesh.T.tofile('trunk/fortran_srcs/mesh.bin')
-# Coordinates, Deformation Matrix D, and matrix M
-X.T.tofile('trunk/fortran_srcs/coords4fortran.bin')
-#print(X)
-D.T.tofile('trunk/fortran_srcs/deformmatrix4fortran.bin')  
-M.T.tofile('trunk/fortran_srcs/matrixM4fortran.bin')  
-#print(numpy.shape(U))                    
-U.T.tofile('trunk/fortran_srcs/velocity4fortran.bin')
-#print(M)
-#=========================================================================================================================================
-
 #======  Boucle en temps ===== 
 #~ print "time taken to complete all initialisations : " , time.time() - start_code_bis
 
 
 print 'Start'
-while (round(t,13) < (round((config.Tmax),13)) ) :    
+while (round(t,13) < (round((config.Tmax),13)) ) : 
 #~ while (abs(t-config.Tmax) < 0.00000001)  :    	
     if (config.method == 'PIC') or (config.method == 'LTPIC'):
         U = calcule_U_PIC(X, M, D, Xgrille, Ygrille)
@@ -290,7 +256,7 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
         if (config.time_scheme == 'middle_point') : 
             raise ValueError("TO DO")
             # HERE
-    '''
+    
     if (config.problem == "diffusion") and (config.method == 'LTP') :
         if (config.time_scheme == 'euler_explicit') : 
             start = time.time()
@@ -327,42 +293,7 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
             
         if (config.time_scheme == 'middle_point') : 
             raise ValueError("TO DO")
-            
-            
-    '''
-    if (config.problem == "diffusion") and (config.method == "LTP"):
-        if (config.time_scheme == 'euler_explicit') : 
-            start = time.time()
-            print "t = " , t   
-                             
-            cmd = 'mpif90 -fopenmp trunk/fortran_srcs/tri_casier_method.f90 -o outfile \
-                    trunk/fortran_srcs/launchfortran.o \
-                    trunk/fortran_srcs/mod_particle_2D.o \
-                    trunk/fortran_srcs/MPI_2D_spatialisation.o \
-                    trunk/fortran_srcs/MPI_2D_structures.o \
-                    trunk/fortran_srcs/calculsfortran_rec.o \
-                    trunk/fortran_srcs/calculs_2D.o \
-                    trunk/fortran_srcs/calculsfortran_ini.o \
-                    trunk/fortran_srcs/pack.o \
-                     trunk/fortran_srcs/jacobi_method.o   '
-            os.system(str(cmd)) 
-#            print ("launch : " , cmd )
-            cmd = 'mpiexec -n 4 ./outfile'
-            os.system(str(cmd))      
-            
-            
-            
-            # Make no sense these 2 following lines       
-            indice_max_norm_Dm1 = 0
-            Norm_inf_Dm1= 0
-            
-            
-            t += config.dt
-            npic += 1
-            Nboucle +=1
-            end = time.time()
-            print "time for one iteration = " , end - start       
-
+    
     if (config.method == 'analytic_debug') :		    
         if (config.time_scheme == 'euler_explicit') :             
             D_old = D.copy()
@@ -644,9 +575,10 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
                 N = len(M)   
             print 'nouveau nombre de particules', N
 
-    # ---- enregistrement des tableaux -----    
-    #~ if ((Nboucle % int(Nboucle_total/4)) ==0) : 
-    if ((Nboucle % config.param) ==0) : 
+#    
+#     ---- enregistrement des tableaux -----    
+#    ~ if ((Nboucle % int(Nboucle_total/4)) ==0) : 
+    if ((Nboucle % config.param) ==0 and (config.method != "LTP")) : 
         if (config.save_data == 'oui') :
             time_tabs=time.time()
             numpy.savetxt(str(path_to_output_file_name)+'_t='+str(t)+'_M.txt', M)
@@ -658,8 +590,86 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
             numpy.savetxt(str(path_to_output_file_name)+'_t='+str(t)+'_D2.txt', D[2,:])
             numpy.savetxt(str(path_to_output_file_name)+'_t='+str(t)+'_D3.txt', D[3,:])
             print "time to save data in txt files : " , time.time()-time_tabs
+    if (config.problem == "diffusion") and (config.method == "LTP_casier"):
+        if (config.time_scheme == 'euler_explicit') : 
+            break
             
 #===== fin de la boucle en temps ======
+#=========================================== DATA FORTRAN FOR LTP METHOD=======================================================
+D_old = D.copy()
+X_old = X.copy()                
+
+#Nx, Ny, hx, hy, dt, deg_spline, radius_phi, bool_phi_radial 
+sizefile = open("trunk/fortran_srcs/size.data",'w')
+sizefile.write(str(config.Nx)+'\n')
+sizefile.write(str(config.Ny)+'\n')
+sizefile.write(str(config.hx_remap)+'\n')
+sizefile.write(str(config.hy_remap)+'\n')
+sizefile.write(str(config.dt)+'\n')
+sizefile.write(str(config.Tini)+'\n')
+sizefile.write(str(config.Tmax)+'\n')
+sizefile.write(str(1)+'\n')  #update_d_scheme = 1
+sizefile.write(str(config.deg_spline)+'\n')
+sizefile.write(str(config.radius_phi)+'\n')
+sizefile.write(str(config.bool_phi_radial))
+sizefile.close()
+
+
+#NOTEEEE: Lx1 = mesh(1,1), Lx2 = mesh(1,2),  Ly1 = mesh(2,1) , Ly2 = mesh(2,2)
+mesh = numpy.array([config.Ix,config.Iy]) 
+#print('Im here',mesh)
+mesh.T.tofile('trunk/fortran_srcs/mesh.bin')
+# Coordinates, Deformation Matrix D, and matrix M
+X.T.tofile('trunk/fortran_srcs/coords4fortran.bin')
+#print(X)
+D.T.tofile('trunk/fortran_srcs/deformmatrix4fortran.bin')  
+M.T.tofile('trunk/fortran_srcs/matrixM4fortran.bin')  
+#print(numpy.shape(U))                    
+U.T.tofile('trunk/fortran_srcs/velocity4fortran.bin')
+#print(M)
+#=========================================================================================================================================
+
+if (config.problem == "diffusion") and (config.method == "LTP_casier"):
+        if (config.time_scheme == 'euler_explicit') : 
+            start = time.time()
+#            print "t = " , t   
+                             
+            cmd = 'mpif90 -fopenmp trunk/fortran_srcs/tri_casier_method.f90 -o outfile \
+                    trunk/fortran_srcs/launchfortran.o \
+                    trunk/fortran_srcs/mod_particle_2D.o \
+                    trunk/fortran_srcs/MPI_2D_spatialisation.o \
+                    trunk/fortran_srcs/MPI_2D_structures.o \
+                    trunk/fortran_srcs/calculsfortran_rec.o \
+                    trunk/fortran_srcs/calculs_2D.o \
+                    trunk/fortran_srcs/calculsfortran_ini.o \
+                    trunk/fortran_srcs/pack.o \
+                     trunk/fortran_srcs/jacobi_method.o   '
+            os.system(str(cmd)) 
+#            print ("launch : " , cmd )c
+            cmd = 'mpiexec -n 4 ./outfile'
+            os.system(str(cmd))
+            
+#        if (Norm_inf_Dm1 >config.radius_remap) and (config.indic_remapping == 'yes'):
+#            print '\nRemapping!\n'
+#            if D_method == 'implicit' :
+#                X, M, D  = remapping_avec_python_test(config.hx_remap, config.hy_remap, X, M, D, t) 
+#                N = len(M)   
+#                tab = calculsfor_var_modf90.tab_cardinal_particles(X,config.hx_remap,config.hx_remap,N)	
+#            if D_method =='explicit' :
+#                X, M, D  = remapping_avec_python_test(config.hx_remap, config.hy_remap, X, M, D, t) # remapping that also returns remapping grid step				
+#                N = len(M)   
+#            print 'nouveau nombre de particules', N
+#            
+#            # Make no sense these 2 following lines       
+#            indice_max_norm_Dm1 = 0
+#            Norm_inf_Dm1= 0
+#            
+#            
+#            t += config.dt
+#            npic += 1
+#            Nboucle +=1
+#            end = time.time()
+#            print "time for one iteration = " , end - start       
 
 
 
@@ -708,7 +718,21 @@ if ((config.method=='LTP') or (config.method == 'analytic_debug')):
     numpy.savetxt(str(path_to_output_file_name)+'_t='+str(t)+'_D1.txt', D[1,:])
     numpy.savetxt(str(path_to_output_file_name)+'_t='+str(t)+'_D2.txt', D[2,:])
     numpy.savetxt(str(path_to_output_file_name)+'_t='+str(t)+'_D3.txt', D[3,:])
-
+    
+if (config.method=='LTP_casier'):
+    R_ltp = reconstruction_densites_2D.rec_densite_grille_unif_LTP(X, M, D, Xgrille, Ygrille)
+    npicf_ltp = 3000 + npic
+    graphes2D.fait_series_dessins(Xgrille, Ygrille, R_ltp, npicf_ltp, t, name,show=False)
+    relative_error=calculs_2D.error(solution , R_ltp)
+    relative_error_L1=calculs_2D.error_Lp(Xgrille, Ygrille, solution , R_ltp, 1)
+    relative_error_L2=calculs_2D.error_Lp(Xgrille, Ygrille, solution , R_ltp, 2)
+#    print(path_to_output_file_name)
+    numpy.savetxt(str(path_to_output_file_name)+'_t='+str(t)+'_R_ltp_mat.txt', R_ltp)        
+    numpy.savetxt(str(path_to_output_file_name)+'_t='+str(t)+'_D0.txt', D[0,:])
+    numpy.savetxt(str(path_to_output_file_name)+'_t='+str(t)+'_D1.txt', D[1,:])
+    numpy.savetxt(str(path_to_output_file_name)+'_t='+str(t)+'_D2.txt', D[2,:])
+    numpy.savetxt(str(path_to_output_file_name)+'_t='+str(t)+'_D3.txt', D[3,:])
+    
     #[Xgrille, Ygrille] = make_grid_unif(Ix, Iy, Nmesh_visu3D)
     #R_ltp = rec_densite_grille_unif_LTP(X, M, D, Xgrille, Ygrille)
     #npicf_ltp = 5000 + npic

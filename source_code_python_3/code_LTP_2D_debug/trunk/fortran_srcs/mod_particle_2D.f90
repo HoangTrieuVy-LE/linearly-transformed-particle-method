@@ -31,9 +31,15 @@ real(kind=8) :: Dp2
 real(kind=8) :: Dp3
 real(kind=8) :: Dp4
 
+!3. Pointu
+real(kind=8),dimension(2) :: pointu1
+real(kind=8),dimension(2) :: pointu2
+real(kind=8),dimension(2) :: pointu3
+real(kind=8),dimension(2) :: pointu4
 
-!4. Rho
-real(kind=8) :: Rhop
+
+!4. Mass
+real(kind=8) :: mass
 
 !5. Particle dentity
 integer :: ID
