@@ -36,8 +36,8 @@ IMPLICIT NONE
  									rank_up_left, rank_up_right, rank_down_left,&
 								 	rank_down_right
 
-	INTEGER                      :: nb_neighbours
-	
+	INTEGER, PARAMETER           :: NB_NEIGHBOURS = 8
+	INTEGER                      :: nb_neighbours_actually
 	
 	!INTEGER(kind=MPI_OFFSET_KIND)                 :: offset
 

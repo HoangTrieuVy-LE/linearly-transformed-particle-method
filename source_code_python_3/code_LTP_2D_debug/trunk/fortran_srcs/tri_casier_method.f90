@@ -21,7 +21,7 @@ USE mpi_2D_spatialisation_modf90
 
 
 IMPLICIT NONE
-	logical :: overlapcheck ! case test
+!	logical :: overlapcheck ! case test
 !	double precision, dimension(1,nb_proc) :: matrix
 ! DECLARATIONS TODO
 	
@@ -34,16 +34,11 @@ IMPLICIT NONE
 	CALL set_Nx_Ny
 	CALL set_length_data_read
 	CALL set_Mesh
-	!WRITE(*,*) 'mesh:',mesh(:,1)	
-	!WRITE(*,*) 'Nx = ', Nx
-	!WRITE(*,*) 'Ny = ', Ny
-	!WRITE(*,*) 'length_read', length_read
 	
 	CALL particle_coordinates_initiation
-	!WRITE(*,*) Xparticle_read(:,2)
+
 	CALL mass_initiation
-	!write(*,*) velocity_read(:,1:10)
-	!WRITE(*,*) mass_read(1:10)
+
 	CALL deformation_matrix_initiation
 	CALL velocity_initiation
 
@@ -52,15 +47,11 @@ IMPLICIT NONE
 	!-------------------------------------------------------------------!
 	!  ALREADY DONE IN PYTHON WITH DATA_CODE_LTP_2D.py line 194
 
-
 	!-------------------------------------------------------------------!
 	!!!                         DOMAIN CREATION                       !!!
 	!-------------------------------------------------------------------!
 	CALL topology_initialisation
-	!write(*,*) 'Lx1: ', mesh(1,1)
-	!write(*,*) 'Lx2: ', mesh(1,2)
-	!write(*,*) 'Ly1: ', mesh(2,1)
-	!write(*,*) 'Ly2: ', mesh(2,2)
+
 	call set_block_grid(mesh(1,1),mesh(1,2),mesh(2,1),mesh(2,2))
 
 	call neighbour_blocks
@@ -78,9 +69,6 @@ IMPLICIT NONE
 !		write(*,*)'rank_down_right',rank_down_right
 !	end if
 
-
-
-
 	!-------------------------------------------------------------------!
 	!!!  PARTICLES ATTRIBUTION  &  OVERLAP PARTICLES LISTS CREATION   !!!
 	!-------------------------------------------------------------------!
@@ -91,10 +79,29 @@ IMPLICIT NONE
 
 ! For each processor, define "table_particle_inside" and "table_particle_overlap"
 	call particle_distribution
+	
 	if (rank==0) then
-		write(*,*)'rank:',rank, 'COUNTER_inside', COUNTER_inside
-		write(*,*)'rank:',rank, 'COUNTER_overlap', COUNTER_overlap
+	DO i=0,nb_proc-1
+		write(*,*)'rank:',i, 'COUNTER_inside', COUNTER_inside
+	END DO
+	write(*,*)'              				   FJ	','	BJ	','   FK	','	BK	','   FJBK	      ','BJFK	  ','BJBK		','FJFK		'
+	DO i = 0,nb_proc-1	
+		write(*,*)'rank:',i, 'COUNTER_overlap', COUNTER_overlap(:,i)
+	END DO
+
+	DO i = 0,nb_proc-1	
+		write(*,*)'rank:',i, 'COUNTER_leave', COUNTER_leave(:,i)
+	END DO
+!	write(*,*) IND_overlap(1:10,3)
 	end if 
+!	
+	call neighbouring
+	call update_overlap_table
+	
+	if(rank==0) then
+		write(*,*) 'rank= ', rank ,'IND_recv',IND_recv(1:10,1)
+	end if
+	
 !	call overlap_criterion(ALL_PARTICLES(1),overlapcheck)
 !	print*,overlapcheck
 	
@@ -104,60 +111,50 @@ IMPLICIT NONE
 	!-------------------------------------------------------------------!
 	!!!LOOP ON PARTICLES INSIDE BLOCK AND THE OTHERS IN OVERLAP TABLES!!!
 	!-------------------------------------------------------------------!
-!	if (rank==4) then
-!	call particle_screening
-!	write(*,*) "COUNTER_overlap_north",COUNTER_overlap_north
-!	write(*,*) "COUNTER_overlap_south",COUNTER_overlap_south
-!	write(*,*) "COUNTER_overlap_east",COUNTER_overlap_east
-!	write(*,*) "COUNTER_overlap_west",COUNTER_overlap_west
-!	write(*,*) "COUNTER_overlap_north_east",COUNTER_overlap_north_east
-!	write(*,*) "COUNTER_overlap_north_west",COUNTER_overlap_north_west
-!	write(*,*) "COUNTER_overlap_south_est",COUNTER_overlap_south_east
-!	write(*,*) "COUNTER_overlap_south_west",COUNTER_overlap_south_west
-!	end if
 
-DO WHILE(Tini<=Tmaximum)
-! TODO
-	!update_overlap_table
-	if(rank==0) then
-	print*, "t= ", Tini
-	end if
+!DO WHILE(Tini<=Tmaximum)
+!! TODO
+!	!update_overlap_table
 !	if(rank==0) then
-!		write(*,*) 'before', Xparticle_read(1,1:5)
+!	print*, "t= ", Tini
 !	end if
-	call block_loop
-	
-	!-------------------------------------------------------------------!
-	!!!                            UPDATE                             !!!
-	!-------------------------------------------------------------------!
-	
-	! Displacement
-	call update_displacement
-!	call update_deformation_matrix
-	call update_table_block
+!!	if(rank==0) then
+!!		write(*,*) 'before', Xparticle_read(1,1:5)
+!!	end if
+!	call block_loop
+!	
+!	!-------------------------------------------------------------------!
+!	!!!                            UPDATE                             !!!
+!	!-------------------------------------------------------------------!
+!	
+!	! Displacement
+!	call update_displacement
+!!	call update_deformation_matrix
+!	call update_table_block
 
-!	if(rank==0) then
-!	write(*,*) 'after', Xparticle_read(1,1:5)
-!	end if
-	if (rank==0) then
-		write(*,*)'rank:',rank, 'COUNTER_inside', COUNTER_inside
-		write(*,*)'rank:',rank, 'COUNTER_overlap', COUNTER_overlap
-	end if 	
+!!	if(rank==0) then
+!!	write(*,*) 'after', Xparticle_read(1,1:5)
+!!	end if
+!	if (rank==0) then
+!		write(*,*)'rank:',rank, 'COUNTER_inside', COUNTER_inside
+!		write(*,*)'rank:',rank, 'COUNTER_overlap', COUNTER_overlap
+!	end if 	
+!	
+!	Tini = Tini + dt
+!!	if(rank==0) then
+!!		print*, ALL_PARTICLES(1:100)%Xp-Xparticle_read(1,1:100)
+!!	end if
+!END DO	
 	
-	Tini = Tini + dt
-END DO	
-
 	!-------------------------------------------------------------------!
 	!!!                        UPDATE FILE IN                         !!!
 	!-------------------------------------------------------------------!
 	! TODO, update mass_initiation, particle_coordinates_initiation, 
 	! deformation_matrix_initiation,
 	
-	
+!	
 !	call update_particle_information
-	
-	
-	
+		
 !	CALL dealloc_XMD
 !	CALL dealloc_all_particle_table
 	CALL environnement_finalization

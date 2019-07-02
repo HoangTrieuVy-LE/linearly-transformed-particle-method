@@ -156,8 +156,8 @@ for i in range(0,nqx) :
 graphes2D.draw_analytical_solution(Xgrille,Ygrille,solution, npic, config.Tini, label=config.name_solution)
 
 
-relative_error=calculs_2D.error(solution , R_ltp)
-print "relative_error = " , relative_error
+#relative_error=calculs_2D.error(solution , R_ltp)
+#print "relative_error = " , relative_error
 
 #~ raise ValueError("STOP")
 
@@ -627,14 +627,16 @@ M.T.tofile('trunk/fortran_srcs/matrixM4fortran.bin')
 #print(numpy.shape(U))                    
 U.T.tofile('trunk/fortran_srcs/velocity4fortran.bin')
 #print(M)
+
+
 #=========================================================================================================================================
 
 if (config.problem == "diffusion") and (config.method == "LTP_casier"):
         if (config.time_scheme == 'euler_explicit') : 
             start = time.time()
-#            print "t = " , t   
+#            print "t = " , t   -g -fcheck=all -Wall
                              
-            cmd = 'mpif90 -fopenmp trunk/fortran_srcs/tri_casier_method.f90 -o outfile \
+            cmd = 'mpif90  -fopenmp trunk/fortran_srcs/tri_casier_method.f90 -o outfile \
                     trunk/fortran_srcs/launchfortran.o \
                     trunk/fortran_srcs/mod_particle_2D.o \
                     trunk/fortran_srcs/MPI_2D_spatialisation.o \
@@ -648,6 +650,11 @@ if (config.problem == "diffusion") and (config.method == "LTP_casier"):
 #            print ("launch : " , cmd )c
             cmd = 'mpiexec -n 4 ./outfile'
             os.system(str(cmd))
+            
+            Xread = numpy.fromfile('trunk/fortran_srcs/coords4fortran.bin')
+            X = Xread.reshape((2500,2)).T
+#            print(X[:,1:10])
+            
             
 #        if (Norm_inf_Dm1 >config.radius_remap) and (config.indic_remapping == 'yes'):
 #            print '\nRemapping!\n'

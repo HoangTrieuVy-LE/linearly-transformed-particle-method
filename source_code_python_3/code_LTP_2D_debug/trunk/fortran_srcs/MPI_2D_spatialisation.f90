@@ -150,30 +150,30 @@ CONTAINS
 
 
 	SUBROUTINE neighbour_counter
-		nb_neighbours = 0
+		nb_neighbours_actually = 0
 		if (rank_left .ge. 0) then 
-			nb_neighbours = nb_neighbours+ 1
+			nb_neighbours_actually = nb_neighbours_actually+ 1
 		end if
 		if (rank_right .ge. 0) then 
-		nb_neighbours =nb_neighbours+ 1
+		nb_neighbours_actually =nb_neighbours_actually+ 1
 		end if
 		if (rank_up .ge. 0)then
-			nb_neighbours =nb_neighbours + 1
+			nb_neighbours_actually =nb_neighbours_actually + 1
 		end if
 		if (rank_down .ge. 0)then
-			nb_neighbours = nb_neighbours+ 1
+			nb_neighbours_actually = nb_neighbours_actually+ 1
 		end if
 		if (rank_up_left .ge. 0)then
-			nb_neighbours = nb_neighbours+1
+			nb_neighbours_actually = nb_neighbours_actually+1
 		end if
 		if (rank_up_right .ge. 0)then
-			nb_neighbours =nb_neighbours+ 1
+			nb_neighbours_actually =nb_neighbours_actually+ 1
 		end if
 		if (rank_down_left .ge. 0)then 
-			nb_neighbours =nb_neighbours+ 1
+			nb_neighbours_actually =nb_neighbours_actually+ 1
 		end if
 		if (rank_down_right  .ge. 0) then 
-			nb_neighbours =nb_neighbours+ 1
+			nb_neighbours_actually =nb_neighbours_actually+ 1
 		end if		
 	END SUBROUTINE neighbour_counter
 
