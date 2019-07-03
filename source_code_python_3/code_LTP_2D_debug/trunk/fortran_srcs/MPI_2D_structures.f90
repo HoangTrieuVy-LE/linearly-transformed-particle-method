@@ -27,8 +27,8 @@ MODULE mpi_2d_structures_modf90
 	! IND_leave indicates the identity(in ALL_PARTICLES) of particles will leave the present block
 	INTEGER, DIMENSION(:,:), ALLOCATABLE                  :: IND_leave
 	
-	! IND_recv indicates the identity of particles receving from neighbours
-	INTEGER, DIMENSION(:,:), ALLOCATABLE                  :: IND_recv
+	! IND_recv_overlap indicates the identity of particles receving from neighbours
+	INTEGER, DIMENSION(:,:), ALLOCATABLE                  :: IND_recv_overlap
 	
 	! IND_inside indicates the identity of particles inside the present block
 	INTEGER, DIMENSION(:), ALLOCATABLE                    :: IND_inside
@@ -37,7 +37,10 @@ MODULE mpi_2d_structures_modf90
 	INTEGER, DIMENSION(:,:), ALLOCATABLE                  :: IND_overlap
 	
 	! COUNTER_inside indicates the number of particles inside the present block
-	INTEGER                                               :: COUNTER_inside  
+	INTEGER                                               :: COUNTER_inside 
+	
+	! COUNTER_recv_overlap
+	INTEGER                                               :: COUNTER_recv_overlap 
 	
 	! COUNTER_leave indicates the number of particles leaving in each direction
 	INTEGER, DIMENSION(:,:), ALLOCATABLE                  :: COUNTER_leave
@@ -72,6 +75,7 @@ MODULE mpi_2d_structures_modf90
 			NEIGHBOUR(BJFK) = rank_down_right
 			NEIGHBOUR(BJBK) = rank_down_left
 			NEIGHBOUR(FJFK) = rank_up_right
+			
 	
 		END SUBROUTINE neighbouring
 		
@@ -80,7 +84,7 @@ MODULE mpi_2d_structures_modf90
 			ALLOCATE(IND_leave(number_of_particles,NB_NEIGHBOURS))
 			ALLOCATE(IND_overlap(number_of_particles,NB_NEIGHBOURS))
 			
-			ALLOCATE(IND_recv(number_of_particles,NB_NEIGHBOURS))
+			ALLOCATE(IND_recv_overlap(number_of_particles,NB_NEIGHBOURS))
 			
 
 			ALLOCATE(COUNTER_overlap(NB_NEIGHBOURS,0:nb_proc-1))
@@ -331,8 +335,7 @@ MODULE mpi_2d_structures_modf90
 				p2 = particle_k%pointu2
 				p3 = particle_k%pointu3
 				p4 = particle_k%pointu4
-
-		
+				
 				
 				if (rank_up /= -1) then
 					if(((p1(2) > start_y+block_step_y .and. p1(2) < end_y+block_step_y) & 
@@ -363,17 +366,21 @@ MODULE mpi_2d_structures_modf90
 						COUNTER_overlap(BJ,rank) = COUNTER_overlap(BJ,rank) + 1
 						IND_overlap(COUNTER_overlap(BJ,rank),BJ) =  particle_k%ID
 					end if
-				
+					
 				end if
-				if (rank_left /= -1) then 
-					if (( (p1(2) > start_y .and. p1(2) < end_y) .and. (p1(1) > start_x-block_step_x .and. p1(1) < end_y-block_step_x) ) .or. &
-					 ( (p2(2) > start_y .and. p2(2) < end_y) .and. (p2(1) > start_x-block_step_x .and. p2(1) < end_y-block_step_x) ) .or. &
-					 ( (p3(2) > start_y .and. p3(2) < end_y) .and. (p3(1) > start_x-block_step_x .and. p3(1) < end_y-block_step_x) ) .or. &
-					 ( (p4(2) > start_y .and. p4(2) < end_y) .and. (p4(1) > start_x-block_step_x .and. p4(1) < end_y-block_step_x) )) &
+				if (rank_left /= -1) then
+					if (( (p1(2) > start_y .and. p1(2) < end_y) .and. (p1(1) > start_x-block_step_x .and. p1(1) < end_x-block_step_x) ) .or. &
+					 ( (p2(2) > start_y .and. p2(2) < end_y) .and. (p2(1) > start_x-block_step_x .and. p2(1) < end_x-block_step_x) ) .or. &
+					 ( (p3(2) > start_y .and. p3(2) < end_y) .and. (p3(1) > start_x-block_step_x .and. p3(1) < end_x-block_step_x) ) .or. &
+					 ( (p4(2) > start_y .and. p4(2) < end_y) .and. (p4(1) > start_x-block_step_x .and. p4(1) < end_x-block_step_x) )) &
 					 
 					then
 						COUNTER_overlap(BK,rank) = COUNTER_overlap(BK,rank) + 1
 						IND_overlap(COUNTER_overlap(BK,rank),BK) =  particle_k%ID
+!						if (rank==2) then 
+!							print*,COUNTER_overlap(BK,rank)
+!						end if
+						
 					end if
 				
 				end if
@@ -407,6 +414,7 @@ MODULE mpi_2d_structures_modf90
 			        	COUNTER_overlap(FJBK,rank) = COUNTER_overlap(FJBK,rank) + 1
 						IND_overlap(COUNTER_overlap(FJBK,rank),FJBK) =  particle_k%ID
 					end if
+					
 				
 				end if
 				if (rank_up_right /= -1) then
@@ -457,9 +465,9 @@ MODULE mpi_2d_structures_modf90
 		END SUBROUTINE
 		
 		
-		SUBROUTINE update_overlap_table
+		SUBROUTINE send_overlap_particle
 		! RECEIVE overlap particles from all possible neighbour blocks
-		! TODO after particle_screening, we will know in every blocks, which overlap particle
+		! After particle_screening, we will know in every blocks, which overlap particle
 		! will overlap which block	
 		
 		! Idea, we concatenate all possible overlap particles from all possible neighbour
@@ -473,132 +481,242 @@ MODULE mpi_2d_structures_modf90
 		integer,dimension(MPI_STATUS_SIZE) :: status
 		integer :: i,neighloop
 		integer, dimension(NB_NEIGHBOURS) :: OPP
-
+		
+		COUNTER_recv_overlap = 0
+		
 		OPP = (/2,1,4,3,6,5,8,7/)		
 
 			DO neighloop = 1,8
+
 				DO i=1,COUNTER_overlap(neighloop,rank)
 					if (NEIGHBOUR(neighloop)<0) then
 						cycle
 					end if
 					call MPI_SEND(IND_overlap(i,neighloop),1,MPI_INTEGER,NEIGHBOUR(neighloop),101,MPI_COMM_WORLD,code)
+					
 				END DO
 			
 				DO i= 1,COUNTER_overlap(OPP(neighloop),NEIGHBOUR(neighloop))
 					if (NEIGHBOUR(neighloop)<0) then
 						cycle
 					end if
-					call MPI_RECV(IND_recv(i,NEIGHBOUR(neighloop)),1,MPI_INTEGER,NEIGHBOUR(neighloop),101,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
+					call MPI_RECV(IND_recv_overlap(i,NEIGHBOUR(neighloop)),1,MPI_INTEGER,NEIGHBOUR(neighloop),101, & 
+					MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
 				END DO
-			END DO
-			
+				if (NEIGHBOUR(neighloop)<0) then
+						cycle
+				else	
+					COUNTER_recv_overlap = COUNTER_recv_overlap + COUNTER_overlap(OPP(neighloop),NEIGHBOUR(neighloop))
+				end if
+				
+			END DO	
   			call MPI_BARRIER(MPI_COMM_WORLD,code)
 			
-		END SUBROUTINE update_overlap_table
+		END SUBROUTINE send_overlap_particle
 		
-		SUBROUTINE update_global_table
 		
-			! If not inside, not overlap, so the particle check is already left the block
-			! This function help us to update all block in this situation
-			! TODO update the "update_block" function in order to continue this work	
+		
+		SUBROUTINE block_loop_on_block_global_table	
+		IMPLICIT NONE
+		integer, dimension(NB_NEIGHBOURS) :: OPP
+		integer :: i,j,neighloop,Ncum1,Ncum2,Ncum3,Ncum4,Ncum5
+		
+		Ncum1 = 0
+		Ncum2 = 0
+		Ncum3 = 0
+		Ncum4 = 0
+		Ncum5 = 0
+		
+		OPP  = (/2,1,4,3,6,5,8,7/)	
+		! UPDATE GLOBAL_TABLE
+		! This part's mission is about to include not only IND_inside and IND_overlap
+		! but also all possible overlap particles from all possible neighbours 
+
+		! We will have "Npart_block" became: COUNTER_inside + inside sum of COUNTER_overlap in 
+		! all direction + COUNTER_recv
+		! Where COUNTER_recv = sum of COUNTER_overlap from neigbour !TODO COMPLICATED
 			
-			! Idea:
-			! Send information of IND_overlap(identity,direction) for all possible neighbour blocks
-			! Receive at the same time all informations from neighbours and assign them into 
-			! IND_rec
+!			print*,'rank',rank,'COUNTER_recv_overlap',COUNTER_recv_overlap
 			
-			! We will have "Npart_block" became: COUNTER_inside + inside sum of COUNTER_overlap in 
-			! all direction + COUNTER_recv
-			! Where COUNTER_recv = sum of COUNTER_overlap from neigbour !TODO COMPLICATED
+			Npart_block = COUNTER_recv_overlap + COUNTER_inside + SUM(COUNTER_overlap(:,rank))
+!			print*,'rank',rank,'Npart_block = ',Npart_block	
+
+		DO i= 1,COUNTER_inside
+			Xpart_block(1,i) = ALL_PARTICLES(IND_inside(i))%Xp
+			Xpart_block(2,i) = ALL_PARTICLES(IND_inside(i))%Yp
+		END DO
+		Ncum1 = Ncum1 + COUNTER_inside
 		
-		END SUBROUTINE update_global_table
+		DO neighloop=1,8
+			if (NEIGHBOUR(neighloop)<0) then
+				cycle
+			end if
+			DO j=1,COUNTER_overlap(neighloop,rank)
+				Xpart_block(1,j+Ncum1) = ALL_PARTICLES(IND_overlap(j,neighloop))%Xp
+				Xpart_block(2,j+Ncum1) = ALL_PARTICLES(IND_overlap(j,neighloop))%Yp
+			END DO
+			Ncum1 = Ncum1 + COUNTER_overlap(neighloop,rank)
+!			if (rank==0) then
+!				print*, Ncum
+!			end if
+			DO j=1,COUNTER_overlap(OPP(neighloop),NEIGHBOUR(neighloop))
+				Xpart_block(1,j+Ncum1) = ALL_PARTICLES(IND_recv_overlap(j,NEIGHBOUR(neighloop)))%Xp
+				Xpart_block(1,j+Ncum1) = ALL_PARTICLES(IND_recv_overlap(j,NEIGHBOUR(neighloop)))%Yp
+			END DO
+			Ncum1 = Ncum1 + COUNTER_overlap(OPP(neighloop),NEIGHBOUR(neighloop))
+			
+!			if (rank==0) then
+!				print*, Ncum
+!			end if
+		END DO
 		
+		DO i= 1,COUNTER_inside
+			Mblock(i) = ALL_PARTICLES(IND_inside(i))%mass
+		END DO
+		Ncum2 = Ncum2 + COUNTER_inside
 		
-!		SUBROUTINE block_loop	
+		DO neighloop=1,8
+			if (NEIGHBOUR(neighloop)<0) then
+				cycle
+			end if
+			DO j=1,COUNTER_overlap(neighloop,rank)
+				Mblock(j+Ncum2) = ALL_PARTICLES(IND_overlap(j,neighloop))%mass
+			END DO
+			Ncum2 = Ncum2 + COUNTER_overlap(neighloop,rank)
+			
+			DO j=1,COUNTER_overlap(OPP(neighloop),NEIGHBOUR(neighloop))
+				Mblock(j+Ncum2) = ALL_PARTICLES(IND_recv_overlap(j,NEIGHBOUR(neighloop)))%mass
+			END DO
+			Ncum2 = Ncum2 + COUNTER_overlap(OPP(neighloop),NEIGHBOUR(neighloop))
+		END DO
+	
 !		
-!		IMPLICIT NONE
-!		! Input: X_block_k (k is rank of processor),M_block_k,D_old_block_k,hx,hy, N_part_block_k	
-!		! Output: U_block_k, Df2py_block_k
-!		Npart_block = TODO
+		DO i= 1,COUNTER_inside
+			Dblock(1,i) = ALL_PARTICLES(IND_inside(i))%Dp1
+			Dblock(2,i) = ALL_PARTICLES(IND_inside(i))%Dp2
+			Dblock(3,i) = ALL_PARTICLES(IND_inside(i))%Dp3
+			Dblock(4,i) = ALL_PARTICLES(IND_inside(i))%Dp4
+		END DO
+		
+		Ncum3 = Ncum3 + COUNTER_inside
+!		
+		DO neighloop=1,8
+			if (NEIGHBOUR(neighloop)<0) then
+				cycle
+			end if
+			DO j=1,COUNTER_overlap(neighloop,rank)
+				Dblock(1,j+Ncum3) = ALL_PARTICLES(IND_overlap(j,neighloop))%Dp1
+				Dblock(2,j+Ncum3) = ALL_PARTICLES(IND_overlap(j,neighloop))%Dp2
+				Dblock(3,j+Ncum3) = ALL_PARTICLES(IND_overlap(j,neighloop))%Dp3
+				Dblock(4,j+Ncum3) = ALL_PARTICLES(IND_overlap(j,neighloop))%Dp4
+			END DO
+			Ncum3 = Ncum3 + COUNTER_overlap(neighloop,rank)
+			
+			DO j=1,COUNTER_overlap(OPP(neighloop),NEIGHBOUR(neighloop))
+				Dblock(1,j+Ncum3) = ALL_PARTICLES(IND_recv_overlap(j,NEIGHBOUR(neighloop)))%Dp1
+				Dblock(2,j+Ncum3) = ALL_PARTICLES(IND_recv_overlap(j,NEIGHBOUR(neighloop)))%Dp2
+				Dblock(3,j+Ncum3) = ALL_PARTICLES(IND_recv_overlap(j,NEIGHBOUR(neighloop)))%Dp3
+				Dblock(4,j+Ncum3) = ALL_PARTICLES(IND_recv_overlap(j,NEIGHBOUR(neighloop)))%Dp4
+			END DO
+			Ncum3 = Ncum3 + COUNTER_overlap(OPP(neighloop),NEIGHBOUR(neighloop))
+		END DO
+		
+!		
+		DO i= 1,COUNTER_inside
+			velocity_field(1,i) = ALL_PARTICLES(IND_inside(i))%Upx
+			velocity_field(2,i) = ALL_PARTICLES(IND_inside(i))%Upy
+		END DO
+		Ncum4 = Ncum4 + COUNTER_inside
+		DO neighloop=1,8
+			if (NEIGHBOUR(neighloop)<0) then
+				cycle
+			end if
+			DO j=1,COUNTER_overlap(neighloop,rank)
+				velocity_field(1,j+Ncum4) = ALL_PARTICLES(IND_overlap(j,neighloop))%Upx
+				velocity_field(2,j+Ncum4) = ALL_PARTICLES(IND_overlap(j,neighloop))%Upy
+			END DO
+			
+			Ncum4 = Ncum4 + COUNTER_overlap(neighloop,rank)
+			
+			DO j=1,COUNTER_overlap(OPP(neighloop),NEIGHBOUR(neighloop))
+				velocity_field(1,j+Ncum4) = ALL_PARTICLES(IND_recv_overlap(j,NEIGHBOUR(neighloop)))%Upx
+				velocity_field(2,j+Ncum4) = ALL_PARTICLES(IND_recv_overlap(j,NEIGHBOUR(neighloop)))%Upy
+			END DO
+			Ncum4 = Ncum4 + COUNTER_overlap(OPP(neighloop),NEIGHBOUR(neighloop))
+		END DO
+!		
+		
+		if(rank==0) then
+!		print*, Dblock(2,1:1500)
+!		print*,'Mblock(Npart_block)',Xpart_block(1,1:Npart_block+1)
+!		print*, 'rank',rank,'velocity',velocity_field(1,1:10)
+!		print*,'Before',velocity_field(:,1:5)
+!		print*,'Before',Xpart_block(:,1:10)
+!		print*, Mblock(1:10)
+!		print*,'hx', hx, 'dt', dt	
+		end if
+	
+		call diffusion_field_ltp(Xpart_block,Mblock,Dblock,hx,hy,velocity_field,Npart_block)
+!		call diffusion_field_ltp(Xparticle_read,mass_read,D_read,hx,hy,velocity_read,number_of_particles)
+		
 
-!		DO i= 1,COUNTER_inside
-!			Xpart_block(1,i) = ALL_PARTICLES(IND_inside(i))%Xp
-!			Xpart_block(2,i) = ALL_PARTICLES(IND_inside(i))%Yp
-!		END DO
-!		DO i=1,COUNTER_overlap
-!			Xpart_block(1,i+COUNTER_inside) = ALL_PARTICLES(IND_overlap(i))%Xp
-!			Xpart_block(2,i+COUNTER_inside) = ALL_PARTICLES(IND_overlap(i))%Yp
-!		END DO
-!		
-!		
-!		
-!		DO i= 1,COUNTER_inside
-!			Mblock(i) = ALL_PARTICLES(IND_inside(i))%mass
-!		END DO
-!		DO i=1,COUNTER_overlap
-!			Mblock(i+COUNTER_inside) = ALL_PARTICLES(IND_overlap(i))%mass
-!		END DO
 
-!		
-!		DO i= 1,COUNTER_inside
-!			Dblock(1,i) = ALL_PARTICLES(IND_inside(i))%Dp1
-!			Dblock(2,i) = ALL_PARTICLES(IND_inside(i))%Dp2
-!			Dblock(3,i) = ALL_PARTICLES(IND_inside(i))%Dp3
-!			Dblock(4,i) = ALL_PARTICLES(IND_inside(i))%Dp4
-!		END DO
-!		DO i=1,COUNTER_overlap
-!			Dblock(1,i+COUNTER_inside) = ALL_PARTICLES(IND_overlap(i))%Dp1
-!			Dblock(2,i+COUNTER_inside) = ALL_PARTICLES(IND_overlap(i))%Dp2
-!			Dblock(3,i+COUNTER_inside) = ALL_PARTICLES(IND_overlap(i))%Dp3
-!			Dblock(4,i+COUNTER_inside) = ALL_PARTICLES(IND_overlap(i))%Dp4
-!		END DO
-!		
-!		
-!		DO i= 1,COUNTER_inside
-!			velocity_field(1,i) = ALL_PARTICLES(IND_inside(i))%Upx
-!			velocity_field(2,i) = ALL_PARTICLES(IND_inside(i))%Upy
-!		END DO
-!		DO i=1,COUNTER_overlap
-!			velocity_field(1,i+COUNTER_inside) = ALL_PARTICLES(IND_overlap(i))%Upx
-!			velocity_field(2,i+COUNTER_inside) = ALL_PARTICLES(IND_overlap(i))%Upy
-!		END DO
-!		
-!!		print*, shape(velocity_field)
-!!		print*,velocity_field(:,1:10)
-!!		print*,Xpart_block(:,1:10)
-!!		print*, Mblock(1:10)
-!!		print*, hx
-!		! Velocity calculation
+		
+!		call update_d_diffusion(Xpart_block, Dblock, Mblock, Tini, dt, time_scheme, hx, hy, &
+!     indice_max_norm_Dm1, Norm_inf_Dm1, Dout, Npart_block)
+!     	call update_d_diffusion(Xparticle_read, D_read, mass_read, Tini, dt, time_scheme, hx, hy, &
+!      indice_max_norm_Dm1, Norm_inf_Dm1, Dout, number_of_particles)
+     
+		DO i=1,Npart_block
+			Xpart_block(1,i) = Xpart_block(1,i) - velocity_field(1,i)*dt
+			Xpart_block(2,i) = Xpart_block(2,i) - velocity_field(2,i)*dt
+		END DO
+!	
+!		if(rank==0) then
+!     	print*,'rank',rank,'After', Dout(1,1:Npart_block)
+		print*,'After',velocity_field(:,1:5)
+!     	end if
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!HUGE PROBLEM
-!!Need to initiate all the value in new library calculsfortran_rec,init,2D
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-!		call diffusion_field_ltp(Xpart_block,Mblock,Dblock,hx,hy,velocity_field,Npart_block)
-!!		call update_d_diffusion(Xpart_block, Dblock, Mblock, Tini, dt, time_scheme, hx, hy, &
-!!     indice_max_norm_Dm1, Norm_inf_Dm1, Dout, Npart_block)
-!     	
-!		END SUBROUTINE block_loop	
-!		
-!		SUBROUTINE update_displacement
-!!			print*, "Before", ALL_PARTICLES(IND_inside(1))%Xp
-!			DO i=1,COUNTER_inside
-!				ALL_PARTICLES(IND_inside(i))%Xp = ALL_PARTICLES(IND_inside(i))%Xp - velocity_field(1,i)*dt
-!				ALL_PARTICLES(IND_inside(i))%Yp = ALL_PARTICLES(IND_inside(i))%Yp - velocity_field(2,i)*dt
-!			END DO
-!			DO i=1,COUNTER_overlap
-!				ALL_PARTICLES(IND_overlap(i))%Xp = ALL_PARTICLES(IND_overlap(i))%Xp - velocity_field(1,i+COUNTER_inside)*dt
-!				ALL_PARTICLES(IND_overlap(i))%Yp = ALL_PARTICLES(IND_overlap(i))%Yp - velocity_field(2,i+COUNTER_inside)*dt
-!			END DO
-!		
-!!			print*, "After", ALL_PARTICLES(IND_inside(1))%Xp
+	
+		END SUBROUTINE block_loop_on_block_global_table	
 
 
-!		END SUBROUTINE update_displacement
+
+
+		
+		SUBROUTINE update_displacement_on_just_IND_inside_and_IND_overlap
+		integer :: neighloop, Ncum1, Ncum2, Ncum3, Ncum4, Ncum5
+		integer :: i,j
+		Ncum1 = 0
+		Ncum2 = 0
+		Ncum3 = 0
+		Ncum4 = 0
+		Ncum5 = 0
+			print*, "Before", ALL_PARTICLES(1:10)%Xp
+			DO i=1,COUNTER_inside
+				ALL_PARTICLES(IND_inside(i))%Xp = Xpart_block(1,i)
+				ALL_PARTICLES(IND_inside(i))%Yp = Xpart_block(2,i)
+			END DO
+			Ncum1 = Ncum1 + COUNTER_inside
+			DO neighloop=1,8
+				if (NEIGHBOUR(neighloop)<0) then
+					cycle
+				end if
+				DO j=1,COUNTER_overlap(neighloop,rank)
+					ALL_PARTICLES(IND_overlap(j,neighloop))%Xp = Xpart_block(1,j+Ncum1)
+					ALL_PARTICLES(IND_overlap(j,neighloop))%Yp = Xpart_block(2,j+Ncum1)
+				END DO
+				Ncum1 = Ncum1 + COUNTER_overlap(neighloop,rank)
+			END DO
+
+		
+			print*, "After", ALL_PARTICLES(1:10)%Xp
+
+
+		END SUBROUTINE update_displacement_on_just_IND_inside_and_IND_overlap
 !		
 !		
-!		SUBROUTINE update_deformation_matrix
+!		SUBROUTINE update_deformation_matrix_on_just_IND_inside_and_IND_overlap
 !			DO i=1,COUNTER_inside
 !				ALL_PARTICLES(IND_inside(i))%Dp1 = Dout(1,i) 
 !				ALL_PARTICLES(IND_inside(i))%Dp2 = Dout(2,i)
@@ -611,7 +729,7 @@ MODULE mpi_2d_structures_modf90
 !				ALL_PARTICLES(IND_overlap(i))%Dp3 = Dout(3,i+COUNTER_inside)
 !				ALL_PARTICLES(IND_overlap(i))%Dp4 = Dout(4,i+COUNTER_inside)
 !			END DO
-!		END SUBROUTINE update_deformation_matrix
+!		END SUBROUTINE update_deformation_matrix_on_just_IND_inside_and_IND_overlap
 !		
 !		SUBROUTINE update_table_block
 !			IMPLICIT NONE
@@ -659,7 +777,7 @@ MODULE mpi_2d_structures_modf90
 !				
 !		END SUBROUTINE update_table_block
 !		
-!		SUBROUTINE update_particle_information
+!		SUBROUTINE update_all_particle_information
 !			DO i=1,COUNTER_inside
 !!				print*, 'Xparticle_read(1,IND_inside(i))',Xparticle_read(1,IND_inside(i))
 !!				print*, 'ALL_PARTICLES(IND_inside(i))%Xp',ALL_PARTICLES(IND_inside(i))%Xp
@@ -695,7 +813,7 @@ MODULE mpi_2d_structures_modf90
 !			close(2)
 !			close(3)
 
-!		END SUBROUTINE update_particle_information
+!		END SUBROUTINE update_all_particle_information
 
 
 		SUBROUTINE dealloc_all_particle_table
@@ -706,7 +824,7 @@ MODULE mpi_2d_structures_modf90
 			
 			DEALLOCATE(COUNTER_leave)
 			DEALLOCATE(COUNTER_overlap)
-			DEALLOCATE(IND_recv)
+			DEALLOCATE(IND_recv_overlap)
 		
 			DEALLOCATE(Dout)
 			DEALLOCATE(Xpart_block)

@@ -13,6 +13,7 @@ implicit none
   
 contains
 
+
 !-------------------------------------------------------
 ! function phi is radial if (phi(x,y) = psi(x) * psi(y)
     subroutine set_phi_radial(bool_radial)
@@ -285,12 +286,9 @@ contains
     !gradient of phi_2d_h with 2D variables (2-size array) 
     subroutine grad_phi_2d_h(grad_h, x, y, hx_remap, hy_remap)
         double precision,  intent(in)                 :: x ,y , hx_remap , hy_remap
-        double precision, dimension (2), intent(out)  :: grad_h   
- 					
+        double precision, dimension (2), intent(out)  :: grad_h    
         if ((phi_radial == 1) .OR. (phi_radial == 2)) then 
-			
             call grad_phi_2d(grad_h, x/hx_remap , y/hy_remap)
-			                    
             grad_h(1) = (1/(hx_remap*hy_remap)) * (1/hx_remap) * grad_h(1)
             grad_h(2) = (1/(hx_remap*hy_remap)) * (1/hy_remap) * grad_h(2)
         else if (phi_radial == 0) then 
@@ -361,11 +359,9 @@ contains
             det_Dkn = Dkn(1,1) * Dkn(2,2) - Dkn(2,1) * Dkn(1,2)
             !vect_var = MATMUL(TRANSPOSE(Dkn),X_coord - Xpart(:,k))
             vect_var = MATMUL(Dkn,X_coord - Xpart(:,k))
-
             call phi_2d_h( phi_hn , vect_var(1) , vect_var(2) , hx_remap, hy_remap)            
             rho_hn = rho_hn + M(k) * det_Dkn * phi_hn
         end do
-!			print*, DD(1,k),DD(4,k)
 !~        !$OMP END PARALLEL DO        
  
     end subroutine
@@ -415,8 +411,7 @@ contains
                 Dkn(2,1) = DD(3,k)
                 Dkn(2,2) = DD(4,k)
                 det_Dkn = Dkn(1,1) * Dkn(2,2) - Dkn(2,1) * Dkn(1,2)                
-                vect_var = MATMUL(Dkn,X_coord - Xpart(:,k))   
-
+                vect_var = MATMUL(Dkn,X_coord - Xpart(:,k))                
                 call grad_phi_2d_h(grad_phi_hn , vect_var(1) , vect_var(2) , hx_remap, hy_remap)
                 grad_rho_hn = grad_rho_hn + det_Dkn * M(k) * MATMUL(TRANSPOSE(Dkn), grad_phi_hn)
             end do
@@ -429,8 +424,7 @@ contains
                 Dkn(2,1) = DD(3,k)
                 Dkn(2,2) = DD(4,k)
                 det_Dkn = Dkn(1,1) * Dkn(2,2) - Dkn(2,1) * Dkn(1,2)                
-                vect_var = MATMUL(Dkn,X_coord - Xpart(:,k))  
-
+                vect_var = MATMUL(Dkn,X_coord - Xpart(:,k))            
                 call grad_phi_2d_h(grad_phi_hn , vect_var(1) , vect_var(2) , hx_remap, hy_remap)
                 grad_rho_hn = grad_rho_hn + det_Dkn * M(k) * MATMUL(TRANSPOSE(Dkn), grad_phi_hn)
 !~                 if ( (abs(X_coord(1) - 0.5625) <=0.000001) .AND. (abs(X_coord(2) - 1.5625)) <=0.000001 ) then
@@ -442,8 +436,7 @@ contains
                 
             end do        
 !~             !$OMP END PARALLEL DO        
-        end if   
-!		print*, grad_phi_hn
+        end if         
         
     end subroutine
     
@@ -959,21 +952,16 @@ contains
         chunk = N_part / nb_proc +1
         !$OMP END PARALLEL 
         
-        ! print *, "nb_proc, chunk = " , nb_proc, chunk
+!        print *, "nb_proc, chunk = " , nb_proc, chunk
         diff_field = 0.
-		
 		!$OMP PARALLEL DO shared(chunk) private(j, rho_hn, grad_rho_hn) schedule(dynamic,chunk)
         do j=1,N_part                             			
             grad_rho_hn = 0.                            
             call rec_ltp_grad_at_coordinate(grad_rho_hn, Xpart, M, DD, hx_remap, hy_remap, Xpart(:,j), N_part)
             call rec_ltp_at_coordinate(rho_hn, Xpart, M, DD, hx_remap, hy_remap, Xpart(:,j), N_part)
-			
-			diff_field(1,j) = grad_rho_hn(1) / rho_hn 
-            diff_field(2,j) = grad_rho_hn(2) / rho_hn
-        end do
-
-
-
+            diff_field(1,j) = grad_rho_hn(1) / rho_hn 
+            diff_field(2,j) = grad_rho_hn(2) / rho_hn 
+        end do                 
 	    !$OMP END PARALLEL DO
     end subroutine
     

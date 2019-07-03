@@ -165,7 +165,7 @@ contains
     !-------------------------------------------------------    
     subroutine update_d_diffusion(Xpart, DD, M, t, dt, time_scheme, hx_remap, hy_remap, &
      indice_max_norm_Dm1, Norm_inf_Dm1, Dout, N_part)
-        integer, intent(in)                                       :: N_part, time_scheme
+        integer, intent(in)                             :: N_part, time_scheme
         double precision, dimension (2,N_part), intent(in)        :: Xpart        
         double precision, dimension (4, N_part), intent(in)       :: DD
         double precision, dimension (N_part), intent(in)          :: M
@@ -173,8 +173,7 @@ contains
         double precision, intent(out)                             :: Norm_inf_Dm1
         integer(8), intent(out)                         :: indice_max_norm_Dm1
         double precision, dimension (4, N_part), intent(out)      :: Dout
-            
-                
+                            
         integer(8)              :: k, invertible        
         double precision                  :: det_Dk, a, b, c, d, norm_inf_Dkm1, det_Jk, det_mat, new_dt
         double precision                  :: rho_hn
@@ -211,7 +210,12 @@ contains
                 invJk = 0.
                 call rec_ltp_hess_at_coordinate(hess_rho_hn, Xpart, M, DD, hx_remap, hy_remap, Xpart(:,k), N_part)
                 call rec_ltp_grad_at_coordinate(grad_rho_hn, Xpart, M, DD, hx_remap, hy_remap, Xpart(:,k), N_part)
-                call rec_ltp_at_coordinate(rho_hn, Xpart, M, DD, hx_remap, hy_remap, Xpart(:,k), N_part)
+                call rec_ltp_at_coordinate(rho_hn, Xpart, M, DD, hx_remap, hy_remap, Xpart(:,k), N_part)			
+!				print*, rho_hn
+!				print*,hess_rho_hn
+!				print*,grad_rho_hn
+				 
+				
                 mat_grad_rho(1,1) = grad_rho_hn(1) * grad_rho_hn(1) 
                 mat_grad_rho(1,2) = grad_rho_hn(1) * grad_rho_hn(2)
                 mat_grad_rho(2,1) = grad_rho_hn(2) * grad_rho_hn(1)

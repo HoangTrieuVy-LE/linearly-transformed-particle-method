@@ -266,7 +266,7 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
             
             
             tmp = time.time()            
-            U = - calculsfor_rec_modf90.diffusion_field_ltp(X, M , D_old, config.hx_remap, config.hy_remap, N)                
+            U = - calculsfor_rec_modf90.diffusion_field_ltp(X, M , D_old, config.hx_remap, config.hy_remap, N) 
             print "time for U = " , time.time() - tmp
             X[0,:] += config.dt * U[0,:]
             X[1,:] += config.dt * U[1,:]
@@ -274,7 +274,7 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
             # update deformations of particles 
             tmp = time.time()
             update_d_scheme = 1
-            indice_max_norm_Dm1, Norm_inf_Dm1, Df2py  = calculsfor_var_modf90.update_d_diffusion(X_old, D_old, M, t, config.dt, update_d_scheme, config.hy_remap, config.hy_remap, N)            
+            indice_max_norm_Dm1, Norm_inf_Dm1, Df2py  = calculsfor_var_modf90.update_d_diffusion(X_old, D_old, M, t, config.dt, update_d_scheme, config.hx_remap, config.hy_remap, N)            
             print "time for D = " , time.time() - tmp
             D = Df2py.copy()
             indice_max_norm_Dm1 = int(indice_max_norm_Dm1 - 1) #so this array makes sense in pythonic world (not sure if useful)                                    
@@ -624,7 +624,8 @@ X.T.tofile('trunk/fortran_srcs/coords4fortran.bin')
 #print(X)
 D.T.tofile('trunk/fortran_srcs/deformmatrix4fortran.bin')  
 M.T.tofile('trunk/fortran_srcs/matrixM4fortran.bin')  
-#print(numpy.shape(U))                    
+#print(numpy.shape(U))   
+#print(U[:,1:10])                 
 U.T.tofile('trunk/fortran_srcs/velocity4fortran.bin')
 #print(M)
 
@@ -652,7 +653,7 @@ if (config.problem == "diffusion") and (config.method == "LTP_casier"):
             os.system(str(cmd))
             
             Xread = numpy.fromfile('trunk/fortran_srcs/coords4fortran.bin')
-            X = Xread.reshape((2500,2)).T
+            X = Xread.reshape((config.Nini,2)).T
 #            print(X[:,1:10])
             
             

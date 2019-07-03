@@ -57,7 +57,7 @@ IMPLICIT NONE
 	call neighbour_blocks
 !	call neighbour_counter
 !	print*,'rank:',rank,'nb_neighbours',nb_neighbours	
-!	if (rank==3) then 	
+!	if (rank==1) then 	
 !		call neighbour_blocks
 !		write(*,*)'rank_left',rank_left
 !		write(*,*)'rank_right',rank_right 
@@ -74,12 +74,9 @@ IMPLICIT NONE
 	!-------------------------------------------------------------------!
 	call initiation_table
 	call parttype_convert
-	! write(*,*) , 'mass : ', ALL_PARTICLES(1)%Mass
-	!print*, 'rank:',rank,'star_x', start_x, 'end_x', end_x, 'start_y', start_y,'end_y',end_y
-
-! For each processor, define "table_particle_inside" and "table_particle_overlap"
-	call particle_distribution
 	
+	call particle_distribution
+!	
 	if (rank==0) then
 	DO i=0,nb_proc-1
 		write(*,*)'rank:',i, 'COUNTER_inside', COUNTER_inside
@@ -92,18 +89,16 @@ IMPLICIT NONE
 	DO i = 0,nb_proc-1	
 		write(*,*)'rank:',i, 'COUNTER_leave', COUNTER_leave(:,i)
 	END DO
-!	write(*,*) IND_overlap(1:10,3)
+
 	end if 
 !	
 	call neighbouring
-	call update_overlap_table
+	call send_overlap_particle
+
+	call block_loop_on_block_global_table
+	call update_displacement_on_just_IND_inside_and_IND_overlap
 	
-	if(rank==0) then
-		write(*,*) 'rank= ', rank ,'IND_recv',IND_recv(1:10,1)
-	end if
-	
-!	call overlap_criterion(ALL_PARTICLES(1),overlapcheck)
-!	print*,overlapcheck
+
 	
 	!-------------------------------------------------------------------!
 	!!!          FOR EVERY SUB-DOMAIN - INSIDE A PROCESS              !!!
