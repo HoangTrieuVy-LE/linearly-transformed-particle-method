@@ -149,7 +149,7 @@ MODULE mpi_2d_structures_modf90
 			DOUBLE PRECISION, dimension(n), intent(out)             :: pointu1, pointu2,pointu3,pointu4
 			DOUBLE PRECISION, dimension(n)                          :: pointu5,pointu6,pointu7,pointu8
 
-			DOUBLE PRECISION		   :: D11,D12,D21,D22
+			DOUBLE PRECISION		   :: D11,D12,D21,D22, d1,d2,d3,d4
 			
 			LOGICAL :: pointu1inside,pointu2inside,pointu3inside,pointu4inside, &
 			 		  pointu5inside,pointu6inside,pointu7inside,pointu8inside
@@ -265,6 +265,16 @@ MODULE mpi_2d_structures_modf90
 			end if
 			
 			if(pure_inside_check) then
+				d1 = particle_k%Xp - start_x
+				d2 = -particle_k%Xp + end_x
+				d3 = particle_k%Yp - start_y
+				d4 = -particle_k%Yp + end_y
+				 
+				if (d1<2 .or. d2<2 .or. d3<2 .or. d4 <2) then
+					overlap_check = .true.
+				else
+					overlap_check = .false.
+				end if
 				
 			end if 
 
@@ -335,6 +345,12 @@ MODULE mpi_2d_structures_modf90
 			! a neighbour block is JUST ONE of 4 pointu locate inside of the neigbour.
 			type(PARTTYPE), INTENT(in)     :: particle_k
 			double precision, dimension(2) :: p1,p2,p3,p4
+			double precision               :: d1,d2,d3,d4
+			
+				d1 = particle_k%Xp - start_x
+				d2 = -particle_k%Xp + end_x
+				d3 = particle_k%Yp - start_y
+				d4 = -particle_k%Yp + end_y
 		
 				p1 = particle_k%pointu1
 				p2 = particle_k%pointu2
@@ -356,6 +372,13 @@ MODULE mpi_2d_structures_modf90
 						IND_overlap(COUNTER_overlap(FJ,rank),FJ) =  particle_k%ID
 						
 					end if
+					
+					if (d4<2) then
+						COUNTER_overlap(FJ,rank) = COUNTER_overlap(FJ,rank) + 1
+						IND_overlap(COUNTER_overlap(FJ,rank),FJ) =  particle_k%ID
+					end if
+					
+					
 				end if
 			
 				if (rank_down /= -1) then
@@ -372,6 +395,11 @@ MODULE mpi_2d_structures_modf90
 						IND_overlap(COUNTER_overlap(BJ,rank),BJ) =  particle_k%ID
 					end if
 					
+					if (d3<2) then
+						COUNTER_overlap(BJ,rank) = COUNTER_overlap(BJ,rank) + 1
+						IND_overlap(COUNTER_overlap(BJ,rank),BJ) =  particle_k%ID
+					end if
+					
 				end if
 				if (rank_left /= -1) then
 					if (( (p1(2) > start_y .and. p1(2) < end_y) .and. (p1(1) > start_x-block_step_x .and. p1(1) < end_x-block_step_x) ) .or. &
@@ -382,10 +410,11 @@ MODULE mpi_2d_structures_modf90
 					then
 						COUNTER_overlap(BK,rank) = COUNTER_overlap(BK,rank) + 1
 						IND_overlap(COUNTER_overlap(BK,rank),BK) =  particle_k%ID
-!						if (rank==2) then 
-!							print*,COUNTER_overlap(BK,rank)
-!						end if
-						
+					end if
+					
+					if(d1<2) then
+						COUNTER_overlap(BK,rank) = COUNTER_overlap(BK,rank) + 1
+						IND_overlap(COUNTER_overlap(BK,rank),BK) =  particle_k%ID
 					end if
 				
 				end if
@@ -401,6 +430,11 @@ MODULE mpi_2d_structures_modf90
 					
 					 then
 					 	COUNTER_overlap(FK,rank) = COUNTER_overlap(FK,rank) + 1
+						IND_overlap(COUNTER_overlap(FK,rank),FK) =  particle_k%ID
+					end if
+					
+					if(d2<2) then
+						COUNTER_overlap(FK,rank) = COUNTER_overlap(FK,rank) + 1
 						IND_overlap(COUNTER_overlap(FK,rank),FK) =  particle_k%ID
 					end if
 			
@@ -420,6 +454,11 @@ MODULE mpi_2d_structures_modf90
 						IND_overlap(COUNTER_overlap(FJBK,rank),FJBK) =  particle_k%ID
 					end if
 					
+					if(d4<2 .and.d1<2) then
+						COUNTER_overlap(FJBK,rank) = COUNTER_overlap(FJBK,rank) + 1
+						IND_overlap(COUNTER_overlap(FJBK,rank),FJBK) =  particle_k%ID
+					end if
+					
 				
 				end if
 				if (rank_up_right /= -1) then
@@ -432,6 +471,11 @@ MODULE mpi_2d_structures_modf90
 			       ( (p4(2) > start_y+block_step_y .and. p4(2) < end_y+block_step_y) &
 			       .and. (p4(1) > start_x+block_step_x .and. p4(1) < end_x+block_step_x) ))&
 			        then
+			        	COUNTER_overlap(FJFK,rank) = COUNTER_overlap(FJFK,rank) + 1
+						IND_overlap(COUNTER_overlap(FJFK,rank),FJFK) =  particle_k%ID
+			        end if
+			        
+			        if (d4<2 .and. d2<2) then
 			        	COUNTER_overlap(FJFK,rank) = COUNTER_overlap(FJFK,rank) + 1
 						IND_overlap(COUNTER_overlap(FJFK,rank),FJFK) =  particle_k%ID
 			        end if
@@ -450,6 +494,12 @@ MODULE mpi_2d_structures_modf90
 						COUNTER_overlap(BJBK,rank) = COUNTER_overlap(BJBK,rank) + 1
 						IND_overlap(COUNTER_overlap(BJBK,rank),BJBK) =  particle_k%ID
 					end if
+					
+					if (d3<2 .and. d1<2) then
+						COUNTER_overlap(BJBK,rank) = COUNTER_overlap(BJBK,rank) + 1
+						IND_overlap(COUNTER_overlap(BJBK,rank),BJBK) =  particle_k%ID
+					end if
+					
 				end if
 				if (rank_down_right /= -1) then
 					if ( ((p1(2) > start_y-block_step_y .and. p1(2) < end_y-block_step_y) &
@@ -465,6 +515,12 @@ MODULE mpi_2d_structures_modf90
 						COUNTER_overlap(BJFK,rank) = COUNTER_overlap(BJFK,rank) + 1
 						IND_overlap(COUNTER_overlap(BJFK,rank),BJFK) =  particle_k%ID
 					end if
+					
+					if (d3<2 .and. d2<2) then
+						COUNTER_overlap(BJFK,rank) = COUNTER_overlap(BJFK,rank) + 1
+						IND_overlap(COUNTER_overlap(BJFK,rank),BJFK) =  particle_k%ID
+					end if
+					
 				end if
 			
 		END SUBROUTINE
@@ -669,7 +725,7 @@ MODULE mpi_2d_structures_modf90
 
 		
 		if(rank==0) then
-!		print*, Dblock(2,1:1500)
+		print*,'rank',rank,Dblock(:,1)
 !		print*,'Mblock(Npart_block)',Xpart_block(1,1:Npart_block+1)
 !		print*, 'rank',rank,'velocity',velocity_field(1,1:10)
 !		print*,'Before',velocity_field(1,:)
@@ -684,8 +740,8 @@ MODULE mpi_2d_structures_modf90
 
 
 		
-!		call update_d_diffusion(Xpart_block, Dblock, Mblock, Tini, dt, time_scheme, hx, hy, &
-!     indice_max_norm_Dm1, Norm_inf_Dm1, Dout, Npart_block)
+		call update_d_diffusion(Xpart_block, Dblock, Mblock, Tini, dt, time_scheme, hx, hy, &
+     indice_max_norm_Dm1, Norm_inf_Dm1, Dout, Npart_block)
 !     	call update_d_diffusion(Xparticle_read, D_read, mass_read, Tini, dt, time_scheme, hx, hy, &
 !      indice_max_norm_Dm1, Norm_inf_Dm1, Dout, number_of_particles)
      
@@ -696,7 +752,7 @@ MODULE mpi_2d_structures_modf90
 		
 		if(rank==0) then
 !		print*, 'After', Xpart_block(1,1)
-!     	print*,'rank',rank,'After', Dout(1,1:Npart_block)
+     	print*,'rank',rank,'After', Dout(:,1)
 !		print*,'After',velocity_field(1,1:682)
      	end if
 
