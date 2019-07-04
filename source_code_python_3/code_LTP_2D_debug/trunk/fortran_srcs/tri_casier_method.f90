@@ -103,13 +103,13 @@ IMPLICIT NONE
 	!!!LOOP ON PARTICLES INSIDE BLOCK AND THE OTHERS IN OVERLAP TABLES!!!
 	!-------------------------------------------------------------------!
 	if (rank==0) then
-		print*,'BEFORE', ALL_PARTICLES(289:293)%Xp
+		print*,'BEFORE', ALL_PARTICLES(1813)%Xp
 	end if 
 	call block_loop_on_block_global_table
 	call update_displacement_on_just_IND_inside_and_IND_overlap
 	
 	if (rank==0) then
-		print*,'AFTER', ALL_PARTICLES(289:293)%Xp
+		print*,'AFTER', ALL_PARTICLES(1813)%Xp
 	end if 
 
 !DO WHILE(Tini<=Tmaximum)
