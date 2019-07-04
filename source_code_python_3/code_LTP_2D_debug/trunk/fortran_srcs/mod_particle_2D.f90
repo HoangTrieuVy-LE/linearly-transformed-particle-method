@@ -43,16 +43,16 @@ real(kind=8) :: mass
 
 !5. Particle dentity
 integer :: ID
-integer :: PROC_ID
+!integer :: PROC_ID
 
 END TYPE PARTTYPE
 
 
 !integer :: NINTEGER = 2
-integer :: NINTEGER = 0
+integer :: NINTEGER = 1
 
 ! NDOUBLE 
-integer :: NDOUBLE = 28 + 2500*11
+integer :: NDOUBLE = 9 + 2*4
 
 !! MPI TYPE FOR PARTICLE EXCHANGE
 integer :: MPI_PARTICLETYPE
@@ -84,7 +84,7 @@ CONTAINS
 
 !  Now define structured type and commit it  
     CALL MPI_TYPE_STRUCT(2, blockcounts, offsets, oldtypes, MPI_PARTICLETYPE, code) 
-    CALL MPI_TYPE_COMMIT(MPI_PARTICLETYPE, code) 
+    CALL MPI_TYPE_COMMIT(MPI_PARTICLETYPE, code)
 
 	END SUBROUTINE MPI_PART_TYPE
 

@@ -39,7 +39,8 @@ MODULE mpi_2d_structures_modf90
 	! COUNTER_inside indicates the number of particles inside the present block
 	INTEGER                                               :: COUNTER_inside 
 	
-	! COUNTER_recv_overlap
+	! COUNTER_recv_overlap indicates the number of overlap particles receiving in each direction 
+
 	INTEGER                                               :: COUNTER_recv_overlap 
 	
 	! COUNTER_leave indicates the number of particles leaving in each direction
@@ -564,10 +565,7 @@ MODULE mpi_2d_structures_modf90
 				Xpart_block(1,j+Ncum1) = ALL_PARTICLES(IND_recv_overlap(j,NEIGHBOUR(neighloop)))%Yp
 			END DO
 			Ncum1 = Ncum1 + COUNTER_overlap(OPP(neighloop),NEIGHBOUR(neighloop))
-			
-!			if (rank==0) then
-!				print*, Ncum
-!			end if
+		
 		END DO
 		
 		DO i= 1,COUNTER_inside
@@ -671,33 +669,56 @@ MODULE mpi_2d_structures_modf90
 			Xpart_block(1,i) = Xpart_block(1,i) - velocity_field(1,i)*dt
 			Xpart_block(2,i) = Xpart_block(2,i) - velocity_field(2,i)*dt
 		END DO
-!	
-!		if(rank==0) then
+		
+		if(rank==0) then
+!		print*, 'After', Xpart_block(1,100:110)
 !     	print*,'rank',rank,'After', Dout(1,1:Npart_block)
-		print*,'After',velocity_field(:,1:5)
-!     	end if
+!		print*,'After',velocity_field(:,1:5)
+     	end if
 
 	
 		END SUBROUTINE block_loop_on_block_global_table	
-
-
-
-
-		
+	
+	
+	
+	
 		SUBROUTINE update_displacement_on_just_IND_inside_and_IND_overlap
 		integer :: neighloop, Ncum1, Ncum2, Ncum3, Ncum4, Ncum5
-		integer :: i,j
+		integer :: i,j,ID
+		integer,dimension(MPI_STATUS_SIZE) :: status_msg
+		integer,dimension(1:nb_proc-1)   ::address
+		address(:) = 0
 		Ncum1 = 0
 		Ncum2 = 0
 		Ncum3 = 0
 		Ncum4 = 0
 		Ncum5 = 0
-			print*, "Before", ALL_PARTICLES(1:10)%Xp
+
+		call MPI_PART_TYPE
+		
+!		if (rank==0) then
+
+!		print*,rank,'Before', IND_inside(1:COUNTER_inside)
+!		print*, 'Before',ALL_PARTICLES(IND_overlap(1:COUNTER_overlap(1,rank),1))%Xp
 			DO i=1,COUNTER_inside
 				ALL_PARTICLES(IND_inside(i))%Xp = Xpart_block(1,i)
 				ALL_PARTICLES(IND_inside(i))%Yp = Xpart_block(2,i)
+				if (rank /=0) then
+				address(rank) = IND_inside(i)
+				call MPI_SEND(address(rank),1,MPI_INTEGER,0,10,MPI_COMM_WORLD,code)
+				call MPI_SEND(ALL_PARTICLES(address(rank)),1,MPI_PARTICLETYPE,0,9,MPI_COMM_WORLD,code)
+				else
+					DO ID =1,nb_proc-1
+					call MPI_RECV(address(ID),1,MPI_INTEGER,ID,10,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
+					call MPI_RECV(ALL_PARTICLES(address(ID)),1,MPI_PARTICLETYPE,ID,9,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
+					END DO
+				end if
 			END DO
+
 			Ncum1 = Ncum1 + COUNTER_inside
+			
+			address(:) = 0
+			
 			DO neighloop=1,8
 				if (NEIGHBOUR(neighloop)<0) then
 					cycle
@@ -705,17 +726,24 @@ MODULE mpi_2d_structures_modf90
 				DO j=1,COUNTER_overlap(neighloop,rank)
 					ALL_PARTICLES(IND_overlap(j,neighloop))%Xp = Xpart_block(1,j+Ncum1)
 					ALL_PARTICLES(IND_overlap(j,neighloop))%Yp = Xpart_block(2,j+Ncum1)
+							
+				if (rank /=0) then
+				address(rank) = IND_overlap(j,neighloop)
+				call MPI_SEND(address(rank),1,MPI_INTEGER,0,110,MPI_COMM_WORLD,code)
+				call MPI_SEND(ALL_PARTICLES(address(rank)),1,MPI_PARTICLETYPE,0,99,MPI_COMM_WORLD,code)
+				else
+					DO ID =1,nb_proc-1
+					call MPI_RECV(address(ID),1,MPI_INTEGER,ID,110,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
+					call MPI_RECV(ALL_PARTICLES(address(ID)),1,MPI_PARTICLETYPE,ID,99,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
+					END DO
+				end if
 				END DO
 				Ncum1 = Ncum1 + COUNTER_overlap(neighloop,rank)
 			END DO
-
 		
-			print*, "After", ALL_PARTICLES(1:10)%Xp
-
-
+			
 		END SUBROUTINE update_displacement_on_just_IND_inside_and_IND_overlap
-!		
-!		
+		
 !		SUBROUTINE update_deformation_matrix_on_just_IND_inside_and_IND_overlap
 !			DO i=1,COUNTER_inside
 !				ALL_PARTICLES(IND_inside(i))%Dp1 = Dout(1,i) 
