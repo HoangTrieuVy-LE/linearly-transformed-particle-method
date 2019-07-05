@@ -76,7 +76,7 @@ IMPLICIT NONE
 	call parttype_convert
 	
 	call particle_distribution
-!	
+	
 	if (rank==0) then
 	DO i=0,nb_proc-1
 		write(*,*)'rank:',i, 'COUNTER_inside', COUNTER_inside
@@ -85,15 +85,17 @@ IMPLICIT NONE
 	DO i = 0,nb_proc-1	
 		write(*,*)'rank:',i, 'COUNTER_overlap', COUNTER_overlap(:,i)
 	END DO
-
+	DO i = 0,nb_proc-1	
+		write(*,*)'rank:',i, 'COUNTER_danger', COUNTER_danger(:,i)
+	END DO
 	DO i = 0,nb_proc-1	
 		write(*,*)'rank:',i, 'COUNTER_leave', COUNTER_leave(:,i)
 	END DO
 
 	end if 
-!	
+	
 	call neighbouring
-	call send_overlap_particle
+	call send_overlap_and_danger_particle
 
 	
 	!-------------------------------------------------------------------!
@@ -102,15 +104,18 @@ IMPLICIT NONE
 	!-------------------------------------------------------------------!
 	!!!LOOP ON PARTICLES INSIDE BLOCK AND THE OTHERS IN OVERLAP TABLES!!!
 	!-------------------------------------------------------------------!
-	if (rank==0) then
-		print*,'BEFORE', ALL_PARTICLES(1)%Xp
-	end if 
+!	if (rank==0) then
+!		print*,'BEFORE', ALL_PARTICLES(1)%Xp
+!	end if 
+
 	call block_loop_on_block_global_table
 	call update_displacement_on_just_IND_inside_and_IND_overlap
-	
+
 	if (rank==0) then
 		print*,'AFTER', ALL_PARTICLES(1)%Xp
 	end if 
+	
+	 
 
 !DO WHILE(Tini<=Tmaximum)
 !! TODO
@@ -153,7 +158,7 @@ IMPLICIT NONE
 	! deformation_matrix_initiation,
 	
 !	
-!	call update_particle_information
+	call update_all_particle_information
 		
 !	CALL dealloc_XMD
 !	CALL dealloc_all_particle_table

@@ -37,6 +37,8 @@ real(kind=8),dimension(2) :: pointu2
 real(kind=8),dimension(2) :: pointu3
 real(kind=8),dimension(2) :: pointu4
 
+!6. Maximum of
+real(kind=8) :: axe
 
 !4. Mass
 real(kind=8) :: mass
@@ -52,7 +54,7 @@ END TYPE PARTTYPE
 integer :: NINTEGER = 1
 
 ! NDOUBLE 
-integer :: NDOUBLE = 9 + 2*4
+integer :: NDOUBLE = 10s + 2*4
 
 !! MPI TYPE FOR PARTICLE EXCHANGE
 integer :: MPI_PARTICLETYPE

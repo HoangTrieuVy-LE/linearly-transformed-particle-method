@@ -270,7 +270,7 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
             print "time for U = " , time.time() - tmp
             X[0,:] += config.dt * U[0,:]
             X[1,:] += config.dt * U[1,:]
-                                    
+            print(U[0,1:20])
             # update deformations of particles 
             tmp = time.time()
             update_d_scheme = 1
@@ -621,7 +621,6 @@ mesh = numpy.array([config.Ix,config.Iy])
 mesh.T.tofile('trunk/fortran_srcs/mesh.bin')
 # Coordinates, Deformation Matrix D, and matrix M
 X.T.tofile('trunk/fortran_srcs/coords4fortran.bin')
-#print(X)
 D.T.tofile('trunk/fortran_srcs/deformmatrix4fortran.bin')  
 M.T.tofile('trunk/fortran_srcs/matrixM4fortran.bin')  
 #print(numpy.shape(U))   
@@ -649,14 +648,14 @@ if (config.problem == "diffusion") and (config.method == "LTP_casier"):
                      trunk/fortran_srcs/jacobi_method.o   '
             os.system(str(cmd)) 
 #            print ("launch : " , cmd )c
-            cmd = 'mpiexec -n 9 ./outfile'
+            cmd = 'mpiexec -n 4 ./outfile'
             os.system(str(cmd))
             
             Xread = numpy.fromfile('trunk/fortran_srcs/coords4fortran.bin')
-            X = Xread.reshape((config.Nini,2)).T
-#            print(X[:,1:10])
-            
-            
+            Dread = numpy.fromfile('trunk/fortran_srcs/deformmatrix4fortran.bin')
+#            print(Dread[0:12])
+            X = Xread.reshape((2,config.Nini))      
+            D = Dread.reshape((config.Nini,4)).T
 #        if (Norm_inf_Dm1 >config.radius_remap) and (config.indic_remapping == 'yes'):
 #            print '\nRemapping!\n'
 #            if D_method == 'implicit' :
