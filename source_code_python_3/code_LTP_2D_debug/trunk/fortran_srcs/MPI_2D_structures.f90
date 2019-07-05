@@ -496,45 +496,55 @@ MODULE mpi_2d_structures_modf90
 				d3 = particle_k%Yp - start_y
 				d4 = -particle_k%Yp + end_y
 				axe_k = particle_k%axe
-				
+				if (rank_up /= -1) then
 				if (d4<2*axe_k .and. (.not. d1<2*axe_k) .and. (.not.d2<2*axe_k)) then
 						COUNTER_danger(FJ,rank) = COUNTER_danger(FJ,rank) + 1
 						IND_danger(COUNTER_danger(FJ,rank),FJ) =  particle_k%ID
 					end if
+				end if
+				if (rank_down /= -1) then
 				if (d3<2*axe_k.and. (.not. d1<2*axe_k) .and. (.not.d2<2*axe_k)) then
 						COUNTER_danger(BJ,rank) = COUNTER_danger(BJ,rank) + 1
 						IND_danger(COUNTER_danger(BJ,rank),BJ) =  particle_k%ID
 					end if
-					
+				end if
+				if (rank_left /= -1) then
 					if(d1<2*axe_k.and. (.not. d3<2*axe_k) .and. (.not.d4<2*axe_k)) then
 						COUNTER_danger(BK,rank) = COUNTER_danger(BK,rank) + 1
 						IND_danger(COUNTER_danger(BK,rank),BK) =  particle_k%ID
 					end if
-					
+				end if
+				if (rank_right /= -1) then	
 					if(d2<2*axe_k.and. (.not. d3<2*axe_k) .and. (.not.d4<2*axe_k)) then
 						COUNTER_danger(FK,rank) = COUNTER_danger(FK,rank) + 1
 						IND_danger(COUNTER_danger(FK,rank),FK) =  particle_k%ID
 					end if
-						
+				end if
+				if (rank_up_left /= -1) then		
 					if(d4<2*axe_k .and.d1<2*axe_k) then
 						COUNTER_danger(FJBK,rank) = COUNTER_danger(FJBK,rank) + 1
 						IND_danger(COUNTER_danger(FJBK,rank),FJBK) =  particle_k%ID
 					end if
-					    
+				end if
+				if (rank_up_right /= -1) then	    
 			        if (d4<2*axe_k .and. d2<2*axe_k) then
 			        	COUNTER_danger(FJFK,rank) = COUNTER_danger(FJFK,rank) + 1
 						IND_danger(COUNTER_danger(FJFK,rank),FJFK) =  particle_k%ID
 			        end if
-					
+			    end if
+				if (rank_down_left /= -1) then	
 					if (d3<2*axe_k .and. d1<2*axe_k) then
 						COUNTER_danger(BJBK,rank) = COUNTER_danger(BJBK,rank) + 1
 						IND_danger(COUNTER_danger(BJBK,rank),BJBK) =  particle_k%ID
 					end if
+				end if
+					
+				if (rank_down_right /= -1) then
 					if (d3<2*axe_k .and. d2<2*axe_k) then
 						COUNTER_danger(BJFK,rank) = COUNTER_danger(BJFK,rank) + 1
 						IND_danger(COUNTER_danger(BJFK,rank),BJFK) =  particle_k%ID
 					end if
-				
+				end if
 				end if
 				
 				
