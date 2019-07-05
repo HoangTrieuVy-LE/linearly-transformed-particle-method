@@ -131,7 +131,7 @@ MODULE mpi_2d_structures_modf90
 		! OVERLAP CRITERION FOR JUST ONE PARTICLE!
 		!----------------------------------------!
 			
-		SUBROUTINE overlap_criterion(particle_k,overlap_check,pure_inside_check,danger_check, & 
+		SUBROUTINE overlap_criterion(particle_k,overlap_check,totally_inside_check,danger_check, & 
 		pointu1,pointu2,pointu3,pointu4,axe)
 		! Check a particle if it satifies overlap_criterion
 		! Retrieve the eigenvalues and eigenvectors to determine the direction movement of particles, 	then decide its status
@@ -143,7 +143,7 @@ MODULE mpi_2d_structures_modf90
 			IMPLICIT NONE
 			TYPE(PARTTYPE), INTENT(in)                              :: particle_k
 			LOGICAL, INTENT(out)                                    :: overlap_check
-			LOGICAL, INTENT(out)                                    :: pure_inside_check
+			LOGICAL, INTENT(out)                                    :: totally_inside_check
 			LOGICAL, INTENT(out)                                    :: danger_check
 			DOUBLE PRECISION, INTENT(out)                           :: axe
 			
@@ -220,37 +220,25 @@ MODULE mpi_2d_structures_modf90
 				.and.(pointu4(2)-start_y>0)        &
 				.and.(pointu4(2)-end_y<0)		
 			
-			! WE HAVE 3 CASE HERE, ONE IS PARTICLE IS ABSOLUTELY INSIDE ("PURE INSIDE") 
+			! WE HAVE 3 CASE HERE, ONE IS PARTICLE IS ABSOLUTELY INSIDE ("totally INSIDE") 
 			! THE BLOCK HAVING THE RANK OF THE EXECUTING PROCESS OR ANOTHER BLOCK  
 			! ANOTHER CASE IS BARYCENTER OF PARTICLE IS INSIDE THE BLOCK AND IT IS 
 			! AN OVERLAP PARTICLE
-			
+		
 			if(pointu1inside.and.pointu2inside.and.pointu3inside.and.pointu4inside)then 
-				pure_inside_check = .true. ! This particle is inside block
+				totally_inside_check = .true. ! This particle is inside block
 			else 
-				pure_inside_check = .false.	! This particle is maybe an overlap particle
+				totally_inside_check = .false.	! This particle is maybe an overlap particle
 			end if
 			
-			if ((particle_k%Xp>start_x .and. particle_k%Xp<end_x) &
-		  .and. (particle_k%Yp>start_y .and. particle_k%Yp<end_y)) then
-		  		partial_inside_check = .true.
-		  	else
-		  		partial_inside_check = .false.
-		  	end if
+			if (totally_inside_check) then
 			
-			if ((partial_inside_check).and.(.not. pure_inside_check)) then
-				overlap_check = .true.
-			else
-				overlap_check = .false.
-			end if
-			
-			if(pure_inside_check) then
 				d1 = particle_k%Xp - start_x
 				d2 = -particle_k%Xp + end_x
 				d3 = particle_k%Yp - start_y
 				d4 = -particle_k%Yp + end_y
 				
-				
+				overlap_check = .false.
 				
 				if (d1<2*axe .or. d2<2*axe .or. d3<2*axe .or. d4 <2*axe) then
 					danger_check = .true.
@@ -258,7 +246,23 @@ MODULE mpi_2d_structures_modf90
 					danger_check = .false.
 				end if
 				
-			end if 
+			else
+				danger_check  = .false.
+				if ((particle_k%Xp>start_x .and. particle_k%Xp<end_x) &
+		  .and. (particle_k%Yp>start_y .and. particle_k%Yp<end_y)) then
+		  		partial_inside_check = .true.
+		  	else
+		  		partial_inside_check = .false.
+		  	end if
+		  		if (partial_inside_check) then
+					overlap_check = .true.
+
+				else 
+					overlap_check = .false.
+
+				end if
+			end if
+			
 
 		END SUBROUTINE overlap_criterion
 	
@@ -290,11 +294,11 @@ MODULE mpi_2d_structures_modf90
 
 				if (local_insidecheck) then
 					COUNTER_inside = COUNTER_inside + 1
-					IND_inside(COUNTER_inside) = i
-				end if
+					IND_inside(COUNTER_inside) = i	
+					call particle_screening(ALL_PARTICLES(i),local_overlapcheck,local_dangercheck)
 				
-				if (local_overlapcheck) then
-					call particle_screening(ALL_PARTICLES(i))
+				else if(local_overlapcheck) then
+					call particle_screening(ALL_PARTICLES(i),local_overlapcheck,local_dangercheck)
 				end if
 			END DO
     		
@@ -331,7 +335,7 @@ MODULE mpi_2d_structures_modf90
 		END SUBROUTINE particle_distribution
 		
 		
-		SUBROUTINE particle_screening(particle_k)
+		SUBROUTINE particle_screening(particle_k,overlap,danger)
 			! For an overlap table of a block, we will precise in which neighbour block, these overlap
 			! particles access.
 			
@@ -340,21 +344,17 @@ MODULE mpi_2d_structures_modf90
 			type(PARTTYPE), INTENT(in)     :: particle_k
 			double precision, dimension(2) :: p1,p2,p3,p4
 			double precision               :: d1,d2,d3,d4,  axe_k
-			
+			logical, intent(in)            :: overlap, danger
 			logical                        :: in_up,in_down,in_left,in_right, & 
 			in_up_left,in_up_right,in_down_left,in_down_right
-			
-				d1 = particle_k%Xp - start_x
-				d2 = -particle_k%Xp + end_x
-				d3 = particle_k%Yp - start_y
-				d4 = -particle_k%Yp + end_y
-		
+
+				if(overlap) then
+				
 				p1 = particle_k%pointu1
 				p2 = particle_k%pointu2
 				p3 = particle_k%pointu3
 				p4 = particle_k%pointu4
 				
-				axe_k = particle_k%axe
 				
 				in_up =((p1(2) > start_y+block_step_y .and. p1(2) < end_y+block_step_y) & 
 					.and. (p1(1) > start_x .and. p1(1) < end_x)) .or. &
@@ -430,10 +430,7 @@ MODULE mpi_2d_structures_modf90
 						COUNTER_overlap(FJ,rank) = COUNTER_overlap(FJ,rank) + 1
 						IND_overlap(COUNTER_overlap(FJ,rank),FJ) =  particle_k%ID		
 					end if	
-					if (d4<2*axe_k .and. (.not. d1<2*axe_k) .and. (.not.d2<2*axe_k)) then
-						COUNTER_danger(FJ,rank) = COUNTER_danger(FJ,rank) + 1
-						IND_danger(COUNTER_danger(FJ,rank),FJ) =  particle_k%ID
-					end if
+					
 				end if
 			
 				if (rank_down /= -1) then
@@ -441,10 +438,7 @@ MODULE mpi_2d_structures_modf90
 						COUNTER_overlap(BJ,rank) = COUNTER_overlap(BJ,rank) + 1
 						IND_overlap(COUNTER_overlap(BJ,rank),BJ) =  particle_k%ID
 					end if
-					if (d3<2*axe_k.and. (.not. d1<2*axe_k) .and. (.not.d2<2*axe_k)) then
-						COUNTER_danger(BJ,rank) = COUNTER_danger(BJ,rank) + 1
-						IND_danger(COUNTER_danger(BJ,rank),BJ) =  particle_k%ID
-					end if
+					
 					
 				end if
 				if (rank_left /= -1) then
@@ -452,11 +446,7 @@ MODULE mpi_2d_structures_modf90
 						COUNTER_overlap(BK,rank) = COUNTER_overlap(BK,rank) + 1
 						IND_overlap(COUNTER_overlap(BK,rank),BK) =  particle_k%ID
 					end if
-					
-					if(d1<2*axe_k.and. (.not. d3<2*axe_k) .and. (.not.d4<2*axe_k)) then
-						COUNTER_danger(BK,rank) = COUNTER_danger(BK,rank) + 1
-						IND_danger(COUNTER_danger(BK,rank),BK) =  particle_k%ID
-					end if
+				
 				
 				end if
 				if (rank_right /= -1) then
@@ -465,60 +455,89 @@ MODULE mpi_2d_structures_modf90
 						IND_overlap(COUNTER_overlap(FK,rank),FK) =  particle_k%ID
 					end if
 					
-					if(d2<2*axe_k.and. (.not. d3<2*axe_k) .and. (.not.d4<2*axe_k)) then
-						COUNTER_danger(FK,rank) = COUNTER_danger(FK,rank) + 1
-						IND_danger(COUNTER_danger(FK,rank),FK) =  particle_k%ID
-					end if
-			
 				end if
 				if (rank_up_left /= -1) then
 					if (in_up_left) then
 			        	COUNTER_overlap(FJBK,rank) = COUNTER_overlap(FJBK,rank) + 1
 						IND_overlap(COUNTER_overlap(FJBK,rank),FJBK) =  particle_k%ID
 					end if
-					
-					if(d4<2*axe_k .and.d1<2*axe_k) then
-						COUNTER_danger(FJBK,rank) = COUNTER_danger(FJBK,rank) + 1
-						IND_danger(COUNTER_danger(FJBK,rank),FJBK) =  particle_k%ID
-					end if
-					
-				
+			
 				end if
 				if (rank_up_right /= -1) then
 					if (in_up_right) then
 			        	COUNTER_overlap(FJFK,rank) = COUNTER_overlap(FJFK,rank) + 1
 						IND_overlap(COUNTER_overlap(FJFK,rank),FJFK) =  particle_k%ID
 			        end if
-			        
-			        if (d4<2*axe_k .and. d2<2*axe_k) then
-			        	COUNTER_danger(FJFK,rank) = COUNTER_danger(FJFK,rank) + 1
-						IND_danger(COUNTER_danger(FJFK,rank),FJFK) =  particle_k%ID
-			        end if
-				
+			    
 				end if
 				if (rank_down_left /= -1) then 
 					if (in_down_left) then
 						COUNTER_overlap(BJBK,rank) = COUNTER_overlap(BJBK,rank) + 1
 						IND_overlap(COUNTER_overlap(BJBK,rank),BJBK) =  particle_k%ID
 					end if
-					
-					if (d3<2*axe_k .and. d1<2*axe_k) then
-						COUNTER_danger(BJBK,rank) = COUNTER_danger(BJBK,rank) + 1
-						IND_danger(COUNTER_danger(BJBK,rank),BJBK) =  particle_k%ID
-					end if
-					
+				
 				end if
 				if (rank_down_right /= -1) then
 					if (in_down_right) then 
 						COUNTER_overlap(BJFK,rank) = COUNTER_overlap(BJFK,rank) + 1
 						IND_overlap(COUNTER_overlap(BJFK,rank),BJFK) =  particle_k%ID
 					end if
+					
+				end if
+			
+				end if 
+				
+				
+				if(danger) then
+				
+				
+				d1 = particle_k%Xp - start_x
+				d2 = -particle_k%Xp + end_x
+				d3 = particle_k%Yp - start_y
+				d4 = -particle_k%Yp + end_y
+				axe_k = particle_k%axe
+				
+				if (d4<2*axe_k .and. (.not. d1<2*axe_k) .and. (.not.d2<2*axe_k)) then
+						COUNTER_danger(FJ,rank) = COUNTER_danger(FJ,rank) + 1
+						IND_danger(COUNTER_danger(FJ,rank),FJ) =  particle_k%ID
+					end if
+				if (d3<2*axe_k.and. (.not. d1<2*axe_k) .and. (.not.d2<2*axe_k)) then
+						COUNTER_danger(BJ,rank) = COUNTER_danger(BJ,rank) + 1
+						IND_danger(COUNTER_danger(BJ,rank),BJ) =  particle_k%ID
+					end if
+					
+					if(d1<2*axe_k.and. (.not. d3<2*axe_k) .and. (.not.d4<2*axe_k)) then
+						COUNTER_danger(BK,rank) = COUNTER_danger(BK,rank) + 1
+						IND_danger(COUNTER_danger(BK,rank),BK) =  particle_k%ID
+					end if
+					
+					if(d2<2*axe_k.and. (.not. d3<2*axe_k) .and. (.not.d4<2*axe_k)) then
+						COUNTER_danger(FK,rank) = COUNTER_danger(FK,rank) + 1
+						IND_danger(COUNTER_danger(FK,rank),FK) =  particle_k%ID
+					end if
+						
+					if(d4<2*axe_k .and.d1<2*axe_k) then
+						COUNTER_danger(FJBK,rank) = COUNTER_danger(FJBK,rank) + 1
+						IND_danger(COUNTER_danger(FJBK,rank),FJBK) =  particle_k%ID
+					end if
+					    
+			        if (d4<2*axe_k .and. d2<2*axe_k) then
+			        	COUNTER_danger(FJFK,rank) = COUNTER_danger(FJFK,rank) + 1
+						IND_danger(COUNTER_danger(FJFK,rank),FJFK) =  particle_k%ID
+			        end if
+					
+					if (d3<2*axe_k .and. d1<2*axe_k) then
+						COUNTER_danger(BJBK,rank) = COUNTER_danger(BJBK,rank) + 1
+						IND_danger(COUNTER_danger(BJBK,rank),BJBK) =  particle_k%ID
+					end if
 					if (d3<2*axe_k .and. d2<2*axe_k) then
 						COUNTER_danger(BJFK,rank) = COUNTER_danger(BJFK,rank) + 1
 						IND_danger(COUNTER_danger(BJFK,rank),BJFK) =  particle_k%ID
 					end if
+				
 				end if
-			
+				
+				
 		END SUBROUTINE
 		
 		
@@ -840,27 +859,15 @@ MODULE mpi_2d_structures_modf90
 		
 		END SUBROUTINE block_loop_on_block_global_table	
 	
-	
-	
-	
 		SUBROUTINE update_displacement_on_just_IND_inside_and_IND_overlap
-		integer :: neighloop, Ncum1, Ncum2, Ncum3, Ncum4, Ncum5
+		integer :: neighloop, Ncum1
 		integer :: i,j,ID
 		integer,dimension(MPI_STATUS_SIZE) :: status_msg
 		integer,dimension(1:nb_proc-1)   ::address
 		address(:) = 0
 		Ncum1 = 0
-		Ncum2 = 0
-		Ncum3 = 0
-		Ncum4 = 0
-		Ncum5 = 0
 
 		call MPI_PART_TYPE
-
-!		if (rank==0) then
-
-!		print*,rank,'Before', IND_inside(1:COUNTER_inside)
-!		print*, 'Before',ALL_PARTICLES(IND_overlap(1:COUNTER_overlap(1,rank),1))%Xp
 			DO i=1,COUNTER_inside
 				if (rank /=0) then
 				address(rank) = IND_inside(i)
@@ -899,31 +906,26 @@ MODULE mpi_2d_structures_modf90
 				Ncum1 = Ncum1 + COUNTER_overlap(neighloop,rank)
 			END DO
 			call MPI_BARRIER(MPI_COMM_WORLD,code)
-!		if (rank==0) then
-!			print*, Ncum1
-!		end if 
-		
 		END SUBROUTINE update_displacement_on_just_IND_inside_and_IND_overlap
 
 
 
 !		SUBROUTINE update_table_block
 !			IMPLICIT NONE
-!			LOGICAL :: overlap_check, pure_inside_check
+!			LOGICAL :: overlap_check, totally_inside_check, danger_check
 !			double precision, dimension(2) :: pointu1,pointu2,pointu3,pointu4
-
+!			integer :: j,neighloop
+!			
+!			
 !			DO i=1,COUNTER_inside
-!				call overlap_criterion(ALL_PARTICLES(IND_inside(i)),overlap_check,pure_inside_check,pointu1,pointu2,pointu3,pointu4)
+!				call overlap_criterion(ALL_PARTICLES(IND_inside(i)),overlap_check,totally_inside_check,danger_check,pointu1,pointu2,pointu3,pointu4)
 !							
-!				if (pure_inside_check) then
+!				if (totally_inside_check) then
 !					cycle
 !					
 !				else
 !					if(overlap_check) then
-!						COUNTER_overlap = COUNTER_overlap + 1
 !						
-!						IND_inside(i:(COUNTER_inside-1)) = IND_inside((i+1):COUNTER_inside)
-!						COUNTER_inside = COUNTER_inside - 1
 !					else
 !						IND_leave(COUNTER_leave+1) = ALL_PARTICLES(IND_inside(i))%ID
 !						COUNTER_leave = COUNTER_leave + 1
@@ -932,12 +934,12 @@ MODULE mpi_2d_structures_modf90
 !			END DO		
 !			
 !			DO i=1, COUNTER_overlap
-!				call overlap_criterion(ALL_PARTICLES(IND_overlap(i)),overlap_check,pure_inside_check,pointu1,pointu2,pointu3,pointu4)
+!				call overlap_criterion(ALL_PARTICLES(IND_overlap(i)),overlap_check,totally_inside_check,pointu1,pointu2,pointu3,pointu4)
 !				
 !				if (overlap_check) then
 !					cycle
 !				else
-!					if(pure_inside_check) then
+!					if(totally_inside_check) then
 !						IND_inside(COUNTER_inside+1) = ALL_PARTICLES(IND_overlap(i))%ID
 !						COUNTER_inside = COUNTER_inside + 1
 !						
@@ -949,31 +951,24 @@ MODULE mpi_2d_structures_modf90
 !					end if 
 !				end if
 !			END DO
-!			
-!				
+			
+				
 !		END SUBROUTINE update_table_block
 
 
 		SUBROUTINE update_all_particle_information
 		
 		if(rank==0) then
-
-		 
 			DO i=1,number_of_particles
-!				print*,ALL_PARTICLES(i)%Xp-Xparticle_read(1,i)
+
 				Xparticle_read(1,i) = ALL_PARTICLES(i)%Xp
-				Xparticle_read(2,i) = ALL_PARTICLES(i)%Yp
-				
-			
+				Xparticle_read(2,i) = ALL_PARTICLES(i)%Yp		
+
 				D_read(1,i) = ALL_PARTICLES(i)%Dp1
 				D_read(2,i) = ALL_PARTICLES(i)%Dp2
 				D_read(3,i) = ALL_PARTICLES(i)%Dp3 
 				D_read(4,i) = ALL_PARTICLES(i)%Dp4
-
 			END DO
-				
-!			print*,D_read(:,1)
-				
 
 			OPEN(unit = 2, FILE = 'trunk/fortran_srcs/coords4fortran.bin',FORM="UNFORMATTED", &
  STATUS="UNKNOWN",POSITION="REWIND", ACTION="READWRITE", ACCESS='STREAM')
@@ -985,9 +980,11 @@ MODULE mpi_2d_structures_modf90
 			
 			write(3) D_read
 			close(3)
+			
 		end if
-
+		
 		END SUBROUTINE update_all_particle_information
+
 
 
 		SUBROUTINE dealloc_all_particle_table

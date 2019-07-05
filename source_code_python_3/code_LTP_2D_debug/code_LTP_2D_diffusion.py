@@ -270,7 +270,7 @@ while (round(t,13) < (round((config.Tmax),13)) ) :
             print "time for U = " , time.time() - tmp
             X[0,:] += config.dt * U[0,:]
             X[1,:] += config.dt * U[1,:]
-            print(U[0,1:20])
+#            print(U[0,1:20])
             # update deformations of particles 
             tmp = time.time()
             update_d_scheme = 1
@@ -635,7 +635,6 @@ if (config.problem == "diffusion") and (config.method == "LTP_casier"):
         if (config.time_scheme == 'euler_explicit') : 
             start = time.time()
 #            print "t = " , t   -g -fcheck=all -Wall
-                             
             cmd = 'mpif90  -fopenmp trunk/fortran_srcs/tri_casier_method.f90 -o outfile \
                     trunk/fortran_srcs/launchfortran.o \
                     trunk/fortran_srcs/mod_particle_2D.o \
@@ -654,8 +653,11 @@ if (config.problem == "diffusion") and (config.method == "LTP_casier"):
             Xread = numpy.fromfile('trunk/fortran_srcs/coords4fortran.bin')
             Dread = numpy.fromfile('trunk/fortran_srcs/deformmatrix4fortran.bin')
 #            print(Dread[0:12])
-            X = Xread.reshape((2,config.Nini))      
+            X = Xread.reshape((config.Nini,2)).T
             D = Dread.reshape((config.Nini,4)).T
+            
+
+           
 #        if (Norm_inf_Dm1 >config.radius_remap) and (config.indic_remapping == 'yes'):
 #            print '\nRemapping!\n'
 #            if D_method == 'implicit' :

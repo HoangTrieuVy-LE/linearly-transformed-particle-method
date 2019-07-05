@@ -104,51 +104,28 @@ IMPLICIT NONE
 	!-------------------------------------------------------------------!
 	!!!LOOP ON PARTICLES INSIDE BLOCK AND THE OTHERS IN OVERLAP TABLES!!!
 	!-------------------------------------------------------------------!
-!	if (rank==0) then
-!		print*,'BEFORE', ALL_PARTICLES(1)%Xp
-!	end if 
-
-	call block_loop_on_block_global_table
-	call update_displacement_on_just_IND_inside_and_IND_overlap
-
-	if (rank==0) then
-		print*,'AFTER', ALL_PARTICLES(1)%Xp
-	end if 
 	
-	 
 
 !DO WHILE(Tini<=Tmaximum)
-!! TODO
-!	!update_overlap_table
-!	if(rank==0) then
-!	print*, "t= ", Tini
-!	end if
-!!	if(rank==0) then
-!!		write(*,*) 'before', Xparticle_read(1,1:5)
-!!	end if
-!	call block_loop
-!	
-!	!-------------------------------------------------------------------!
-!	!!!                            UPDATE                             !!!
-!	!-------------------------------------------------------------------!
-!	
-!	! Displacement
-!	call update_displacement
-!!	call update_deformation_matrix
+	call block_loop_on_block_global_table
+
+
+	!-------------------------------------------------------------------!
+	!!!                            UPDATE                             !!!
+	!-------------------------------------------------------------------!
+	
+	! Displacement and Deformation matrix
+
+	call update_displacement_on_just_IND_inside_and_IND_overlap
+
+	
+
+	
 !	call update_table_block
 
-!!	if(rank==0) then
-!!	write(*,*) 'after', Xparticle_read(1,1:5)
-!!	end if
-!	if (rank==0) then
-!		write(*,*)'rank:',rank, 'COUNTER_inside', COUNTER_inside
-!		write(*,*)'rank:',rank, 'COUNTER_overlap', COUNTER_overlap
-!	end if 	
-!	
+
 !	Tini = Tini + dt
-!!	if(rank==0) then
-!!		print*, ALL_PARTICLES(1:100)%Xp-Xparticle_read(1,1:100)
-!!	end if
+
 !END DO	
 	
 	!-------------------------------------------------------------------!
