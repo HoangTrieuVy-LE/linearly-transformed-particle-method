@@ -29,18 +29,18 @@ IMPLICIT NONE
 	!-------------------------------------------------------------------!
 	!!!                    PARTICLES INITIALISATION                   !!!
 	!-------------------------------------------------------------------!
-	CALL environnement_initialisation
+CALL environnement_initialisation
 
-	CALL set_Nx_Ny
-	CALL set_length_data_read
-	CALL set_Mesh
+CALL set_Nx_Ny
+CALL set_length_data_read
+CALL set_Mesh
 	
-	CALL particle_coordinates_initiation
+CALL particle_coordinates_initiation
 
-	CALL mass_initiation
+CALL mass_initiation
 
-	CALL deformation_matrix_initiation
-	CALL velocity_initiation
+CALL deformation_matrix_initiation
+CALL velocity_initiation
 
 	!-------------------------------------------------------------------!
 	!!!                    SHAPE FUNCTIONS INITIATION                 !!!
@@ -50,11 +50,11 @@ IMPLICIT NONE
 	!-------------------------------------------------------------------!
 	!!!                         DOMAIN CREATION                       !!!
 	!-------------------------------------------------------------------!
-	CALL topology_initialisation
+CALL topology_initialisation
 
-	call set_block_grid(mesh(1,1),mesh(1,2),mesh(2,1),mesh(2,2))
+CALL set_block_grid(mesh(1,1),mesh(1,2),mesh(2,1),mesh(2,2))
 
-	call neighbour_blocks
+CALL neighbour_blocks
 !	call neighbour_counter
 !	print*,'rank:',rank,'nb_neighbours',nb_neighbours	
 !	if (rank==1) then 	
@@ -72,30 +72,15 @@ IMPLICIT NONE
 	!-------------------------------------------------------------------!
 	!!!  PARTICLES ATTRIBUTION  &  OVERLAP PARTICLES LISTS CREATION   !!!
 	!-------------------------------------------------------------------!
-	call initiation_table
-	call parttype_convert
+CALL initiation_table
+CALL parttype_convert
 	
-	call particle_distribution
-	
-	if (rank==0) then
-	DO i=0,nb_proc-1
-		write(*,*)'rank:',i, 'COUNTER_inside', COUNTER_inside
-	END DO
-	write(*,*)'              				   FJ	','	BJ	','   FK	','	BK	','   FJBK	      ','BJFK	  ','BJBK		','FJFK		'
-	DO i = 0,nb_proc-1	
-		write(*,*)'rank:',i, 'COUNTER_overlap', COUNTER_overlap(:,i)
-	END DO
-	DO i = 0,nb_proc-1	
-		write(*,*)'rank:',i, 'COUNTER_danger', COUNTER_danger(:,i)
-	END DO
-	DO i = 0,nb_proc-1	
-		write(*,*)'rank:',i, 'COUNTER_leave', COUNTER_leave(:,i)
-	END DO
 
-	end if 
-	
-	call neighbouring
-	call send_overlap_and_danger_particle
+
+CALL particle_distribution
+
+CALL neighbouring
+CALL send_overlap_and_danger_particle
 
 	
 	!-------------------------------------------------------------------!
@@ -106,8 +91,29 @@ IMPLICIT NONE
 	!-------------------------------------------------------------------!
 	
 
-!DO WHILE(Tini<=Tmaximum)
-	call block_loop_on_block_global_table
+DO WHILE(Tini<=Tmaximum)
+	
+	if (rank==0) then
+		print*,'Tini',Tini
+		print*,'Tmaximum',Tmaximum
+		print*,'dt',dt
+		DO i=0,nb_proc-1
+			write(*,*)'rank:',i, 'COUNTER_inside', COUNTER_inside
+		END DO
+	write(*,*)'              				   FJ	','	BJ	','   FK	','	BK	','   FJBK      ','BJFK	  ','BJBK		','FJFK'
+		DO i = 0,nb_proc-1
+			write(*,*)'rank:',i, 'COUNTER_overlap', COUNTER_overlap(:,i)
+		END DO
+		DO i = 0,nb_proc-1
+			write(*,*)'rank:',i, 'COUNTER_danger', COUNTER_danger(:,i)
+		END DO
+	end if 
+	if (rank==0) then
+	DO i = 0,nb_proc-1
+			write(*,*)'rank:',i, 'COUNTER_leave', COUNTER_leave(:,i)
+		END DO
+	end if
+	CALL block_loop_on_block_global_table
 
 
 	!-------------------------------------------------------------------!
@@ -115,18 +121,13 @@ IMPLICIT NONE
 	!-------------------------------------------------------------------!
 	
 	! Displacement and Deformation matrix
-
-	call update_displacement_on_just_IND_inside_and_IND_overlap
-
 	
-
+	CALL update_displacement_on_just_IND_inside_and_IND_overlap
+	CALL update_table_block
 	
-!	call update_table_block
-
-
-!	Tini = Tini + dt
-
-!END DO	
+	Tini = Tini + dt
+	
+END DO	
 	
 	!-------------------------------------------------------------------!
 	!!!                        UPDATE FILE IN                         !!!
@@ -135,9 +136,9 @@ IMPLICIT NONE
 	! deformation_matrix_initiation,
 	
 !	
-	call update_all_particle_information
+call update_all_particle_information
 		
 !	CALL dealloc_XMD
 !	CALL dealloc_all_particle_table
-	CALL environnement_finalization
+CALL environnement_finalization
 END PROGRAM tri_casier_modf90

@@ -635,7 +635,7 @@ if (config.problem == "diffusion") and (config.method == "LTP_casier"):
         if (config.time_scheme == 'euler_explicit') : 
             start = time.time()
 #            print "t = " , t   -g -fcheck=all -Wall
-            cmd = 'mpif90  -fopenmp trunk/fortran_srcs/tri_casier_method.f90 -o outfile \
+            cmd = 'mpif90 -g -fcheck=all -Wall -fopenmp trunk/fortran_srcs/tri_casier_method.f90 -o outfile \
                     trunk/fortran_srcs/launchfortran.o \
                     trunk/fortran_srcs/mod_particle_2D.o \
                     trunk/fortran_srcs/MPI_2D_spatialisation.o \
@@ -647,7 +647,7 @@ if (config.problem == "diffusion") and (config.method == "LTP_casier"):
                      trunk/fortran_srcs/jacobi_method.o   '
             os.system(str(cmd)) 
 #            print ("launch : " , cmd )c
-            cmd = 'mpiexec -n 4 ./outfile'
+            cmd = 'mpiexec  -n 4 ./outfile'
             os.system(str(cmd))
             
             Xread = numpy.fromfile('trunk/fortran_srcs/coords4fortran.bin')
