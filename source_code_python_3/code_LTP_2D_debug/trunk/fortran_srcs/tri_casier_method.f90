@@ -80,7 +80,7 @@ CALL parttype_convert
 CALL particle_distribution
 
 CALL neighbouring
-CALL send_overlap_and_danger_particle
+
 
 	
 	!-------------------------------------------------------------------!
@@ -113,6 +113,7 @@ DO WHILE(Tini<=Tmaximum)
 			write(*,*)'rank:',i, 'COUNTER_leave', COUNTER_leave(:,i)
 		END DO
 	end if
+	CALL send_overlap_and_danger_particle
 	CALL block_loop_on_block_global_table
 
 

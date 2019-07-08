@@ -1055,13 +1055,16 @@ MODULE mpi_2d_structures_modf90
 						COUNTER_inside = COUNTER_inside -1
 					end if
 				end if
+				
 			END DO		
 			
 			DO neighloop=1,8
 			if (NEIGHBOUR(neighloop)<0) then
 				cycle
 			end if
-			DO j=1,COUNTER_overlap(neighloop,rank)					
+			
+			DO j=1,COUNTER_overlap(neighloop,rank)
+								
 				call overlap_criterion(ALL_PARTICLES(IND_overlap(j,neighloop)),overlap_check,totally_inside_check,danger_check, & 
 				pointu1,pointu2,pointu3,pointu4,axe)
 				ALL_PARTICLES(IND_overlap(j,neighloop))%pointu1 = pointu1
@@ -1069,6 +1072,7 @@ MODULE mpi_2d_structures_modf90
 				ALL_PARTICLES(IND_overlap(j,neighloop))%pointu3 = pointu3
 				ALL_PARTICLES(IND_overlap(j,neighloop))%pointu4 = pointu4
 				ALL_PARTICLES(IND_overlap(j,neighloop))%axe = axe
+				
 				if (totally_inside_check) then
 					leave_check = .false.
 					call particle_screening(ALL_PARTICLES(IND_overlap(j,neighloop)),overlap_check,danger_check,leave_check)
@@ -1092,6 +1096,7 @@ MODULE mpi_2d_structures_modf90
 			END DO
 				
 			DO neighloop = 1,8
+			
 				DO i=1,COUNTER_leave(neighloop,rank)
 					if(NEIGHBOUR(neighloop)<0) then
 						cycle
