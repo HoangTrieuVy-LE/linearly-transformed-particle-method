@@ -1178,7 +1178,14 @@ MODULE mpi_2d_structures_modf90
 				print*, COUNTER_overlap(:,rank)
 				print*, COUNTER_inside
 			end if
+			
+			
+		! TODO
+		! ADD SURROUDING PROCESS FOR CONTROL LEAVING PARTICLES
 		
+		
+		
+		 
 		END SUBROUTINE update_ALL_particles
 !===============================================================================================
 	
