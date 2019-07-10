@@ -378,7 +378,7 @@ MODULE mpi_2d_structures_modf90
 				in_down_right = ((yk > start_y-block_step_y .and. yk < end_y-block_step_y) &
 			       .and. (xk > start_x+block_step_x .and. xk < end_x+block_step_x))
 			     
-		 
+		 		
 !================================================================================================
 			    
 			  
@@ -397,14 +397,14 @@ MODULE mpi_2d_structures_modf90
 !================================================================================================
 			    
 			    	if(in_left) then
-			    		COUNTER_leave(FK,rank) = COUNTER_leave(FK,rank) + 1
+			    		COUNTER_leave(BK,rank) = COUNTER_leave(FK,rank) + 1
 			    		IND_leave(COUNTER_leave(FK,rank),FK) = particle_k%ID
 			    	end if
 		
 !================================================================================================
 			   
 			    	if(in_right) then
-			    		COUNTER_leave(BK,rank) = COUNTER_leave(BK,rank) + 1
+			    		COUNTER_leave(FK,rank) = COUNTER_leave(BK,rank) + 1
 			    		IND_leave(COUNTER_leave(BK,rank),BK) = particle_k%ID
 			    	end if
 			   
@@ -682,7 +682,7 @@ MODULE mpi_2d_structures_modf90
 					IF (NEIGHBOUR(neighloop)<0) THEN
 						CYCLE
 					END IF
-					call MPI_RECV(IND_recv_overlap(i,NEIGHBOUR(neighloop)),1,MPI_INTEGER,NEIGHBOUR(neighloop),4, & 
+					call MPI_RECV(IND_recv_overlap(i,neighloop),1,MPI_INTEGER,NEIGHBOUR(neighloop),4, & 
 					MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
 				END DO
 !================================================================================================				
@@ -705,7 +705,7 @@ MODULE mpi_2d_structures_modf90
 					IF (NEIGHBOUR(neighloop)<0) THEN
 						CYCLE
 					END IF
-					call MPI_RECV(IND_recv_danger(i,NEIGHBOUR(neighloop)),1,MPI_INTEGER,NEIGHBOUR(neighloop),5, & 
+					call MPI_RECV(IND_recv_danger(i,neighloop),1,MPI_INTEGER,NEIGHBOUR(neighloop),5, & 
 					MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
 				END DO
 !================================================================================================				
@@ -794,8 +794,8 @@ MODULE mpi_2d_structures_modf90
 				cycle
 			end if
 		DO j=1,COUNTER_overlap(OPP(neighloop),NEIGHBOUR(neighloop))
-				Xpart_block(1,j+Ncum1) = ALL_PARTICLES(IND_recv_overlap(j,NEIGHBOUR(neighloop)))%Xp
-				Xpart_block(1,j+Ncum1) = ALL_PARTICLES(IND_recv_overlap(j,NEIGHBOUR(neighloop)))%Yp
+				Xpart_block(1,j+Ncum1) = ALL_PARTICLES(IND_recv_overlap(j,neighloop))%Xp
+				Xpart_block(1,j+Ncum1) = ALL_PARTICLES(IND_recv_overlap(j,neighloop))%Yp
 			END DO
 			Ncum1 = Ncum1 + COUNTER_overlap(OPP(neighloop),NEIGHBOUR(neighloop))
 		
@@ -806,8 +806,8 @@ MODULE mpi_2d_structures_modf90
 				cycle
 			end if
 		DO j=1,COUNTER_danger(OPP(neighloop),NEIGHBOUR(neighloop))
-				Xpart_block(1,j+Ncum1) = ALL_PARTICLES(IND_recv_danger(j,NEIGHBOUR(neighloop)))%Xp
-				Xpart_block(1,j+Ncum1) = ALL_PARTICLES(IND_recv_danger(j,NEIGHBOUR(neighloop)))%Yp
+				Xpart_block(1,j+Ncum1) = ALL_PARTICLES(IND_recv_danger(j,neighloop))%Xp
+				Xpart_block(1,j+Ncum1) = ALL_PARTICLES(IND_recv_danger(j,neighloop))%Yp
 			END DO
 			Ncum1 = Ncum1 + COUNTER_danger(OPP(neighloop),NEIGHBOUR(neighloop))
 		END DO
@@ -831,7 +831,7 @@ MODULE mpi_2d_structures_modf90
 				cycle
 			end if
 		DO j=1,COUNTER_overlap(OPP(neighloop),NEIGHBOUR(neighloop))
-				Mblock(j+Ncum2) = ALL_PARTICLES(IND_recv_overlap(j,NEIGHBOUR(neighloop)))%mass
+				Mblock(j+Ncum2) = ALL_PARTICLES(IND_recv_overlap(j,neighloop))%mass
 			END DO
 			Ncum2 = Ncum2 + COUNTER_overlap(OPP(neighloop),NEIGHBOUR(neighloop))	
 		END DO
@@ -840,7 +840,7 @@ MODULE mpi_2d_structures_modf90
 				cycle
 			end if
 		DO j=1,COUNTER_danger(OPP(neighloop),NEIGHBOUR(neighloop))
-				Mblock(j+Ncum2) = ALL_PARTICLES(IND_recv_danger(j,NEIGHBOUR(neighloop)))%mass
+				Mblock(j+Ncum2) = ALL_PARTICLES(IND_recv_danger(j,neighloop))%mass
 			END DO
 			Ncum2 = Ncum2 + COUNTER_danger(OPP(neighloop),NEIGHBOUR(neighloop))	
 		END DO
@@ -869,10 +869,10 @@ MODULE mpi_2d_structures_modf90
 				cycle
 			end if
 		DO j=1,COUNTER_overlap(OPP(neighloop),NEIGHBOUR(neighloop))
-				Dblock(1,j+Ncum3) = ALL_PARTICLES(IND_recv_overlap(j,NEIGHBOUR(neighloop)))%Dp1
-				Dblock(2,j+Ncum3) = ALL_PARTICLES(IND_recv_overlap(j,NEIGHBOUR(neighloop)))%Dp2
-				Dblock(3,j+Ncum3) = ALL_PARTICLES(IND_recv_overlap(j,NEIGHBOUR(neighloop)))%Dp3
-				Dblock(4,j+Ncum3) = ALL_PARTICLES(IND_recv_overlap(j,NEIGHBOUR(neighloop)))%Dp4
+				Dblock(1,j+Ncum3) = ALL_PARTICLES(IND_recv_overlap(j,neighloop))%Dp1
+				Dblock(2,j+Ncum3) = ALL_PARTICLES(IND_recv_overlap(j,neighloop))%Dp2
+				Dblock(3,j+Ncum3) = ALL_PARTICLES(IND_recv_overlap(j,neighloop))%Dp3
+				Dblock(4,j+Ncum3) = ALL_PARTICLES(IND_recv_overlap(j,neighloop))%Dp4
 			END DO
 			Ncum3 = Ncum3 + COUNTER_overlap(OPP(neighloop),NEIGHBOUR(neighloop))	
 		END DO
@@ -881,10 +881,10 @@ MODULE mpi_2d_structures_modf90
 				cycle
 			end if
 		DO j=1,COUNTER_danger(OPP(neighloop),NEIGHBOUR(neighloop))
-				Dblock(1,j+Ncum3) = ALL_PARTICLES(IND_recv_danger(j,NEIGHBOUR(neighloop)))%Dp1
-				Dblock(2,j+Ncum3) = ALL_PARTICLES(IND_recv_danger(j,NEIGHBOUR(neighloop)))%Dp2
-				Dblock(3,j+Ncum3) = ALL_PARTICLES(IND_recv_danger(j,NEIGHBOUR(neighloop)))%Dp3
-				Dblock(4,j+Ncum3) = ALL_PARTICLES(IND_recv_danger(j,NEIGHBOUR(neighloop)))%Dp4
+				Dblock(1,j+Ncum3) = ALL_PARTICLES(IND_recv_danger(j,neighloop))%Dp1
+				Dblock(2,j+Ncum3) = ALL_PARTICLES(IND_recv_danger(j,neighloop))%Dp2
+				Dblock(3,j+Ncum3) = ALL_PARTICLES(IND_recv_danger(j,neighloop))%Dp3
+				Dblock(4,j+Ncum3) = ALL_PARTICLES(IND_recv_danger(j,neighloop))%Dp4
 			END DO
 			Ncum3 = Ncum3 + COUNTER_danger(OPP(neighloop),NEIGHBOUR(neighloop))
 		END DO
@@ -1000,8 +1000,11 @@ MODULE mpi_2d_structures_modf90
 						
 						leave_check = .true.
 						call particle_screening(ALL_PARTICLES(IND_inside(i)),overlap_check,danger_check,leave_check)
+						
 						IND_inside(i:COUNTER_inside-1) = IND_inside(i+1:COUNTER_inside)
 						COUNTER_inside = COUNTER_inside - 1
+						
+						
 					end if
 				end if
 		
@@ -1043,10 +1046,12 @@ MODULE mpi_2d_structures_modf90
 						IND_overlap(j:COUNTER_overlap(neighloop,rank)-1,neighloop) = & 
 						IND_overlap(j+1:COUNTER_overlap(neighloop,rank),neighloop)
 						COUNTER_overlap(neighloop,rank) = COUNTER_overlap(neighloop,rank) -1
+						
 					end if
 				end if
 			END DO
 			END DO
+
 			
 			
 			if(rank /= 0) then
@@ -1057,23 +1062,59 @@ MODULE mpi_2d_structures_modf90
       			end do	
     		end if
     		call MPI_BCAST(COUNTER_leave,NB_NEIGHBOURS*nb_proc,MPI_INTEGER,0,MPI_COMM_WORLD,code)
+
+
+			
+!			if (rank==0) then
+!				print*,'rankkkkkk', rank
+!				print*,rank,'COUNTER_leave', COUNTER_leave(:,rank)
+!				print*, COUNTER_overlap(:,rank)
+!				print*, COUNTER_inside
+!			end if
+!			if (rank==1) then
+!			print*,'rankkkkkk', rank
+!				print*,'COUNTER_leave', COUNTER_leave(:,rank)
+!				print*, COUNTER_overlap(:,rank)
+!				print*, COUNTER_inside
+!			end if
+!			if (rank==2) then
+!			print*,'rankkkkk', rank
+!				print*,'COUNTER_leave', COUNTER_leave(:,rank)
+!				print*, COUNTER_overlap(:,rank)
+!				print*, COUNTER_inside
+!			end if
+!			if (rank==3) then
+!			print*,'rankkkkk', rank
+!				print*,'COUNTER_leave', COUNTER_leave(:,rank)
+!				print*, COUNTER_overlap(:,rank)
+!				print*, COUNTER_inside
+!			end if	
+
 !================================================================================================
-			
+		
 			DO neighloop = 1,8
-			
+					
 				DO i=1,COUNTER_leave(neighloop,rank)
 					if(NEIGHBOUR(neighloop)<0) then
 						cycle
 					end if
+						
 					call MPI_SEND(IND_leave(i,neighloop),1,MPI_INTEGER,NEIGHBOUR(neighloop),8,MPI_COMM_WORLD,code)
+					
 				END DO
 				
 				DO i=1,COUNTER_leave(OPP(neighloop),NEIGHBOUR(neighloop))
 					if(NEIGHBOUR(neighloop)<0) then
 						cycle
 					end if
-					call MPI_RECV(IND_recv_leave(i,NEIGHBOUR(neighloop)),1,MPI_INTEGER,NEIGHBOUR(neighloop),8 & 
+					call MPI_RECV(IND_recv_leave(i,neighloop),1,MPI_INTEGER,NEIGHBOUR(neighloop),8 & 
 					,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
+					
+!					if(rank==2) then
+!						print*, 'RECEIVE FROM LEFT BLOCK: ',  IND_recv_leave(i,neighloop),neighloop
+!						print*, 'RECEIVE FROM LEFT BLOCK: ',  ALL_PARTICLES(IND_recv_leave(i,neighloop))%Xp,neighloop
+!					end if		
+						
 				END DO
 				
 				if (NEIGHBOUR(neighloop)<0) then
@@ -1083,9 +1124,36 @@ MODULE mpi_2d_structures_modf90
 					COUNTER_recv_leave = COUNTER_recv_leave + COUNTER_leave(OPP(neighloop),NEIGHBOUR(neighloop))
 				end if	
 			END DO
+
 			
+!================================================================================================
 			
-			
+			DO neighloop=1,8
+				if (NEIGHBOUR(neighloop)<0) then
+					cycle
+				end if
+				
+				DO j=1,COUNTER_leave(OPP(neighloop),NEIGHBOUR(neighloop))
+					
+					call overlap_criterion(ALL_PARTICLES(IND_recv_leave(j,neighloop)),local_overlapcheck, & 
+					local_insidecheck,local_dangercheck,pointu1,pointu2,pointu3,pointu4,axe)	
+					if (rank==2) then
+						print*,IND_recv_leave(j,neighloop),ALL_PARTICLES(IND_recv_leave(j,neighloop))%Xp, & 
+						ALL_PARTICLES(IND_recv_leave(j,neighloop))%Yp
+					end if
+					if (local_insidecheck) then
+						COUNTER_inside = COUNTER_inside + 1
+						IND_inside(COUNTER_inside) = i	
+						call particle_screening(ALL_PARTICLES(IND_recv_leave(j,neighloop)), & 
+						local_overlapcheck,local_dangercheck,local_leave_check)
+					else 
+						call particle_screening(ALL_PARTICLES(IND_recv_leave(j,neighloop)), & 
+						local_overlapcheck,local_dangercheck,local_leave_check)
+				end if
+					
+				END DO
+		
+		END DO
 			if (rank==0) then
 				print*,'rankkkkkk', rank
 				print*,'COUNTER_leave', COUNTER_leave(:,rank)
@@ -1109,62 +1177,7 @@ MODULE mpi_2d_structures_modf90
 				print*,'COUNTER_leave', COUNTER_leave(:,rank)
 				print*, COUNTER_overlap(:,rank)
 				print*, COUNTER_inside
-			end if	
-
-			
-!================================================================================================
-			DO neighloop=1,8
-				if (NEIGHBOUR(neighloop)<0) then
-					cycle
-				end if
-				
-				DO j=1,COUNTER_leave(OPP(neighloop),NEIGHBOUR(neighloop))
-					
-					call overlap_criterion(ALL_PARTICLES(IND_recv_leave(j,NEIGHBOUR(neighloop))),local_overlapcheck, & 
-					local_insidecheck,local_dangercheck,pointu1,pointu2,pointu3,pointu4,axe)	
-!					if (rank==0) then
-!						print*,j,ALL_PARTICLES(IND_recv_leave(j,NEIGHBOUR(neighloop)))%Xp, & 
-!						ALL_PARTICLES(IND_recv_leave(j,NEIGHBOUR(neighloop)))%Yp
-!					end if
-					if (local_insidecheck) then
-						COUNTER_inside = COUNTER_inside + 1
-						IND_inside(COUNTER_inside) = i	
-						call particle_screening(ALL_PARTICLES(IND_recv_leave(j,NEIGHBOUR(neighloop))), & 
-						local_overlapcheck,local_dangercheck,local_leave_check)
-					else 
-						call particle_screening(ALL_PARTICLES(IND_recv_leave(j,NEIGHBOUR(neighloop))), & 
-						local_overlapcheck,local_dangercheck,local_leave_check)
-				end if
-					
-				END DO
-		
-		END DO
-		
-		
-!			if (rank==0) then
-!				print*,'rankkkkkk', rank
-!				print*,'COUNTER_leave', COUNTER_leave(:,rank)
-!				print*, COUNTER_overlap(:,rank)
-!				print*, COUNTER_inside
-!			end if
-!			if (rank==1) then
-!			print*,'rankkkkkk', rank
-!				print*,'COUNTER_leave', COUNTER_leave(:,rank)
-!				print*, COUNTER_overlap(:,rank)
-!				print*, COUNTER_inside
-!			end if
-!			if (rank==2) then
-!			print*,'rankkkkk', rank
-!				print*,'COUNTER_leave', COUNTER_leave(:,rank)
-!				print*, COUNTER_overlap(:,rank)
-!				print*, COUNTER_inside
-!			end if
-!			if (rank==3) then
-!			print*,'rankkkkk', rank
-!				print*,'COUNTER_leave', COUNTER_leave(:,rank)
-!				print*, COUNTER_overlap(:,rank)
-!				print*, COUNTER_inside
-!			end if
+			end if
 		
 		END SUBROUTINE update_ALL_particles
 !===============================================================================================
