@@ -7,8 +7,6 @@
 !--------------------------------------------------------------------------- 
 
 MODULE mod_particle_2D_modf90
-
-!import module, TODO decide which module would be necessary
 USE PACKMPI
 
 
@@ -20,24 +18,19 @@ type PARTTYPE
 real(kind=8) :: Xp
 real(kind=8) :: Yp
 
-!1. Velocity of k-th particle U[1,k],U[2,k]
-real(kind=8) :: Upx
-real(kind=8) :: Upy
- 
-
-!2. Deformation Matrix of k-th particle Dk: TODO find eigenvalues, eigenvector????
+!1. Deformation Matrix of k-th particle Dk: TODO find eigenvalues, eigenvector????
 real(kind=8) :: Dp1 
 real(kind=8) :: Dp2
 real(kind=8) :: Dp3
 real(kind=8) :: Dp4
 
-!3. Pointu
+!2. Pointu
 real(kind=8),dimension(2) :: pointu1
 real(kind=8),dimension(2) :: pointu2
 real(kind=8),dimension(2) :: pointu3
 real(kind=8),dimension(2) :: pointu4
 
-!6. Maximum of
+!3. Maximum of
 real(kind=8) :: axe
 
 !4. Mass
@@ -54,7 +47,7 @@ END TYPE PARTTYPE
 integer :: NINTEGER = 1
 
 ! NDOUBLE 
-integer :: NDOUBLE = 10s + 2*4
+integer :: NDOUBLE = 8 + 2*4
 
 !! MPI TYPE FOR PARTICLE EXCHANGE
 integer :: MPI_PARTICLETYPE

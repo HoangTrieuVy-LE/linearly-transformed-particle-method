@@ -623,9 +623,6 @@ mesh.T.tofile('trunk/fortran_srcs/mesh.bin')
 X.T.tofile('trunk/fortran_srcs/coords4fortran.bin')
 D.T.tofile('trunk/fortran_srcs/deformmatrix4fortran.bin')  
 M.T.tofile('trunk/fortran_srcs/matrixM4fortran.bin')  
-#print(numpy.shape(U))   
-#print(U[:,1:10])                 
-U.T.tofile('trunk/fortran_srcs/velocity4fortran.bin')
 #print(M)
 
 
@@ -635,7 +632,7 @@ if (config.problem == "diffusion") and (config.method == "LTP_casier"):
         if (config.time_scheme == 'euler_explicit') : 
             start = time.time()
 #            print "t = " , t   -g -fcheck=all -Wall
-            cmd = 'mpif90 -g -fcheck=all -Wall -fopenmp trunk/fortran_srcs/tri_casier_method.f90 -o outfile \
+            cmd = 'mpif90 -g -fcheck=all -Wall -Wtabs -fopenmp trunk/fortran_srcs/tri_casier_method.f90 -o outfile \
                     trunk/fortran_srcs/launchfortran.o \
                     trunk/fortran_srcs/mod_particle_2D.o \
                     trunk/fortran_srcs/MPI_2D_spatialisation.o \

@@ -36,6 +36,17 @@ CONTAINS
 
 		! Number of processes on each dimension (depends on the total number of processes)
 		dims(:) = 0
+
+!       Example for dims(1) = 3 and dims(2) = 3
+!		-------------
+!		| 2 | 5 | 8 |
+!		-------------
+!		| 1 | 4 | 7 |
+!		-------------
+!		| 0 | 3 | 6 |
+! 		-------------
+		
+
 		CALL MPI_DIMS_CREATE(nb_proc, nbdims, dims, code)
 		! Creation of the 2D cartesian topology (no periodicity)
 		periods(:) = .false.
@@ -54,14 +65,20 @@ CONTAINS
 	SUBROUTINE set_block_grid(Lx1,Lx2,Ly1,Ly2)
 		DOUBLE PRECISION, INTENT(in) :: Lx1,Lx2,Ly1,Ly2		
 		
-		! TODO Divide the domain depending on the number of processor
-		! Consider we have Lx1,Lx2,Ly1,Ly2
 		! After having dims(), we can find block_step_x and block_step_y
 		block_step_x = (Lx2-Lx1)/dims(1)
 		block_step_y = (Ly2-Ly1)/dims(2)
 
-		! calculate the coordinates in the topology
-		CALL mpi_cart_coords(comm2d, rank, nbdims, coords, code)		
+		! calculate the block coordinates in the topology
+		CALL mpi_cart_coords(comm2d, rank, nbdims, coords, code)	
+		
+!		-------------------------
+!		| (0,2) | (1,2) | (2,2) |
+!		-------------------------
+!		| (0,1) | (1,1) | (2,1) |
+!		-------------------------
+!		| (0,0) | (1,0) | (2,0) |
+! 		-------------------------
 		
 		! Limits at X-axis
 		start_x = (coords(1)*block_step_x)+Lx1

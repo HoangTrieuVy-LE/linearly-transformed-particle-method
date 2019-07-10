@@ -1,49 +1,39 @@
 module data_launch
 	USE PACKMPI
-	USE calculsfor_rec_modf90
-	use calculsfor_ini_modf90
+	USE calculsfor_rec_modf90  !Update also these variables 
+	use calculsfor_ini_modf90  !Update also these variables 
 
 	IMPLICIT NONE
     INTEGER                                        :: time_scheme
-	DOUBLE PRECISION                               :: dt, Tini, Tmaximum
+	DOUBLE PRECISION                               :: time_step, T_start, T_end
 	DOUBLE PRECISION , ALLOCATABLE, DIMENSION(:,:) :: mesh
-
-
 	DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:,:)  :: Xparticle_read 
 	DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:,:)  :: D_read
 	DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:)    :: mass_read 
-	DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:,:)  :: velocity_read 
 	
-	
-
 	INTEGER, DIMENSION(MPI_STATUS_SIZE)            :: status
-	INTEGER                                        :: fh1,fh2,fh3&
-													, bytes_in_DOUBLE_PRECISION
-
-
 	INTEGER                                        :: number_of_particles
+
+
 CONTAINS
-
-
-
-SUBROUTINE set_Nx_Ny
+SUBROUTINE setup_variables
 	OPEN(unit = 1, FILE = 'trunk/fortran_srcs/size.data',status ='old')
 	READ(1,*) nxg
 	READ(1,*) nyg
 	READ(1,*) hx
 	READ(1,*) hy
-	READ(1,*) dt
-	READ(1,*) Tini
-	READ(1,*) Tmaximum
+	READ(1,*) time_step
+	READ(1,*) T_start
+	READ(1,*) T_end
 	READ(1,*) time_scheme
 	READ(1,*) degre_spline
 	READ(1,*) radius_phi
 	READ(1,*) phi_radial
 
 	CLOSE(1)
-END SUBROUTINE set_Nx_Ny
+END SUBROUTINE setup_variables
 
-SUBROUTINE set_length_data_read
+SUBROUTINE setup_particle_information_matrix
 
 	number_of_particles = nxg*nyg
 	ALLOCATE(mass_read(number_of_particles))
@@ -54,9 +44,7 @@ SUBROUTINE set_length_data_read
 	
 	ALLOCATE(mesh(2,2))
 
-	ALLOCATE(velocity_read(2,number_of_particles))
-
-END SUBROUTINE set_length_data_read
+END SUBROUTINE setup_particle_information_matrix
 
 SUBROUTINE set_Mesh
 	OPEN(unit = 5, FILE = 'trunk/fortran_srcs/mesh.bin',FORM="UNFORMATTED",&
@@ -74,13 +62,6 @@ SUBROUTINE mass_initiation
 	CLOSE(4)
 	
 END SUBROUTINE mass_initiation
-
-SUBROUTINE velocity_initiation
-	OPEN(unit = 7, FILE = 'trunk/fortran_srcs/velocity4fortran.bin',FORM="UNFORMATTED",&
-STATUS="UNKNOWN", ACTION="READ", ACCESS='STREAM')
-	READ(7) velocity_read
-	CLOSE(7)
-END SUBROUTINE velocity_initiation
 	
 
 SUBROUTINE particle_coordinates_initiation
