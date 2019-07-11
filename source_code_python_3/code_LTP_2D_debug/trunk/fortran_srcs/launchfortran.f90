@@ -50,6 +50,7 @@ SUBROUTINE set_Mesh
 	OPEN(unit = 5, FILE = 'trunk/fortran_srcs/mesh.bin',FORM="UNFORMATTED",&
 	STATUS="UNKNOWN", ACTION="READ", ACCESS='STREAM')
 	READ(5) mesh
+!	print*,'mesh',mesh(1,1),mesh(1,2),mesh(2,1),mesh(2,2)
 	CLOSE(5)
 END SUBROUTINE set_Mesh
 

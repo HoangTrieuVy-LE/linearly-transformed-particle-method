@@ -39,11 +39,11 @@ CONTAINS
 
 !       Example for dims(1) = 3 and dims(2) = 3
 !		-------------
-!		| 2 | 5 | 8 |
+!		! 2 ! 5 ! 8 !
 !		-------------
-!		| 1 | 4 | 7 |
+!		! 1 ! 4 ! 7 !
 !		-------------
-!		| 0 | 3 | 6 |
+!		! 0 ! 3 ! 6 !
 ! 		-------------
 		
 
@@ -51,46 +51,88 @@ CONTAINS
 		! Creation of the 2D cartesian topology (no periodicity)
 		periods(:) = .false.
 		CALL MPI_CART_CREATE(MPI_COMM_WORLD, nbdims, dims, periods, reorder,comm2d,code)
-		
-		
-		IF (rank == 0) THEN
-
-!			WRITE (*,'(A,i4,A,i4,A)') 'Dimension for the topology: ', &
-!							dims(1), ' along x, ', dims(2), ' along  y'
-		END IF
 
 	END SUBROUTINE topology_initialisation
 
 
 	SUBROUTINE set_block_grid(Lx1,Lx2,Ly1,Ly2)
 		DOUBLE PRECISION, INTENT(in) :: Lx1,Lx2,Ly1,Ly2		
+		INTEGER   :: STATUS=0		
 		
-		! After having dims(), we can find block_step_x and block_step_y
-		block_step_x = (Lx2-Lx1)/dims(1)
-		block_step_y = (Ly2-Ly1)/dims(2)
+
+!		print*,dims(1)
+!		print*,Lx2,Lx1
+!		print*,'block-step',block_step_x
+!		print*, rank, start_x,end_x
 
 		! calculate the block coordinates in the topology
-		CALL mpi_cart_coords(comm2d, rank, nbdims, coords, code)	
+		CALL mpi_cart_coords(comm2d, rank, nbdims, coords, code)
+
+!        !       !       !       !         
+!		 !       !       !       !         
+! (0,4)	 ! (1,4) ! (2,4) ! (3,4) !   (4,4)      
+!		 !       !       !       !         
+!-------------------------------------------
+! (0,3)	 ! (1,3) ! (2,3) ! (3,3) !  (4,3)      
+!-------------------------------------------
+! (0,2)  ! (1,2) ! (2,2) ! (3,2) !  (4,2)       
+!-------------------------------------------
+! (0,1)  ! (1,1) ! (2,1) ! (3,1) !  (4,1)       
+!-------------------------------------------
+!	   	 !       !       !       !         
+! (0.0)	 ! (1,0) ! (2,0) ! (3,0) !  (4,0)        
+!		 !		 !	     !       !         
+!        !       !       !       !         
+
+
+! LES BLOCK SURROUNDING HAVE INFINITY LENGHT
+
+		if(dims(1) <=2 .or. dims(2)<=2) then
+			if(rank==0) then
+			print*, "ERROR DIMENSION, MUSTE BE AS LEAST 3x3"
+			end if
+			call EXIT(STATUS)
 		
+		else 
+		
+		if (coords(1)>=1.and.coords(2)>=1.and. & 
+		         coords(1)<dims(1)- 1 .and.coords(2)<dims(2) -1 )then
+		         
+		! After having dims(), we can find block_step_x and block_step_y
+		block_step_x = (Lx2-Lx1)/(dims(1)-2)
+		block_step_y = (Ly2-Ly1)/(dims(2)-2)
+
 !		-------------------------
-!		| (0,2) | (1,2) | (2,2) |
+!		! (0,2) ! (1,2) ! (2,2) !
 !		-------------------------
-!		| (0,1) | (1,1) | (2,1) |
+!		! (0,1) ! (1,1) ! (2,1) !
 !		-------------------------
-!		| (0,0) | (1,0) | (2,0) |
+!		! (0,0) ! (1,0) ! (2,0) !
 ! 		-------------------------
 		
 		! Limits at X-axis
-		start_x = (coords(1)*block_step_x)+Lx1
-		end_x =((coords(1)+1)*block_step_x)+Lx1
+		start_x = ((coords(1)-1)*block_step_x)+Lx1
+		end_x =(coords(1)*block_step_x)+Lx1
 
 		! Limits at Y-axis
-		start_y = (coords(2)*block_step_y)+Ly1
-		end_y = ((coords(2)+1)*block_step_y)+Ly1
+		start_y = ((coords(2)-1)*block_step_y)+Ly1
+		end_y = (coords(2)*block_step_y)+Ly1
+		
+		else if(coords(1)==0.and.coords(2)==0) then
+			start_x = -100000 ! TODO assign -infinity later
+			end_x   = Lx1
+			start_y = -100000
+			end_y   = Ly1
+		else if(coords(1)==dims(1)-1 .and. coords(2)==dims(2)-1) then
+			start_x = Lx2
+			end_x   =  100000
+			start_y = Ly2
+			end_y   = 1000000
+			
+		call EXIT(STATUS)
+		end if
 
-!		WRITE (*,'(A,i4,A,F5.2,A,F5.2,A,F5.2,A,F5.2,A)') 'Rank in the topology: ', rank, &
-!         ' Local Grid Index:',  start_x, ' to', end_x, ' along x, ', &
-!         start_y, ' to', end_y, ' along y'
+
 
 	END SUBROUTINE set_block_grid
 

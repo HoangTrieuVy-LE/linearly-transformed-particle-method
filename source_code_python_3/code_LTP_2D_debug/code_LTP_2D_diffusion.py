@@ -41,12 +41,13 @@ start_code = time.clock()
 start_code_bis = time.time()
 
 
+
 #=====  Initialisation ====== 
 t = config.Tini
 npic_part = 0
 
 
-	
+
 #----- initialisation des positions et poids -----
 
 print 'Initialisation'
@@ -142,7 +143,6 @@ Dk_exact_test = numpy.zeros([2,2])
 Save_det_Dk = numpy.zeros(N);
 delta_X = numpy.zeros(N);
 
-
 R_ltp = reconstruction_densites_2D.rec_densite_grille_unif_LTP(X, M, D, Xgrille, Ygrille)
 graphes2D.fait_series_dessins(Xgrille, Ygrille, R_ltp, 0, t, 'LTP')    
 
@@ -154,6 +154,7 @@ for i in range(0,nqx) :
         solution[i,j] = diffusion_fcts.diffusion_init(Xgrille[i],Ygrille[j])
 
 graphes2D.draw_analytical_solution(Xgrille,Ygrille,solution, npic, config.Tini, label=config.name_solution)
+
 
 
 #relative_error=calculs_2D.error(solution , R_ltp)
@@ -616,7 +617,9 @@ sizefile.close()
 
 
 #NOTEEEE: Lx1 = mesh(1,1), Lx2 = mesh(1,2),  Ly1 = mesh(2,1) , Ly2 = mesh(2,2)
-mesh = numpy.array([config.Ix,config.Iy]) 
+Lx = numpy.array([config.Lx1, config.Lx2])
+Ly = numpy.array([config.Ly1, config.Ly2])    
+mesh = numpy.array([Lx,Ly]) 
 #print('Im here',mesh)
 mesh.T.tofile('trunk/fortran_srcs/mesh.bin')
 # Coordinates, Deformation Matrix D, and matrix M
@@ -632,7 +635,7 @@ if (config.problem == "diffusion") and (config.method == "LTP_casier"):
         if (config.time_scheme == 'euler_explicit') : 
             start = time.time()
 #            print "t = " , t   -g -fcheck=all -Wall
-            cmd = 'mpif90 -g -fcheck=all -Wall -Wtabs -fopenmp trunk/fortran_srcs/tri_casier_method.f90 -o outfile \
+            cmd = 'mpif90 -g -fopenmp trunk/fortran_srcs/tri_casier_method.f90 -o outfile \
                     trunk/fortran_srcs/launchfortran.o \
                     trunk/fortran_srcs/mod_particle_2D.o \
                     trunk/fortran_srcs/MPI_2D_spatialisation.o \
@@ -643,39 +646,21 @@ if (config.problem == "diffusion") and (config.method == "LTP_casier"):
                     trunk/fortran_srcs/pack.o \
                      trunk/fortran_srcs/jacobi_method.o   '
             os.system(str(cmd)) 
-#            print ("launch : " , cmd )c
-            cmd = 'mpiexec  -n 4 ./outfile'
+            cmd = 'mpiexec  -n 12 ./outfile'
             os.system(str(cmd))
             
             Xread = numpy.fromfile('trunk/fortran_srcs/coords4fortran.bin')
             Dread = numpy.fromfile('trunk/fortran_srcs/deformmatrix4fortran.bin')
-#            print(Dread[0:12])
             X = Xread.reshape((config.Nini,2)).T
             D = Dread.reshape((config.Nini,4)).T
+        
+            fp = open('trunk/fortran_srcs/temp_out.txt','r')
+            t  = float(fp.readline())
+            Npic = int(fp.readline())
+            Nboulce = int(fp.readline())
             
-
-           
-#        if (Norm_inf_Dm1 >config.radius_remap) and (config.indic_remapping == 'yes'):
-#            print '\nRemapping!\n'
-#            if D_method == 'implicit' :
-#                X, M, D  = remapping_avec_python_test(config.hx_remap, config.hy_remap, X, M, D, t) 
-#                N = len(M)   
-#                tab = calculsfor_var_modf90.tab_cardinal_particles(X,config.hx_remap,config.hx_remap,N)	
-#            if D_method =='explicit' :
-#                X, M, D  = remapping_avec_python_test(config.hx_remap, config.hy_remap, X, M, D, t) # remapping that also returns remapping grid step				
-#                N = len(M)   
-#            print 'nouveau nombre de particules', N
-#            
-#            # Make no sense these 2 following lines       
-#            indice_max_norm_Dm1 = 0
-#            Norm_inf_Dm1= 0
-#            
-#            
-#            t += config.dt
-#            npic += 1
-#            Nboucle +=1
-#            end = time.time()
-#            print "time for one iteration = " , end - start       
+            print(t,Npic,Nboucle)
+          
 
 
 
