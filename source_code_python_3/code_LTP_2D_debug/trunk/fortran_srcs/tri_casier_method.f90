@@ -95,24 +95,7 @@ CALL particle_distribution
 
 
 DO WHILE(T_start<=T_end)
-	write(*,*)'rank:',rank, 'COUNTER_inside', COUNTER_inside
-	if (rank==0) then
-	print*,'T:',T_start
-	
 
-	write(*,*)'              				   UP	','	DOWN	','  RIGHT','       LEFT	',' UP-LEFT  ',' DOWN-RIGHT','    DOWN-LEFT','  UP-RIGHT'
-		DO i = 0,nb_proc-1
-			write(*,*)'rank:',i, 'COUNTER_overlap', COUNTER_overlap(:,i)
-		END DO
-		DO i = 0,nb_proc-1
-			write(*,*)'rank:',i, 'COUNTER_danger', COUNTER_danger(:,i)
-		END DO
-		DO i = 0,nb_proc-1
-			write(*,*)'rank:',i, 'COUNTER_leave', COUNTER_leave(:,i)
-		END DO
-	end if 
-
-!	
 
 	CALL send_overlap_and_danger_particle
 
@@ -123,7 +106,13 @@ DO WHILE(T_start<=T_end)
 	!-------------------------------------------------------------------!
 	!!!                            UPDATE                             !!!
 	!-------------------------------------------------------------------!
-
+if(rank==5) then
+print*,'----------------------------------'
+	write(*,*)'rank:',rank, 'COUNTER_inside', COUNTER_inside(rank)
+	write(*,*)'              				   UP	','	DOWN	','  RIGHT','       LEFT	',' UP-LEFT  ',' DOWN-RIGHT','    DOWN-LEFT','  UP-RIGHT'	
+	write(*,*)'rank:',rank, 'COUNTER_overlap', COUNTER_overlap(:,rank)
+	write(*,*)'rank:',rank, 'COUNTER_danger', COUNTER_danger(:,rank)
+end if
 	CALL update_ALL_particles
 
 
@@ -140,16 +129,19 @@ END DO
 	!!!                        UPDATE FILE IN                         !!!
 	!-------------------------------------------------------------------!
 
+	
 
 CALL update_all_particle_information
 
+
 OPEN(unit= 4, FILE='trunk/fortran_srcs/temp_out.txt')			
-			
+		
 			write(4,5) T_start-time_step
 			write(4,6) Npic
-			write(4,6) Nboucle
+			write(4,7) Nboucle
 			5 	format (f16.10)
 			6	format (10i7)
+			7	format (10i7)
 			close(4)
 
 	!-------------------------------------------------------------------!
