@@ -45,28 +45,45 @@ CALL topology_initialisation
 
 CALL set_block_grid(mesh(1,1),mesh(1,2),mesh(2,1),mesh(2,2))
 
-!CALL neighbour_blocks
-!!	if (rank==1) then
-!!		call neighbour_counter
-!!		print*,'rank:',rank,'number_of_neighbours',nb_neighbours_actually	 	
-!!		write(*,*)'rank_left',rank_left
-!!		write(*,*)'rank_right',rank_right 
-!!		write(*,*)'rank_up',rank_up
-!!		write(*,*)'rank_down',rank_down
-!!		write(*,*)'rank_up_left',rank_up_left 
-!!		write(*,*)'rank_up_right',rank_up_right
-!!		write(*,*)'rank_down_left',rank_down_left 
-!!		write(*,*)'rank_down_right',rank_down_right
-!!	end if
+CALL neighbour_blocks
+!	if (rank==4) then
+!		call neighbour_counter
+!		print*,'rank:',rank,'number_of_neighbours',nb_neighbours_actually	 	
+!		write(*,*)'rank_left',rank_left
+!		write(*,*)'rank_right',rank_right 
+!		write(*,*)'rank_up',rank_up
+!		write(*,*)'rank_down',rank_down
+!		write(*,*)'rank_up_left',rank_up_left 
+!		write(*,*)'rank_up_right',rank_up_right
+!		write(*,*)'rank_down_left',rank_down_left 
+!		write(*,*)'rank_down_right',rank_down_right
+!	end if
 
 !	!-------------------------------------------------------------------!
 !	!!!  PARTICLES ATTRIBUTION  &  OVERLAP PARTICLES LISTS CREATION   !!!
 !	!-------------------------------------------------------------------!
-!CALL initiation_table
-!CALL parttype_convert
-!CALL neighbouring
+CALL initiation_table
+CALL parttype_convert
+CALL neighbouring
 
-!CALL particle_distribution
+!if(rank==4) then
+!	DO i=1,10
+!	print*, ALL_PARTICLES(i)%ID,':', ALL_PARTICLES(i)%Dp1,ALL_PARTICLES(i)%Dp2,ALL_PARTICLES(i)%Dp3,ALL_PARTICLES(i)%Dp4
+!	END DO
+!end if
+
+
+CALL particle_distribution
+
+
+!if(rank==4) then
+!	print*,'FJ=1,BJ=2,FK=3,BK=4,FJBK=5,BJFK=6,BJBK=7,FJFK=8'
+!	print*,'rank',rank,'  COUNTER-INSIDE',COUNTER_inside
+!	DO i=1,8
+!!	print*,'Danger on',i,':',COUNTER_danger(i,rank)
+!	print*,'Overlap on',i,':',COUNTER_overlap(i,rank)
+!	END DO
+!end if
 
 !	!-------------------------------------------------------------------!
 !	!!!          FOR EVERY SUB-DOMAIN - INSIDE A PROCESS              !!!
@@ -77,72 +94,63 @@ CALL set_block_grid(mesh(1,1),mesh(1,2),mesh(2,1),mesh(2,2))
 !	
 
 
-!DO WHILE(T_start<=T_end)
-!	
-!	if (rank==0) then
-!		print*,'T_start',T_start
-!		print*,'T_end',T_end
-!		print*,'Time_step',time_step
-!		DO i=0,nb_proc-1
-!			write(*,*)'rank:',i, 'COUNTER_inside', COUNTER_inside
-!		END DO
-!	write(*,*)'              				   UP	','	DOWN	','  RIGHT','       LEFT	',' UP-LEFT  ',' DOWN-RIGHT','    DOWN-LEFT','  UP-RIGHT'
-!		DO i = 0,nb_proc-1
-!			write(*,*)'rank:',i, 'COUNTER_overlap', COUNTER_overlap(:,i)
-!		END DO
-!		DO i = 0,nb_proc-1
-!			write(*,*)'rank:',i, 'COUNTER_danger', COUNTER_danger(:,i)
-!		END DO
-!	end if 
-!	if (rank==0) then
-!	DO i = 0,nb_proc-1
-!			write(*,*)'rank:',i, 'COUNTER_leave', COUNTER_leave(:,i)
-!		END DO
-!	end if
+DO WHILE(T_start<=T_end)
+	write(*,*)'rank:',rank, 'COUNTER_inside', COUNTER_inside
+	if (rank==0) then
+	print*,'T:',T_start
+	
 
-
-
-!	CALL send_overlap_and_danger_particle
-
-!	CALL block_loop_on_block_global_table
-
-
-
-!	!-------------------------------------------------------------------!
-!	!!!                            UPDATE                             !!!
-!	!-------------------------------------------------------------------!
-
-!	CALL update_ALL_particles
-
-
-!	T_start = T_start + time_step
-
-!	Npic = Npic + 1
-!	Nboucle = Nboucle + 1
-
+	write(*,*)'              				   UP	','	DOWN	','  RIGHT','       LEFT	',' UP-LEFT  ',' DOWN-RIGHT','    DOWN-LEFT','  UP-RIGHT'
+		DO i = 0,nb_proc-1
+			write(*,*)'rank:',i, 'COUNTER_overlap', COUNTER_overlap(:,i)
+		END DO
+		DO i = 0,nb_proc-1
+			write(*,*)'rank:',i, 'COUNTER_danger', COUNTER_danger(:,i)
+		END DO
+		DO i = 0,nb_proc-1
+			write(*,*)'rank:',i, 'COUNTER_leave', COUNTER_leave(:,i)
+		END DO
+	end if 
 
 !	
-!END DO	
+
+	CALL send_overlap_and_danger_particle
+
+	CALL block_loop_on_block_global_table
 
 
 
-!	!-------------------------------------------------------------------!
-!	!!!                        UPDATE FILE IN                         !!!
-!	!-------------------------------------------------------------------!
+	!-------------------------------------------------------------------!
+	!!!                            UPDATE                             !!!
+	!-------------------------------------------------------------------!
 
-!CALL send_all_block_information_to_rank_0	
-!	
-!CALL update_all_particle_information
+	CALL update_ALL_particles
 
 
-!OPEN(unit= 4, FILE='trunk/fortran_srcs/temp_out.txt')			
-!			
-!			write(4,5) T_start-time_step
-!			write(4,6) Npic
-!			write(4,6) Nboucle
-!			5 	format (f16.10)
-!			6	format (10i7)
-!			close(4)
+	T_start = T_start + time_step
+
+	Npic = Npic + 1
+	Nboucle = Nboucle + 1
+
+
+	
+END DO	
+
+	!-------------------------------------------------------------------!
+	!!!                        UPDATE FILE IN                         !!!
+	!-------------------------------------------------------------------!
+
+
+CALL update_all_particle_information
+
+OPEN(unit= 4, FILE='trunk/fortran_srcs/temp_out.txt')			
+			
+			write(4,5) T_start-time_step
+			write(4,6) Npic
+			write(4,6) Nboucle
+			5 	format (f16.10)
+			6	format (10i7)
+			close(4)
 
 	!-------------------------------------------------------------------!
 	!!!                         DEALLOCATION                          !!!

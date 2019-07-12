@@ -68,21 +68,21 @@ CONTAINS
 		! calculate the block coordinates in the topology
 		CALL mpi_cart_coords(comm2d, rank, nbdims, coords, code)
 
-!        !       !       !       !         
-!		 !       !       !       !         
-! (0,4)	 ! (1,4) ! (2,4) ! (3,4) !   (4,4)      
-!		 !       !       !       !         
-!-------------------------------------------
-! (0,3)	 ! (1,3) ! (2,3) ! (3,3) !  (4,3)      
-!-------------------------------------------
-! (0,2)  ! (1,2) ! (2,2) ! (3,2) !  (4,2)       
-!-------------------------------------------
-! (0,1)  ! (1,1) ! (2,1) ! (3,1) !  (4,1)       
-!-------------------------------------------
-!	   	 !       !       !       !         
-! (0.0)	 ! (1,0) ! (2,0) ! (3,0) !  (4,0)        
-!		 !		 !	     !       !         
-!        !       !       !       !         
+!                        !       !       !       !         
+!		                 !       !       !       !         
+!                 (0,4)	 ! (1,4) ! (2,4) ! (3,4) !   (4,4)      
+!		                 !       !       !       !         
+!                -------------------------------------------
+!                 (0,3)	 ! (1,3) ! (2,3) ! (3,3) !  (4,3)      
+!                -------------------------------------------
+!                 (0,2)  ! (1,2) ! (2,2) ! (3,2) !  (4,2)       
+!                -------------------------------------------
+!                 (0,1)  ! (1,1) ! (2,1) ! (3,1) !  (4,1)       
+!                -------------------------------------------
+!	                 	 !       !       !       !         
+!                 (0.0)	 ! (1,0) ! (2,0) ! (3,0) !  (4,0)        
+!	                 	 !		 !	     !       !         
+!                        !       !       !       !         
 
 
 ! LES BLOCK SURROUNDING HAVE INFINITY LENGHT
@@ -92,12 +92,7 @@ CONTAINS
 			print*, "ERROR DIMENSION, MUSTE BE AS LEAST 3x3"
 			end if
 			call EXIT(STATUS)
-		
 		else 
-		
-		if (coords(1)>=1.and.coords(2)>=1.and. & 
-		         coords(1)<dims(1)- 1 .and.coords(2)<dims(2) -1 )then
-		         
 		! After having dims(), we can find block_step_x and block_step_y
 		block_step_x = (Lx2-Lx1)/(dims(1)-2)
 		block_step_y = (Ly2-Ly1)/(dims(2)-2)
@@ -117,21 +112,24 @@ CONTAINS
 		! Limits at Y-axis
 		start_y = ((coords(2)-1)*block_step_y)+Ly1
 		end_y = (coords(2)*block_step_y)+Ly1
+
 		
-		else if(coords(1)==0.and.coords(2)==0) then
-			start_x = -100000 ! TODO assign -infinity later
-			end_x   = Lx1
-			start_y = -100000
-			end_y   = Ly1
-		else if(coords(1)==dims(1)-1 .and. coords(2)==dims(2)-1) then
-			start_x = Lx2
-			end_x   =  100000
-			start_y = Ly2
-			end_y   = 1000000
-			
-		call EXIT(STATUS)
+		if(coords(1)==0) then
+			start_x = -1000000
+		end if
+		if(coords(1)==dims(1)-1)then
+			end_x = 1000000
+		end if
+		if(coords(2)==0) then
+			start_y = -1000000
+		end if	
+		if(coords(2)==dims(2)-1) then
+			end_y = 1000000
+		end if
+		 
 		end if
 
+!		print*,'rank',coords(1),coords(2),'has:',start_x,end_x,'and',start_y,end_y
 
 
 	END SUBROUTINE set_block_grid
