@@ -646,7 +646,7 @@ if (config.problem == "diffusion") and (config.method == "LTP_casier"):
                     trunk/fortran_srcs/pack.o \
                      trunk/fortran_srcs/jacobi_method.o   '
             os.system(str(cmd)) 
-            cmd = 'mpiexec  -n 16 ./outfile'
+            cmd = 'mpiexec  -n 9 ./outfile'
             os.system(str(cmd))
             
             Xread = numpy.fromfile('trunk/fortran_srcs/coords4fortran.bin')
@@ -656,12 +656,8 @@ if (config.problem == "diffusion") and (config.method == "LTP_casier"):
         
             fp = open('trunk/fortran_srcs/temp_out.txt','r')
             t  = float(fp.readline())
-            Npic = int(fp.readline())
+            npic = int(fp.readline())
             Nboucle = int(fp.readline())
-            
-            print(t,Npic,Nboucle)
-          
-
 
 
 if (config.method == 'LTP') or (config.method == 'part_avec_suivi_vol'): 

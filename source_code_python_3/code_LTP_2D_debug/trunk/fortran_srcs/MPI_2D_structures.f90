@@ -210,35 +210,30 @@ MODULE mpi_2d_structures_modf90
 			pointu4(1) =  eigenvector_1(1) - eigenvector_2(1) + particle_k%Xp
 			pointu4(2) =  eigenvector_1(2) - eigenvector_2(2) + particle_k%Yp
 			
-!			print*,pointu1
-!			print*,a
-!			print*,'EIGENNN', eigenvalue_1,eigenvalue_2
-!			print*,'EIGNENN', eigenvector_1,eigenvector_2
-
-			pointu1inside = (pointu1(1)-start_x>0) &
-				.and.(pointu1(1)-end_x<0)          &
-				.and.(pointu1(2)-start_y>0)        &
-				.and.(pointu2(2)-end_y<0)
-			pointu2inside = (pointu2(1)-start_x>0) &
-				.and.(pointu2(1)-end_x<0)          &
-				.and.(pointu2(2)-start_y>0)        &
-				.and.(pointu2(2)-end_y<0)
-			pointu3inside = (pointu3(1)-start_x>0) &
-				.and.(pointu3(1)-end_x<0)          &
-				.and.(pointu3(2)-start_y>0)        &
-				.and.(pointu3(2)-end_y<0)
-			pointu4inside = (pointu4(1)-start_x>0) &
-				.and.(pointu4(1)-end_x<0)          &
-				.and.(pointu4(2)-start_y>0)        &
-				.and.(pointu4(2)-end_y<0)		
+			pointu1inside = (pointu1(1)-start_x>=0) &
+				.and.(pointu1(1)-end_x<=0)          &
+				.and.(pointu1(2)-start_y>=0)        &
+				.and.(pointu2(2)-end_y<=0)
+			pointu2inside = (pointu2(1)-start_x>=0) &
+				.and.(pointu2(1)-end_x<=0)          &
+				.and.(pointu2(2)-start_y>=0)        &
+				.and.(pointu2(2)-end_y<=0)
+			pointu3inside = (pointu3(1)-start_x>=0) &
+				.and.(pointu3(1)-end_x<=0)          &
+				.and.(pointu3(2)-start_y>=0)        &
+				.and.(pointu3(2)-end_y<=0)
+			pointu4inside = (pointu4(1)-start_x>=0) &
+				.and.(pointu4(1)-end_x<=0)          &
+				.and.(pointu4(2)-start_y>=0)        &
+				.and.(pointu4(2)-end_y<=0)		
 			
 			! WE HAVE 3 CASE HERE, ONE IS PARTICLE IS ABSOLUTELY INSIDE ("totally INSIDE") 
 			! THE BLOCK HAVING THE RANK OF THE EXECUTING PROCESS OR ANOTHER BLOCK  
 			! ANOTHER CASE IS BARYCENTER OF PARTICLE IS INSIDE THE BLOCK AND IT IS 
 			! AN OVERLAP PARTICLE
 		  
-		  if ((particle_k%Xp>start_x .and. particle_k%Xp<end_x) &
-		  .and. (particle_k%Yp>start_y .and. particle_k%Yp<end_y)) then
+		  if ((particle_k%Xp>=start_x .and. particle_k%Xp<end_x) &
+		  .and. (particle_k%Yp>=start_y .and. particle_k%Yp<end_y)) then
 		  
 		  	if(pointu1inside.and.pointu2inside.and.pointu3inside.and.pointu4inside)then 
 		  		totally_inside_check = .true. ! This particle is inside block
@@ -253,7 +248,7 @@ MODULE mpi_2d_structures_modf90
 					danger_check = .false.
 				end if
 			else
-				totally_inside_check = .false.	! This particle is maybe an overlap particle
+				totally_inside_check = .false.
 				overlap_check = .true.
 				danger_check  = .false.	
 		  	end if
@@ -281,8 +276,6 @@ MODULE mpi_2d_structures_modf90
 			COUNTER_overlap(:,rank)   = 0
 			COUNTER_danger(:,rank)    = 0
 
-
-
 			! AT THE BEGINNING: THERE IS NO PARTICLE LEAVING, WE DISTRIBUTE PARTICLES FOR
 			! EVERY BLOCK.
 			local_leave_check = .false.
@@ -293,6 +286,9 @@ MODULE mpi_2d_structures_modf90
 				CALL overlap_criterion(ALL_PARTICLES(i),local_overlapcheck,local_insidecheck,local_dangercheck & 
 				,pointu1,pointu2,pointu3,pointu4,axe)
 				
+!				if(local_overlapcheck .eqv. .true.) then
+!					print*,rank,i,local_insidecheck,local_dangercheck
+!				end if
 				ALL_PARTICLES(i)%pointu1 = pointu1
 				ALL_PARTICLES(i)%pointu2 = pointu2
 				ALL_PARTICLES(i)%pointu3 = pointu3
@@ -302,13 +298,16 @@ MODULE mpi_2d_structures_modf90
 				if (local_insidecheck) then
 					COUNTER_inside(rank)         = COUNTER_inside(rank) + 1
 					IND_inside(COUNTER_inside(rank)) = i
+					
 
 					call particle_screening(ALL_PARTICLES(i),local_overlapcheck,local_dangercheck,local_leave_check)
 				else 
 					call particle_screening(ALL_PARTICLES(i),local_overlapcheck,local_dangercheck,local_leave_check)
+!					if(rank==4) then
+!						print*,i,COUNTER_overlap(:,rank)
+!					end if
 				end if
-			END DO
-			
+			END DO			
 			
 !================================================================================================  		
 			if(rank /= 0) then
@@ -671,18 +670,6 @@ MODULE mpi_2d_structures_modf90
 		
 		
 		SUBROUTINE send_overlap_and_danger_particle
-		! RECEIVE overlap particles from all possible neighbour blocks
-		! After particle_screening, we will know in every blocks, which overlap particle
-		! will overlap which block	
-		
-		! Idea, we concatenate all possible overlap particles from all possible neighbour
-		! blocks into IND_overlap
-		
-		! Firstly, send its informations about "overlap_direction" to all neighbour blocks
-		! Then receive informations from its neighbour blocks.
-		
-		! MPI.SEND
-		! MPI.RECV
 		integer :: i,neighloop
 		integer, dimension(NB_NEIGHBOURS) :: OPP
 		
@@ -783,8 +770,8 @@ MODULE mpi_2d_structures_modf90
 		! This part's mission is about to include not only IND_inside and IND_overlap
 		! but also all possible overlap particles from all possible neighbours 
 
-		! We will have "Npart_block" became: COUNTER_inside + inside sum of COUNTER_overlap in 
-		! all direction + COUNTER_recv + COUNTER_danger
+		! We will have "Npart_block" became: COUNTER_inside + sum of COUNTER_overlap in 
+		! all direction + COUNTER_recv_overlap + COUNTER_recv_danger
 		
 		! Where COUNTER_danger is the number of particle inside of neighbour block but can 
 		! effect on the particles inside the present block
@@ -1192,7 +1179,7 @@ MODULE mpi_2d_structures_modf90
 				END DO
 		
 		END DO
-		 
+		
 		END SUBROUTINE update_ALL_particles
 !===============================================================================================
 	

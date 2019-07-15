@@ -62,16 +62,10 @@ CALL neighbour_blocks
 !	!-------------------------------------------------------------------!
 !	!!!  PARTICLES ATTRIBUTION  &  OVERLAP PARTICLES LISTS CREATION   !!!
 !	!-------------------------------------------------------------------!
+
 CALL initiation_table
 CALL parttype_convert
 CALL neighbouring
-
-!if(rank==4) then
-!	DO i=1,10
-!	print*, ALL_PARTICLES(i)%ID,':', ALL_PARTICLES(i)%Dp1,ALL_PARTICLES(i)%Dp2,ALL_PARTICLES(i)%Dp3,ALL_PARTICLES(i)%Dp4
-!	END DO
-!end if
-
 
 CALL particle_distribution
 
@@ -86,14 +80,15 @@ CALL particle_distribution
 !end if
 
 !	!-------------------------------------------------------------------!
-!	!!!          FOR EVERY SUB-DOMAIN - INSIDE A PROCESS              !!!
-!	!-------------------------------------------------------------------!
-!	!-------------------------------------------------------------------!
 !	!!!LOOP ON PARTICLES INSIDE BLOCK AND THE OTHERS IN OVERLAP TABLES!!!
 !	!-------------------------------------------------------------------!
-!	
-
-
+ if(rank==4) then
+print*,'----------------------------------'
+	write(*,*)'rank:',rank, 'COUNTER_inside', COUNTER_inside(rank)
+	write(*,*)'              				   UP	','	DOWN	','  RIGHT','       LEFT	',' UP-LEFT  ',' DOWN-RIGHT','    DOWN-LEFT','  UP-RIGHT'	
+	write(*,*)'rank:',rank, 'COUNTER_overlap', COUNTER_overlap(:,rank)
+	write(*,*)'rank:',rank, 'COUNTER_danger', COUNTER_danger(:,rank)
+end if
 DO WHILE(T_start<=T_end)
 
 
@@ -101,19 +96,12 @@ DO WHILE(T_start<=T_end)
 
 	CALL block_loop_on_block_global_table
 
-
-
 	!-------------------------------------------------------------------!
-	!!!                            UPDATE                             !!!
+	!!!              UPDATE ALL PARTICLES INFORMATIONS                !!!
 	!-------------------------------------------------------------------!
-if(rank==5) then
-print*,'----------------------------------'
-	write(*,*)'rank:',rank, 'COUNTER_inside', COUNTER_inside(rank)
-	write(*,*)'              				   UP	','	DOWN	','  RIGHT','       LEFT	',' UP-LEFT  ',' DOWN-RIGHT','    DOWN-LEFT','  UP-RIGHT'	
-	write(*,*)'rank:',rank, 'COUNTER_overlap', COUNTER_overlap(:,rank)
-	write(*,*)'rank:',rank, 'COUNTER_danger', COUNTER_danger(:,rank)
-end if
+
 	CALL update_ALL_particles
+	
 
 
 	T_start = T_start + time_step
@@ -121,28 +109,31 @@ end if
 	Npic = Npic + 1
 	Nboucle = Nboucle + 1
 
-
-	
 END DO	
+ if(rank==4) then
+print*,'----------------------------------'
+	write(*,*)'rank:',rank, 'COUNTER_inside', COUNTER_inside(rank)
+	write(*,*)'              				   UP	','	DOWN	','  RIGHT','       LEFT	',' UP-LEFT  ',' DOWN-RIGHT','    DOWN-LEFT','  UP-RIGHT'	
+	write(*,*)'rank:',rank, 'COUNTER_overlap', COUNTER_overlap(:,rank)
+	write(*,*)'rank:',rank, 'COUNTER_danger', COUNTER_danger(:,rank)
+end if
 
 	!-------------------------------------------------------------------!
 	!!!                        UPDATE FILE IN                         !!!
 	!-------------------------------------------------------------------!
-
-	
-
 CALL update_all_particle_information
 
 
 OPEN(unit= 4, FILE='trunk/fortran_srcs/temp_out.txt')			
-		
-			write(4,5) T_start-time_step
-			write(4,6) Npic
-			write(4,7) Nboucle
-			5 	format (f16.10)
-			6	format (10i7)
-			7	format (10i7)
-			close(4)
+	write(4,5) T_start-time_step
+	write(4,6) Npic
+	write(4,7) Nboucle
+	5 	format (f16.10)
+	6	format (10i7)
+	7	format (10i7)
+	close(4)
+
+
 
 	!-------------------------------------------------------------------!
 	!!!                         DEALLOCATION                          !!!

@@ -89,7 +89,7 @@ CONTAINS
 
 		if(dims(1) <=2 .or. dims(2)<=2) then
 			if(rank==0) then
-			print*, "ERROR DIMENSION, MUSTE BE AS LEAST 3x3"
+			print*, "ERROR DIMENSION, MUST BE AS LEAST 3x3"
 			end if
 			call EXIT(STATUS)
 		else 
