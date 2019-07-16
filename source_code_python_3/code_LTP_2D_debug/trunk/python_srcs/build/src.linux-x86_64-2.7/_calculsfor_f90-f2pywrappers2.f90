@@ -404,21 +404,4 @@
      &_finite_differences,quadrature_pts_trapezoidal_method)
       end subroutine f2pyinitcalculsfor_var_modf90
 
-      
-      subroutine f2pyinitparticle_2d_modf90(f2pysetupfunc)
-      use particle_2d_modf90, only : mpi_part_type
-      external f2pysetupfunc
-      call f2pysetupfunc(mpi_part_type)
-      end subroutine f2pyinitparticle_2d_modf90
-
-      
-      subroutine f2pyinitmpi_2d_structures_modf90(f2pysetupfunc)
-      use mpi_2d_structures_modf90, only : overlap_criterion
-      use mpi_2d_structures_modf90, only : particle_numerotation
-      use mpi_2d_structures_modf90, only : particle_screening
-      external f2pysetupfunc
-      call f2pysetupfunc(overlap_criterion,particle_numerotation,particl&
-     &e_screening)
-      end subroutine f2pyinitmpi_2d_structures_modf90
-
 

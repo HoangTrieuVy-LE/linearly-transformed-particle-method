@@ -351,6 +351,104 @@ MODULE mpi_2d_structures_modf90
 		END SUBROUTINE particle_distribution
 
 !================================================================================================
+
+SUBROUTINE particle_distribution_v2
+	! Every block scan its own inside particles in order to obtain 3 tables, "totally_inside_particles" and 
+	! "overlap_particels", "danger_particles"
+	integer :: step_x,step_y,number_of_rows,number_of_columns,ind,j
+
+	logical                           :: local_overlapcheck, local_insidecheck, & 
+												 local_dangercheck,local_leave_check
+			DOUBLE PRECISION, dimension(2)    :: pointu1, pointu2,pointu3,pointu4
+			DOUBLE PRECISION                  :: axe
+			integer                           :: ID
+			
+			COUNTER_inside(:)         = 0
+			COUNTER_leave(:,rank)     = 0
+			COUNTER_overlap(:,rank)   = 0
+			COUNTER_danger(:,rank)    = 0
+
+			! AT THE BEGINNING: THERE IS NO PARTICLE LEAVING, WE DISTRIBUTE PARTICLES FOR
+			! EVERY BLOCK.
+			local_leave_check = .false.
+
+!================================================================================================
+if((coords(1)>=1 .and. coords(1)<=dims(1)-2) .and.(coords(2)>=1 .and. coords(2)<=dims(2)-2)) then
+	step_x = nxg/(dims(1)-2)
+	step_y = number_of_particles/(dims(2)-2)
+	number_of_rows = nyg/(dims(2)-2)
+	number_of_columns = nxg/(dims(1)-2)
+
+
+	DO j=1,number_of_rows
+		DO i=1,number_of_columns
+			ind = step_y*(dims(2)-2-coords(2))+step_x*(coords(1)-1)+i+(j-1)*nxg
+			CALL overlap_criterion(ALL_PARTICLES(ind),local_overlapcheck,local_insidecheck,local_dangercheck & 
+				,pointu1,pointu2,pointu3,pointu4,axe)
+			
+				ALL_PARTICLES(ind)%pointu1 = pointu1
+				ALL_PARTICLES(ind)%pointu2 = pointu2
+				ALL_PARTICLES(ind)%pointu3 = pointu3
+				ALL_PARTICLES(ind)%pointu4 = pointu4
+				ALL_PARTICLES(ind)%axe     = axe
+
+				if (local_insidecheck) then
+					COUNTER_inside(rank)         = COUNTER_inside(rank) + 1
+					IND_inside(COUNTER_inside(rank)) = ind
+					
+
+					call particle_screening(ALL_PARTICLES(ind),local_overlapcheck,local_dangercheck,local_leave_check)
+				else 
+					call particle_screening(ALL_PARTICLES(ind),local_overlapcheck,local_dangercheck,local_leave_check)
+
+				end if
+		END DO
+	END DO
+end if
+
+!================================================================================================  		
+			if(rank /= 0) then
+      			call MPI_SEND(COUNTER_inside(rank),1,MPI_INTEGER,0,1,MPI_COMM_WORLD,code)
+    		else
+      			do ID = 1,nb_proc - 1
+       				call MPI_RECV(COUNTER_inside(ID),1,MPI_INTEGER,ID,1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
+      			end do	
+    		end if
+    		call MPI_BCAST(COUNTER_inside,nb_proc,MPI_INTEGER,0,MPI_COMM_WORLD,code)
+					
+!================================================================================================  		
+			if(rank /= 0) then
+      			call MPI_SEND(COUNTER_overlap(1,rank),NB_NEIGHBOURS,MPI_INTEGER,0,1,MPI_COMM_WORLD,code)
+    		else
+      			do ID = 1,nb_proc - 1
+       				call MPI_RECV(COUNTER_overlap(1,ID),NB_NEIGHBOURS,MPI_INTEGER,ID,1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
+      			end do	
+    		end if
+    		call MPI_BCAST(COUNTER_overlap,NB_NEIGHBOURS*nb_proc,MPI_INTEGER,0,MPI_COMM_WORLD,code)
+!================================================================================================  		
+    		if(rank /= 0) then
+      			call MPI_SEND(COUNTER_leave(1,rank),NB_NEIGHBOURS,MPI_INTEGER,0,2,MPI_COMM_WORLD,code)
+    		else
+      			do ID = 1,nb_proc - 1
+       				call MPI_RECV(COUNTER_leave(1,ID),NB_NEIGHBOURS,MPI_INTEGER,ID,2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
+      			end do
+    		end if
+    		call MPI_BCAST(COUNTER_leave,NB_NEIGHBOURS*nb_proc,MPI_INTEGER,0,MPI_COMM_WORLD,code)
+    		
+!================================================================================================    		
+    		if(rank /= 0) then
+      			call MPI_SEND(COUNTER_danger(1,rank),NB_NEIGHBOURS,MPI_INTEGER,0,3,MPI_COMM_WORLD,code)
+    		else
+      			do ID = 1,nb_proc - 1
+       				call MPI_RECV(COUNTER_danger(1,ID),NB_NEIGHBOURS,MPI_INTEGER,ID,3,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
+      			end do
+    		end if
+    		call MPI_BCAST(COUNTER_danger,NB_NEIGHBOURS*nb_proc,MPI_INTEGER,0,MPI_COMM_WORLD,code)
+
+
+END SUBROUTINE particle_distribution_v2
+
+!================================================================================================
 		
 		SUBROUTINE particle_screening(particle_k,overlap,danger,leave)
 			! For an overlap table of a block, we will precise in which neighbour block, these overlap

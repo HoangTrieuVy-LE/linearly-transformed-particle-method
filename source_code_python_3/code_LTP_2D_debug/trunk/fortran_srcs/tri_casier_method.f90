@@ -101,7 +101,14 @@ DO WHILE(T_start<=T_end)
 	!-------------------------------------------------------------------!
 
 	CALL update_ALL_particles
-	
+	 if(rank==4) then
+print*,'----------------------------------'
+	write(*,*)'rank:',rank, 'COUNTER_inside', COUNTER_inside(rank)
+	write(*,*)'              				   UP	','	DOWN	','  RIGHT','       LEFT	',' UP-LEFT  ',' DOWN-RIGHT','    DOWN-LEFT','  UP-RIGHT'	
+	write(*,*)'rank:',rank, 'COUNTER_overlap', COUNTER_overlap(:,rank)
+	write(*,*)'rank:',rank, 'COUNTER_danger', COUNTER_danger(:,rank)
+end if
+
 
 
 	T_start = T_start + time_step
@@ -110,13 +117,6 @@ DO WHILE(T_start<=T_end)
 	Nboucle = Nboucle + 1
 
 END DO	
- if(rank==4) then
-print*,'----------------------------------'
-	write(*,*)'rank:',rank, 'COUNTER_inside', COUNTER_inside(rank)
-	write(*,*)'              				   UP	','	DOWN	','  RIGHT','       LEFT	',' UP-LEFT  ',' DOWN-RIGHT','    DOWN-LEFT','  UP-RIGHT'	
-	write(*,*)'rank:',rank, 'COUNTER_overlap', COUNTER_overlap(:,rank)
-	write(*,*)'rank:',rank, 'COUNTER_danger', COUNTER_danger(:,rank)
-end if
 
 	!-------------------------------------------------------------------!
 	!!!                        UPDATE FILE IN                         !!!
