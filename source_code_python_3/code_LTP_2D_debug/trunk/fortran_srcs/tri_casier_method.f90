@@ -13,12 +13,8 @@ USE mpi_2D_spatialisation_modf90
 
 IMPLICIT NONE
 
-INTEGER   :: Nboucle, Npic
-
-
 Nboucle = 0
 Npic    = 0
-
 
 	!-------------------------------------------------------------------!
 	!!!                         INITIALISATION                        !!!
@@ -69,16 +65,6 @@ CALL neighbouring
 
 CALL particle_distribution
 
-
-!if(rank==4) then
-!	print*,'FJ=1,BJ=2,FK=3,BK=4,FJBK=5,BJFK=6,BJBK=7,FJFK=8'
-!	print*,'rank',rank,'  COUNTER-INSIDE',COUNTER_inside
-!	DO i=1,8
-!!	print*,'Danger on',i,':',COUNTER_danger(i,rank)
-!	print*,'Overlap on',i,':',COUNTER_overlap(i,rank)
-!	END DO
-!end if
-
 !	!-------------------------------------------------------------------!
 !	!!!LOOP ON PARTICLES INSIDE BLOCK AND THE OTHERS IN OVERLAP TABLES!!!
 !	!-------------------------------------------------------------------!
@@ -102,11 +88,13 @@ DO WHILE(T_start<=T_end)
 
 	CALL update_ALL_particles
 	 if(rank==4) then
+print*,'STEP: ',Npic
 print*,'----------------------------------'
 	write(*,*)'rank:',rank, 'COUNTER_inside', COUNTER_inside(rank)
 	write(*,*)'              				   UP	','	DOWN	','  RIGHT','       LEFT	',' UP-LEFT  ',' DOWN-RIGHT','    DOWN-LEFT','  UP-RIGHT'	
 	write(*,*)'rank:',rank, 'COUNTER_overlap', COUNTER_overlap(:,rank)
 	write(*,*)'rank:',rank, 'COUNTER_danger', COUNTER_danger(:,rank)
+write(*,*)'rank:',rank, 'COUNTER_leave', COUNTER_leave(:,rank)
 end if
 
 

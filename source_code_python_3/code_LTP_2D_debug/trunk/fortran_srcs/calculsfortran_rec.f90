@@ -10,7 +10,7 @@ implicit none
   double precision                                     :: hx, hy
   integer                                    :: nxg, nyg
   double precision, dimension (:),  allocatable        :: Xg, Yg
-  
+  INTEGER   :: Nboucle, Npic
 contains
 
 
@@ -946,7 +946,7 @@ contains
         integer(8)              :: nb_proc, chunk
         integer, external       :: OMP_GET_NUM_THREADS, OMP_GET_THREAD_NUM
 
-
+	
         !$OMP PARALLEL 
         nb_proc = OMP_GET_NUM_THREADS()
         chunk = N_part / nb_proc +1
@@ -961,8 +961,17 @@ contains
             call rec_ltp_at_coordinate(rho_hn, Xpart, M, DD, hx_remap, hy_remap, Xpart(:,j), N_part)
             diff_field(1,j) = grad_rho_hn(1) / rho_hn 
             diff_field(2,j) = grad_rho_hn(2) / rho_hn 
+!if(Npic==4)then
+!	print*,'npic:',Npic,grad_rho_hn(1),grad_rho_hn(2), j
+!end if
+if(Npic==3)then
+	print*,'npic:',Npic, rho_hn,grad_rho_hn(1),grad_rho_hn(2), j
+end if
         end do                 
+
+
 	    !$OMP END PARALLEL DO
+
     end subroutine
     
     

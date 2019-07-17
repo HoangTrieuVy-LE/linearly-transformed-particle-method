@@ -171,7 +171,7 @@ if config.D_method == 'implicit' :
 
 
 print 'Start'
-while (round(t,13) < (round((config.Tmax),13)) ) : 
+while (round(t,13) <= (round((config.Tmax),13)) ) : 
 #~ while (abs(t-config.Tmax) < 0.00000001)  :    	
     if (config.method == 'PIC') or (config.method == 'LTPIC'):
         U = calcule_U_PIC(X, M, D, Xgrille, Ygrille)
@@ -646,7 +646,7 @@ if (config.problem == "diffusion") and (config.method == "LTP_casier"):
                     trunk/fortran_srcs/pack.o \
                      trunk/fortran_srcs/jacobi_method.o   '
             os.system(str(cmd)) 
-            cmd = 'mpiexec  -n 12 ./outfile'
+            cmd = 'mpiexec  -n 16 ./outfile'
             os.system(str(cmd))
             
             Xread = numpy.fromfile('trunk/fortran_srcs/coords4fortran.bin')

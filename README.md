@@ -4,11 +4,13 @@ Parallelization inside of LTP method
 Global review
 
 ================================= PARTICLES INITIALISATION ===================================
+
 Get all particle data from python and transfer into fortran code
 
 ================================= SPATIALISATION =============================================
 
-1. We assign every block(casier) into a process based on a MPI_CART_CREATE rule. This step will be call "topology_initialisation"
+1. We assign every block(casier) into a process based on a MPI_CART_CREATE rule.
+This step will be call "topology_initialisation"
 
 2. We divide the domain into block, we will call the number of block is nb_proc, which is also the number of process. By using "set_block_grid(mesh(1,1),mesh(1,2),mesh(2,1),mesh(2,2))"
 Each block has:
@@ -29,7 +31,7 @@ Each block has:
 
  
  
- ============== PARTICLES DISTRIBUION &  OVERLAP PARTICLES LISTS CREATION ========================
+ ============== PARTICLES DISTRIBUTION &  OVERLAP PARTICLES LISTS CREATION ========================
 
 1. First of all, we would like to renumerize the "ID" of neigbour blocks by "neighbouring" subroutine in order to easier work with MPI_SEND and MPI_RECV.
 
