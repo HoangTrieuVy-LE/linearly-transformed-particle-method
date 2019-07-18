@@ -79,7 +79,8 @@ MODULE mpi_2d_structures_modf90
 	
 	! ALL_PARTICLES stock all particle informations and should be broadcasted after being updated all particles displacement.
 	TYPE(PARTTYPE), DIMENSION(:), ALLOCATABLE             :: ALL_PARTICLES
-	
+
+	DOUBLE PRECISION, DIMENSION(4,8)                      :: neighbour_limit
 
 
 
@@ -443,10 +444,42 @@ end if
     		call MPI_BCAST(COUNTER_danger,NB_NEIGHBOURS*nb_proc,MPI_INTEGER,0,MPI_COMM_WORLD,code)
 
 
-END SUBROUTINE particle_distribution_v2
+		END SUBROUTINE particle_distribution_v2
 
 !================================================================================================
-		
+	
+		SUBROUTINE neighbour_limit_finding
+
+			integer                           :: j,neighloop,ID
+
+			integer, dimension(NB_NEIGHBOURS) :: OPP	
+			double precision, dimension(4)    :: limit
+			
+			OPP = (/2,1,4,3,6,5,8,7/)
+
+			
+			limit(1) = start_x
+			limit(2) = end_x
+			limit(3) = start_y
+			limit(4) = end_y
+			DO neighloop=1,8
+				if (NEIGHBOUR(neighloop)<0)then
+					cycle
+				end if
+				call MPI_SEND(limit,4,MPI_DOUBLE_PRECISION,NEIGHBOUR(neighloop),111,MPI_COMM_WORLD,code)
+				
+			END DO			
+			
+			DO neighloop=1,8
+				if(NEIGHBOUR(neighloop)<0) then
+					cycle
+				end if
+				call MPI_RECV(neighbour_limit(1,neighloop),4,MPI_DOUBLE_PRECISION,NEIGHBOUR(neighloop),111,MPI_COMM_WORLD & 
+				,MPI_STATUS_IGNORE,code)
+			END DO
+		END SUBROUTINE neighbour_limit_finding
+
+	
 		SUBROUTINE particle_screening(particle_k,overlap,danger,leave)
 			! For an overlap table of a block, we will precise in which neighbour block, these overlap
 			! particles access.
@@ -467,30 +500,32 @@ END SUBROUTINE particle_distribution_v2
 				yk = particle_k%Yp
 				
 !================================================================================================
-			
-				in_up =((yk > start_y+block_step_y .and. yk < end_y+block_step_y) & 
-					.and. (xk > start_x .and. xk < end_x))
+
+
+				in_up =((yk > neighbour_limit(3,1) .and. yk < neighbour_limit(4,1)) & 
+					.and. (xk > neighbour_limit(1,1) .and. xk < neighbour_limit(2,1)))
 					
-				in_down = ((yk > start_y-block_step_y .and. yk < end_y-block_step_y) &
-					.and. (xk > start_x .and. xk < end_x))
+				in_down = ((yk >  neighbour_limit(3,2) .and. yk < neighbour_limit(4,2)) &
+					.and. (xk > neighbour_limit(1,2)  .and. xk < neighbour_limit(2,2)))
 				
-				in_left = ((yk > start_y .and. yk < end_y) &
-				    .and. (xk > start_x-block_step_x .and. xk< end_x-block_step_x))
+				in_left = ((yk > neighbour_limit(3,4) .and. yk < neighbour_limit(4,4)) &
+				    .and. (xk > neighbour_limit(1,4)  .and. xk< neighbour_limit(2,4)))
 				
-				in_right = ((yk > start_y .and. yk < end_y) & 
-					.and. (xk > start_x+block_step_x .and. xk < end_x+block_step_x)) 
+				in_right = ((yk >  neighbour_limit(3,3) .and. yk < neighbour_limit(4,3)) & 
+					.and. (xk > neighbour_limit(1,3)  .and. xk < neighbour_limit(2,3))) 
 				
-				in_up_left = ((yk > start_y+block_step_y .and. yk < end_y+block_step_y) &
-			       .and. (xk > start_x-block_step_x .and. xk < end_x-block_step_x))
+				in_up_left = ((yk >  neighbour_limit(3,5) .and. yk <neighbour_limit(4,5)) &
+			       .and. (xk > neighbour_limit(1,5)  .and. xk < neighbour_limit(2,5)))
 			       
-				in_up_right = ((yk > start_y+block_step_y .and. yk < end_y+block_step_y) &
-			       .and. (xk > start_x+block_step_x .and. xk < end_x+block_step_x))
+				in_up_right = ((yk >  neighbour_limit(3,8) .and. yk < neighbour_limit(4,8)) &
+			       .and. (xk >neighbour_limit(1,8)  .and. xk < neighbour_limit(2,8)))
 				
-				in_down_left = ((yk > start_y-block_step_y .and. yk < end_y-block_step_y) &
-			       .and. (xk > start_x-block_step_x .and. xk < end_x-block_step_x))
+				in_down_left = ((yk >  neighbour_limit(3,7) .and. yk < neighbour_limit(4,7)) &
+			       .and. (xk > neighbour_limit(1,7) .and. xk < neighbour_limit(2,7)))
 				
-				in_down_right = ((yk > start_y-block_step_y .and. yk < end_y-block_step_y) &
-			       .and. (xk > start_x+block_step_x .and. xk < end_x+block_step_x))
+				in_down_right = ((yk >  neighbour_limit(3,6) .and. yk < neighbour_limit(4,6)) &
+			       .and. (xk > neighbour_limit(1,6)  .and. xk < neighbour_limit(2,6)))
+
 			     
 		 		
 !================================================================================================
@@ -542,14 +577,15 @@ END SUBROUTINE particle_distribution_v2
 			    if (rank_down_left /= -1) then
 			    	if(in_down_left) then
 			    		COUNTER_leave(BJBK,rank) = COUNTER_leave(BJBK,rank) + 1
-			    		IND_leave(COUNTER_leave(BJBK,rank),rank) = particle_k%ID
+			    		IND_leave(COUNTER_leave(BJBK,rank),BJBK) = particle_k%ID
+			    			
 			    	end if 
 				end if
 !================================================================================================   
 				if (rank_down_right /= -1) then
 					if(in_down_right) then
 						COUNTER_leave(BJFK,rank) = COUNTER_leave(BJFK,rank) + 1
-						IND_leave(COUNTER_leave(BJFK,rank),rank) = particle_k%ID
+						IND_leave(COUNTER_leave(BJFK,rank),BJFK) = particle_k%ID
 					end if
 				end if
 				
@@ -648,7 +684,7 @@ END SUBROUTINE particle_distribution_v2
 					 ( (p4(2) > start_y-block_step_y .and. p4(2) < end_y-block_step_y) &
 					.and. (p4(1) > start_x .and. p4(1) < end_x) ))
 !================================================================================================				
-				in_left = ( (p1(2) > start_y .and. p1(2) < end_y) .and. (p1(1) > start_x-block_step_x .and. p1(1) < end_x-block_step_x) ) .or. & 
+				in_left =((p1(2) > start_y .and. p1(2) < end_y) .and. (p1(1) > start_x-block_step_x .and. p1(1) < end_x-block_step_x) ) .or. & 
 				( (p2(2) > start_y .and. p2(2) < end_y) .and. (p2(1) > start_x-block_step_x .and. p2(1) < end_x-block_step_x) ) .or. & 
 				( (p3(2) > start_y .and. p3(2) < end_y) .and. (p3(1) > start_x-block_step_x .and. p3(1) < end_x-block_step_x) ) .or. & 
 				( (p4(2) > start_y .and. p4(2) < end_y) .and. (p4(1) > start_x-block_step_x .and. p4(1) < end_x-block_step_x) )
@@ -873,7 +909,7 @@ END SUBROUTINE particle_distribution_v2
 
 		Npart_block = COUNTER_recv_overlap + COUNTER_inside(rank) + SUM(COUNTER_overlap(:,rank)) + COUNTER_recv_danger
 		
-		
+
 		
 			ALLOCATE(Xpart_block(2,Npart_block))
 			ALLOCATE(Mblock(Npart_block))
@@ -1002,12 +1038,18 @@ END SUBROUTINE particle_distribution_v2
 		velocity_field(:,:) = 0.
 		
 !================================================================================================
-
+!if(Npic==4.and.rank==4)then
+!	print*,'npic:',Npic,Npart_block
+!end if
+!if(Npic==3.and.rank==4)then
+!	print*,'npic:',Npic,Npart_block
+!end if	
 		call diffusion_field_ltp(Xpart_block,Mblock,Dblock,hx,hy,velocity_field,Npart_block)
 				
 		call update_d_diffusion(Xpart_block, Dblock, Mblock, T_start, time_step, time_scheme, hx, hy, &
      indice_max_norm_Dm1, Norm_inf_Dm1, Dout, Npart_block)
-    
+   
+
 
 !================================================================================================
 	
@@ -1015,9 +1057,28 @@ END SUBROUTINE particle_distribution_v2
 			Xpart_block(1,i) = Xpart_block(1,i) - velocity_field(1,i)*time_step
 			Xpart_block(2,i) = Xpart_block(2,i) - velocity_field(2,i)*time_step
 		END DO
-!if(Npic==4.and.rank==4)then
-!	print*,Dout(1,1)
-!end if
+
+
+
+
+		DO i= 1,COUNTER_inside(rank)
+			Xpart_block(1,i) = ALL_PARTICLES(IND_inside(i))%Xp
+			Xpart_block(2,i) = ALL_PARTICLES(IND_inside(i))%Yp
+		END DO
+		Ncum1 = Ncum1 + COUNTER_inside(rank)
+		DO neighloop=1,8
+			if (NEIGHBOUR(neighloop)<0) then
+				cycle
+			end if
+			DO j=1,COUNTER_overlap(neighloop,rank)
+				Xpart_block(1,j+Ncum1) = ALL_PARTICLES(IND_overlap(j,neighloop))%Xp
+				Xpart_block(2,j+Ncum1) = ALL_PARTICLES(IND_overlap(j,neighloop))%Yp
+				
+			END DO
+			Ncum1 = Ncum1 + COUNTER_overlap(neighloop,rank)
+		END DO
+
+		
 !================================================================================================
 		Ncum5 = 0
 		DO i= 1,COUNTER_inside(rank)
@@ -1095,10 +1156,11 @@ END SUBROUTINE particle_distribution_v2
 			COUNTER_danger(:,:) = 0
 			COUNTER_leave(:,:)  = 0
 
+
 			
 			i=1
 			DO WHILE (i<=COUNTER_inside(rank))
-				
+			
 				call overlap_criterion(ALL_PARTICLES(IND_inside(i)),overlap_check,totally_inside_check,danger_check, & 
 				pointu1,pointu2,pointu3,pointu4,axe)
 
@@ -1129,9 +1191,9 @@ END SUBROUTINE particle_distribution_v2
 						
 					end if
 				end if
-			
+
 			END DO	
-			
+		
 
 !================================================================================================
 
@@ -1141,7 +1203,7 @@ END SUBROUTINE particle_distribution_v2
 			end if
 			j=1
 			DO WHILE (j<=COUNTER_overlap(neighloop,rank))
-								
+
 				call overlap_criterion(ALL_PARTICLES(IND_overlap(j,neighloop)),overlap_check,totally_inside_check,danger_check, & 
 				pointu1,pointu2,pointu3,pointu4,axe)
 				ALL_PARTICLES(IND_overlap(j,neighloop))%pointu1 = pointu1
@@ -1172,8 +1234,7 @@ END SUBROUTINE particle_distribution_v2
 				end if
 			END DO
 			END DO
-			
-			
+
 			if(rank /= 0) then
       			call MPI_SEND(COUNTER_inside(rank),NB_NEIGHBOURS,MPI_INTEGER,0,7,MPI_COMM_WORLD,code)
     		else
@@ -1183,7 +1244,6 @@ END SUBROUTINE particle_distribution_v2
       			end do
     		end if
     		call MPI_BCAST(COUNTER_inside,nb_proc,MPI_INTEGER,0,MPI_COMM_WORLD,code)
-
 
 !================================================================================================    
 	
@@ -1196,6 +1256,7 @@ END SUBROUTINE particle_distribution_v2
       			end do
     		end if
     		call MPI_BCAST(COUNTER_leave,NB_NEIGHBOURS*nb_proc,MPI_INTEGER,0,MPI_COMM_WORLD,code)
+
 
 
 !================================================================================================    		
@@ -1223,12 +1284,13 @@ END SUBROUTINE particle_distribution_v2
 
 !================================================================================================
 			DO neighloop = 1,8
-					
-				DO i=1,COUNTER_leave(neighloop,rank)
-					if(NEIGHBOUR(neighloop)<0) then
+			if(NEIGHBOUR(neighloop)<0) then
 						cycle
 					end if
-						
+				
+				DO i=1,COUNTER_leave(neighloop,rank)
+					
+					
 					call MPI_SEND(IND_leave(i,neighloop),1,MPI_INTEGER,NEIGHBOUR(neighloop),10,MPI_COMM_WORLD,code)
 					
 				END DO
@@ -1263,13 +1325,15 @@ END SUBROUTINE particle_distribution_v2
 				
 					call overlap_criterion(ALL_PARTICLES(IND_recv_leave(j,neighloop)),local_overlapcheck, & 
 					local_insidecheck,local_dangercheck,pointu1,pointu2,pointu3,pointu4,axe)
-	
+					
 					if (local_insidecheck) then
 						COUNTER_inside(rank) = COUNTER_inside(rank) + 1
-						IND_inside(COUNTER_inside(rank)) = i	
+						IND_inside(COUNTER_inside(rank)) = IND_recv_leave(j,neighloop)	
+						local_leave_check= .false.
 						call particle_screening(ALL_PARTICLES(IND_recv_leave(j,neighloop)), & 
 						local_overlapcheck,local_dangercheck,local_leave_check)
 					else 
+						local_leave_check= .false.
 						call particle_screening(ALL_PARTICLES(IND_recv_leave(j,neighloop)), & 
 						local_overlapcheck,local_dangercheck,local_leave_check)
 				end if

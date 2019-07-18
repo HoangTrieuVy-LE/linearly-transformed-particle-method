@@ -592,7 +592,7 @@ while (round(t,13) <= (round((config.Tmax),13)) ) :
             numpy.savetxt(str(path_to_output_file_name)+'_t='+str(t)+'_D3.txt', D[3,:])
             print "time to save data in txt files : " , time.time()-time_tabs
     if (config.problem == "diffusion") and (config.method == "LTP_casier"):
-        if (config.time_scheme == 'euler_explicit') : 
+        if (config.time_scheme == 'euler_explicit') :             
             break
             
 #===== fin de la boucle en temps ======
@@ -646,7 +646,7 @@ if (config.problem == "diffusion") and (config.method == "LTP_casier"):
                     trunk/fortran_srcs/pack.o \
                      trunk/fortran_srcs/jacobi_method.o   '
             os.system(str(cmd)) 
-            cmd = 'mpiexec  -n 16 ./outfile'
+            cmd = 'mpiexec  -n 12 ./outfile'
             os.system(str(cmd))
             
             Xread = numpy.fromfile('trunk/fortran_srcs/coords4fortran.bin')
