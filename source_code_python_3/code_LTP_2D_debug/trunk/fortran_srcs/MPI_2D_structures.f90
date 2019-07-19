@@ -134,7 +134,8 @@ MODULE mpi_2d_structures_modf90
 				ALL_PARTICLES(i)%Dp3 = D_read(3,i)
 				ALL_PARTICLES(i)%Dp4 = D_read(4,i)
 				ALL_PARTICLES(i)%ID = i
-				ALL_PARTICLES(i)%mass = mass_read(i) 
+				ALL_PARTICLES(i)%mass = mass_read(i)
+				
 			END DO
 		
 		END SUBROUTINE parttype_convert
@@ -809,17 +810,27 @@ end if
 
 !================================================================================================
 			DO neighloop = 1,8
-			
-!================================================================================================
 				DO i=1,COUNTER_overlap(neighloop,rank)
 					
 					IF (NEIGHBOUR(neighloop)<0) THEN
 						cycle
 					end if
 					call MPI_SEND(IND_overlap(i,neighloop),1,MPI_INTEGER,NEIGHBOUR(neighloop),4,MPI_COMM_WORLD,code)
-
+					
 				END DO
+				
+				DO i=1,COUNTER_danger(neighloop,rank)
+					IF (NEIGHBOUR(neighloop)<0) THEN
+						cycle
+					end if
+					call MPI_SEND(IND_danger(i,neighloop),1,MPI_INTEGER,NEIGHBOUR(neighloop),5,MPI_COMM_WORLD,code)
+					
+				END DO
+			END DO
+			
+			
 !================================================================================================			
+			DO neighloop=1,8
 				DO i= 1,COUNTER_overlap(OPP(neighloop),NEIGHBOUR(neighloop))
 					IF (NEIGHBOUR(neighloop)<0) THEN
 						CYCLE
@@ -828,22 +839,16 @@ end if
 					MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
 
 				END DO
-!================================================================================================				
+				
 				IF (NEIGHBOUR(neighloop)<0) THEN
 						cycle
 				ELSE	
 					COUNTER_recv_overlap = COUNTER_recv_overlap + COUNTER_overlap(OPP(neighloop),NEIGHBOUR(neighloop))
 					
 				END IF
-!================================================================================================
-				DO i=1,COUNTER_danger(neighloop,rank)
-					IF (NEIGHBOUR(neighloop)<0) THEN
-						cycle
-					end if
-					call MPI_SEND(IND_danger(i,neighloop),1,MPI_INTEGER,NEIGHBOUR(neighloop),5,MPI_COMM_WORLD,code)
-					
-				END DO
-!================================================================================================			
+
+				
+			
 				DO i= 1,COUNTER_danger(OPP(neighloop),NEIGHBOUR(neighloop))
 					IF (NEIGHBOUR(neighloop)<0) THEN
 						CYCLE
@@ -851,7 +856,7 @@ end if
 					call MPI_RECV(IND_recv_danger(i,neighloop),1,MPI_INTEGER,NEIGHBOUR(neighloop),5, & 
 					MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
 				END DO
-!================================================================================================				
+				
 				IF (NEIGHBOUR(neighloop)<0) THEN
 						cycle
 				ELSE	
@@ -909,8 +914,6 @@ end if
 
 		Npart_block = COUNTER_recv_overlap + COUNTER_inside(rank) + SUM(COUNTER_overlap(:,rank)) + COUNTER_recv_danger
 		
-
-		
 			ALLOCATE(Xpart_block(2,Npart_block))
 			ALLOCATE(Mblock(Npart_block))
 			ALLOCATE(Dblock(4,Npart_block))
@@ -921,6 +924,8 @@ end if
 			Xpart_block(1,i) = ALL_PARTICLES(IND_inside(i))%Xp
 			Xpart_block(2,i) = ALL_PARTICLES(IND_inside(i))%Yp
 		END DO
+
+	
 		Ncum1 = Ncum1 + COUNTER_inside(rank)
 		DO neighloop=1,8
 			if (NEIGHBOUR(neighloop)<0) then
@@ -929,21 +934,21 @@ end if
 			DO j=1,COUNTER_overlap(neighloop,rank)
 				Xpart_block(1,j+Ncum1) = ALL_PARTICLES(IND_overlap(j,neighloop))%Xp
 				Xpart_block(2,j+Ncum1) = ALL_PARTICLES(IND_overlap(j,neighloop))%Yp
-				
 			END DO
 			Ncum1 = Ncum1 + COUNTER_overlap(neighloop,rank)
 		END DO
 	
+
 		DO neighloop=1,8
 		if (NEIGHBOUR(neighloop)<0) then
 				cycle
 			end if
 		DO j=1,COUNTER_overlap(OPP(neighloop),NEIGHBOUR(neighloop))
 				Xpart_block(1,j+Ncum1) = ALL_PARTICLES(IND_recv_overlap(j,neighloop))%Xp
-				Xpart_block(1,j+Ncum1) = ALL_PARTICLES(IND_recv_overlap(j,neighloop))%Yp
+				Xpart_block(1,j+Ncum1) = ALL_PARTICLES(IND_recv_overlap(j,neighloop))%Yp	
 			END DO
 			Ncum1 = Ncum1 + COUNTER_overlap(OPP(neighloop),NEIGHBOUR(neighloop))
-		
+	
 		END DO
 		
 		DO neighloop=1,8
@@ -953,14 +958,17 @@ end if
 		DO j=1,COUNTER_danger(OPP(neighloop),NEIGHBOUR(neighloop))
 				Xpart_block(1,j+Ncum1) = ALL_PARTICLES(IND_recv_danger(j,neighloop))%Xp
 				Xpart_block(1,j+Ncum1) = ALL_PARTICLES(IND_recv_danger(j,neighloop))%Yp
+				
 			END DO
 			Ncum1 = Ncum1 + COUNTER_danger(OPP(neighloop),NEIGHBOUR(neighloop))
 		END DO
+
 
 !================================================================================================		
 		DO i= 1,COUNTER_inside(rank)
 			Mblock(i) = ALL_PARTICLES(IND_inside(i))%mass
 		END DO
+		
 		Ncum2 = Ncum2 + COUNTER_inside(rank)
 		DO neighloop=1,8
 			if (NEIGHBOUR(neighloop)<0) then
@@ -971,6 +979,7 @@ end if
 			END DO
 			Ncum2 = Ncum2 + COUNTER_overlap(neighloop,rank)	
 		END DO
+		
 		DO neighloop=1,8
 		if (NEIGHBOUR(neighloop)<0) then
 				cycle
@@ -980,6 +989,7 @@ end if
 			END DO
 			Ncum2 = Ncum2 + COUNTER_overlap(OPP(neighloop),NEIGHBOUR(neighloop))	
 		END DO
+		
 		DO neighloop=1,8
 		if (NEIGHBOUR(neighloop)<0) then
 				cycle
@@ -989,6 +999,7 @@ end if
 			END DO
 			Ncum2 = Ncum2 + COUNTER_danger(OPP(neighloop),NEIGHBOUR(neighloop))	
 		END DO
+
 !================================================================================================				
 		DO i= 1,COUNTER_inside(rank)
 			Dblock(1,i) = ALL_PARTICLES(IND_inside(i))%Dp1
@@ -996,6 +1007,7 @@ end if
 			Dblock(3,i) = ALL_PARTICLES(IND_inside(i))%Dp3
 			Dblock(4,i) = ALL_PARTICLES(IND_inside(i))%Dp4
 		END DO	
+
 		Ncum3 = Ncum3 + COUNTER_inside(rank)	
 		DO neighloop=1,8
 			if (NEIGHBOUR(neighloop)<0) then
@@ -1009,6 +1021,8 @@ end if
 			END DO
 			Ncum3 = Ncum3 + COUNTER_overlap(neighloop,rank)	
 		END DO
+
+
 		DO neighloop=1,8
 		if (NEIGHBOUR(neighloop)<0) then
 				cycle
@@ -1018,9 +1032,12 @@ end if
 				Dblock(2,j+Ncum3) = ALL_PARTICLES(IND_recv_overlap(j,neighloop))%Dp2
 				Dblock(3,j+Ncum3) = ALL_PARTICLES(IND_recv_overlap(j,neighloop))%Dp3
 				Dblock(4,j+Ncum3) = ALL_PARTICLES(IND_recv_overlap(j,neighloop))%Dp4
+
 			END DO
 			Ncum3 = Ncum3 + COUNTER_overlap(OPP(neighloop),NEIGHBOUR(neighloop))	
 		END DO
+
+
 		DO neighloop=1,8
 		if (NEIGHBOUR(neighloop)<0) then
 				cycle
@@ -1033,6 +1050,7 @@ end if
 			END DO
 			Ncum3 = Ncum3 + COUNTER_danger(OPP(neighloop),NEIGHBOUR(neighloop))
 		END DO
+		
 !================================================================================================	
 	
 		velocity_field(:,:) = 0.
@@ -1044,41 +1062,27 @@ end if
 !if(Npic==3.and.rank==4)then
 !	print*,'npic:',Npic,Npart_block
 !end if	
+
 		call diffusion_field_ltp(Xpart_block,Mblock,Dblock,hx,hy,velocity_field,Npart_block)
-				
+
+
 		call update_d_diffusion(Xpart_block, Dblock, Mblock, T_start, time_step, time_scheme, hx, hy, &
      indice_max_norm_Dm1, Norm_inf_Dm1, Dout, Npart_block)
-   
-
-
+    
+if(rank==4) then
+	DO j=1,1462
+		print*,j,Dout(1,j)
+	END DO
+end if
 !================================================================================================
 	
+
+
 		DO i=1,COUNTER_inside(rank) + SUM(COUNTER_overlap(:,rank))
 			Xpart_block(1,i) = Xpart_block(1,i) - velocity_field(1,i)*time_step
 			Xpart_block(2,i) = Xpart_block(2,i) - velocity_field(2,i)*time_step
 		END DO
 
-
-
-
-		DO i= 1,COUNTER_inside(rank)
-			Xpart_block(1,i) = ALL_PARTICLES(IND_inside(i))%Xp
-			Xpart_block(2,i) = ALL_PARTICLES(IND_inside(i))%Yp
-		END DO
-		Ncum1 = Ncum1 + COUNTER_inside(rank)
-		DO neighloop=1,8
-			if (NEIGHBOUR(neighloop)<0) then
-				cycle
-			end if
-			DO j=1,COUNTER_overlap(neighloop,rank)
-				Xpart_block(1,j+Ncum1) = ALL_PARTICLES(IND_overlap(j,neighloop))%Xp
-				Xpart_block(2,j+Ncum1) = ALL_PARTICLES(IND_overlap(j,neighloop))%Yp
-				
-			END DO
-			Ncum1 = Ncum1 + COUNTER_overlap(neighloop,rank)
-		END DO
-
-		
 !================================================================================================
 		Ncum5 = 0
 		DO i= 1,COUNTER_inside(rank)
@@ -1105,6 +1109,7 @@ end if
 			ALL_PARTICLES(IND_inside(i))%Dp2 = Dout(2,i)
 			ALL_PARTICLES(IND_inside(i))%Dp3 = Dout(3,i)
 			ALL_PARTICLES(IND_inside(i))%Dp4 = Dout(4,i)
+			
 		END DO
 		Ncum6 = Ncum6 + COUNTER_inside(rank)
 		DO neighloop=1,8
@@ -1112,14 +1117,21 @@ end if
 				cycle
 			end if
 			DO j=1,COUNTER_overlap(neighloop,rank)
+!				if(rank==4.and.neighloop==3) then
+!				print*,Dout(1,j+Ncum6),IND_overlap(j,neighloop)
+!			end if
 				ALL_PARTICLES(IND_overlap(j,neighloop))%Dp1 = Dout(1,j+Ncum6)
 				ALL_PARTICLES(IND_overlap(j,neighloop))%Dp2 = Dout(2,j+Ncum6)
 				ALL_PARTICLES(IND_overlap(j,neighloop))%Dp3 = Dout(3,j+Ncum6)
 				ALL_PARTICLES(IND_overlap(j,neighloop))%Dp4 = Dout(4,j+Ncum6)
+!				if(neighloop==3.and.rank==4) then
+!				print*,ALL_PARTICLES(IND_overlap(j,neighloop))%Dp1,IND_overlap(j,neighloop)
+!				end if
 			END DO
 			Ncum6 = Ncum6 + COUNTER_overlap(neighloop,rank)			
 		END DO
 		
+
 		
 		CALL send_all_block_information_to_rank_0_and_broadcast	
 			
@@ -1382,6 +1394,9 @@ end if
 							cycle
 				end if
 				DO j=1,COUNTER_overlap(neighloop,rank)
+!					if(rank==4.and.neighloop==3) then
+!						print*, ALL_PARTICLES(IND_overlap(j,neighloop))%Dp1
+!					end if
 					address(rank) = IND_overlap(j,neighloop)
 					call MPI_SEND(address(rank),1,MPI_INTEGER,0,13,MPI_COMM_WORLD,code)
 					call MPI_SEND(ALL_PARTICLES(address(rank)),1,MPI_PARTICLETYPE,0,14,MPI_COMM_WORLD,code)	
@@ -1397,11 +1412,8 @@ end if
 				END DO
 			END DO
 		end if
-
-
 	
 	call MPI_BCAST(ALL_PARTICLES,number_of_particles,MPI_PARTICLETYPE,0,MPI_COMM_WORLD,code)
-
 
 
 !================================================================================================	

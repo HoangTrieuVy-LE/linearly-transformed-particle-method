@@ -659,7 +659,6 @@ if (config.problem == "diffusion") and (config.method == "LTP_casier"):
             npic = int(fp.readline())
             Nboucle = int(fp.readline())
 
-
 if (config.method == 'LTP') or (config.method == 'part_avec_suivi_vol'): 
      start4 = time.clock()     
      #if D_method == 'explicit' : 
@@ -706,7 +705,7 @@ if ((config.method=='LTP') or (config.method == 'analytic_debug')):
     numpy.savetxt(str(path_to_output_file_name)+'_t='+str(t)+'_D2.txt', D[2,:])
     numpy.savetxt(str(path_to_output_file_name)+'_t='+str(t)+'_D3.txt', D[3,:])
     
-if (config.method=='LTP_casier'):
+if (config.method=='LTP_casier')or (config.method == 'analytic_debug'):
     R_ltp = reconstruction_densites_2D.rec_densite_grille_unif_LTP(X, M, D, Xgrille, Ygrille)
     npicf_ltp = 3000 + npic
     graphes2D.fait_series_dessins(Xgrille, Ygrille, R_ltp, npicf_ltp, t, name,show=False)

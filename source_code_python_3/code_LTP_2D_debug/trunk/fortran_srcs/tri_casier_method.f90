@@ -90,7 +90,7 @@ DO WHILE(T_start<=T_end)
 	!-------------------------------------------------------------------!
 
 	CALL update_ALL_particles
-	 if(rank==4.or.rank==7 .or.rank==1) then
+	 if(rank==4.or.rank==7 .or.rank==0) then
 print*,'STEP: ',Npic
 print*,'----------------------------------'
 	write(*,*)'rank:',rank, 'COUNTER_inside', COUNTER_inside(rank)
