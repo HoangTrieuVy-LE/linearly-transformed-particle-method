@@ -116,7 +116,7 @@ CALL update_all_particle_information
 
 
 OPEN(unit= 4, FILE='trunk/fortran_srcs/temp_out.txt')			
-	write(4,5) T_start-time_step
+	write(4,5) T_start
 	write(4,6) Npic
 	write(4,7) Nboucle
 	5 	format (f16.10)

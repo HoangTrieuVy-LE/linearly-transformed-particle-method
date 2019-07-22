@@ -828,6 +828,7 @@ end if
 					MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
 
 				END DO
+				
 !================================================================================================				
 				IF (NEIGHBOUR(neighloop)<0) THEN
 						cycle
@@ -917,11 +918,16 @@ end if
 			ALLOCATE(velocity_field(2,Npart_block))
 			ALLOCATE(Dout(4,Npart_block))
 !================================================================================================
+
+		
 		DO i= 1,COUNTER_inside(rank)
 			Xpart_block(1,i) = ALL_PARTICLES(IND_inside(i))%Xp
 			Xpart_block(2,i) = ALL_PARTICLES(IND_inside(i))%Yp
+
 		END DO
 		Ncum1 = Ncum1 + COUNTER_inside(rank)
+		
+		
 		DO neighloop=1,8
 			if (NEIGHBOUR(neighloop)<0) then
 				cycle
@@ -929,39 +935,38 @@ end if
 			DO j=1,COUNTER_overlap(neighloop,rank)
 				Xpart_block(1,j+Ncum1) = ALL_PARTICLES(IND_overlap(j,neighloop))%Xp
 				Xpart_block(2,j+Ncum1) = ALL_PARTICLES(IND_overlap(j,neighloop))%Yp
-				
+
 			END DO
 			Ncum1 = Ncum1 + COUNTER_overlap(neighloop,rank)
 		END DO
 	
 
+		
 		DO neighloop=1,8
 		if (NEIGHBOUR(neighloop)<0) then
 				cycle
 			end if
 		DO j=1,COUNTER_overlap(OPP(neighloop),NEIGHBOUR(neighloop))
 				Xpart_block(1,j+Ncum1) = ALL_PARTICLES(IND_recv_overlap(j,neighloop))%Xp
-				Xpart_block(1,j+Ncum1) = ALL_PARTICLES(IND_recv_overlap(j,neighloop))%Yp
-				
-				
+				Xpart_block(2,j+Ncum1) = ALL_PARTICLES(IND_recv_overlap(j,neighloop))%Yp
+						
 			END DO
 			Ncum1 = Ncum1 + COUNTER_overlap(OPP(neighloop),NEIGHBOUR(neighloop))
 	
 		END DO
-		
+			
 		DO neighloop=1,8
 		if (NEIGHBOUR(neighloop)<0) then
 				cycle
 			end if
 		DO j=1,COUNTER_danger(OPP(neighloop),NEIGHBOUR(neighloop))
 				Xpart_block(1,j+Ncum1) = ALL_PARTICLES(IND_recv_danger(j,neighloop))%Xp
-				Xpart_block(1,j+Ncum1) = ALL_PARTICLES(IND_recv_danger(j,neighloop))%Yp
+				Xpart_block(2,j+Ncum1) = ALL_PARTICLES(IND_recv_danger(j,neighloop))%Yp
 
 			END DO
 			Ncum1 = Ncum1 + COUNTER_danger(OPP(neighloop),NEIGHBOUR(neighloop))
 		END DO
 
-		
 
 !================================================================================================		
 		DO i= 1,COUNTER_inside(rank)
@@ -1066,14 +1071,7 @@ end if
 				
 		call update_d_diffusion(Xpart_block, Dblock, Mblock, T_start, time_step, time_scheme, hx, hy, &
      indice_max_norm_Dm1, Norm_inf_Dm1, Dout, Npart_block)
-    
-
-if(rank==4) then
-	DO j=1,1462
-		print*,j,Dout(1,j)
-	END DO
-end if
-
+   
 !================================================================================================
 	
 		DO i=1,COUNTER_inside(rank) + SUM(COUNTER_overlap(:,rank))

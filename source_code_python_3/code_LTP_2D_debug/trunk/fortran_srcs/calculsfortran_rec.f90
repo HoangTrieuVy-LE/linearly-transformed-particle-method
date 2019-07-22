@@ -964,7 +964,7 @@ contains
 !if(Npic==4)then
 !	print*,'npic:',Npic,grad_rho_hn(1),grad_rho_hn(2), j
 !end if
-if(Npic==3)then
+if(Npic==2)then
 	print*,'npic:',Npic, rho_hn,grad_rho_hn(1),grad_rho_hn(2), j
 end if
         end do                 
