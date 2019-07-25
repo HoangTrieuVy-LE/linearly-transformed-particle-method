@@ -55,6 +55,7 @@ CALL neighbour_blocks
 !		write(*,*)'rank_down_right',rank_down_right
 !	end if
 
+!print*,'rank',rank,coords(1),coords(2),'has:',start_x,end_x,'and',start_y,end_y
 !	!-------------------------------------------------------------------!
 !	!!!  PARTICLES ATTRIBUTION  &  OVERLAP PARTICLES LISTS CREATION   !!!
 !	!-------------------------------------------------------------------!

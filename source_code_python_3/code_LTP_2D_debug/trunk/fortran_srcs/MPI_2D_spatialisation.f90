@@ -129,7 +129,7 @@ CONTAINS
 		 
 		end if
 
-!		print*,'rank',coords(1),coords(2),'has:',start_x,end_x,'and',start_y,end_y
+
 
 
 	END SUBROUTINE set_block_grid

@@ -596,7 +596,10 @@ while (round(t,13) <= (round((config.Tmax),13)) ) :
             break
             
 #===== fin de la boucle en temps ======
-#=========================================== DATA FORTRAN FOR LTP METHOD=======================================================
+            
+            
+            
+#=========================================== DATA FORTRAN FOR LTP-tri-casier METHOD=======================================================
 D_old = D.copy()
 X_old = X.copy()                
 
@@ -646,7 +649,7 @@ if (config.problem == "diffusion") and (config.method == "LTP_casier"):
                     trunk/fortran_srcs/pack.o \
                      trunk/fortran_srcs/jacobi_method.o   '
             os.system(str(cmd)) 
-            cmd = 'mpiexec  -n 16 ./outfile'
+            cmd = 'mpiexec  -n 9 ./outfile'
             os.system(str(cmd))
             
             Xread = numpy.fromfile('trunk/fortran_srcs/coords4fortran.bin')
