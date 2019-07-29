@@ -637,7 +637,6 @@ M.T.tofile('trunk/fortran_srcs/matrixM4fortran.bin')
 if (config.problem == "diffusion") and (config.method == "LTP_casier"):
         if (config.time_scheme == 'euler_explicit') : 
             start = time.time()
-#            print "t = " , t   -g -fcheck=all -Wall
             cmd = 'mpif90 -g -fopenmp trunk/fortran_srcs/tri_casier_method.f90 -o outfile \
                     trunk/fortran_srcs/launchfortran.o \
                     trunk/fortran_srcs/mod_particle_2D.o \
@@ -646,10 +645,10 @@ if (config.problem == "diffusion") and (config.method == "LTP_casier"):
                     trunk/fortran_srcs/calculsfortran_rec.o \
                     trunk/fortran_srcs/calculs_2D.o \
                     trunk/fortran_srcs/calculsfortran_ini.o \
-                    trunk/fortran_srcs/pack.o \
+                     trunk/fortran_srcs/pack.o \
                      trunk/fortran_srcs/jacobi_method.o   '
             os.system(str(cmd)) 
-            cmd = 'mpiexec  -n 9 ./outfile'
+            cmd = 'mpiexec  -n 16 ./outfile'
             os.system(str(cmd))
             
             Xread = numpy.fromfile('trunk/fortran_srcs/coords4fortran.bin')

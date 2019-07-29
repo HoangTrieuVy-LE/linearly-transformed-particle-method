@@ -71,27 +71,35 @@ CALL particle_distribution
 !	!-------------------------------------------------------------------!
 !	!!!LOOP ON PARTICLES INSIDE BLOCK AND THE OTHERS IN OVERLAP TABLES!!!
 !	!-------------------------------------------------------------------!
- if(rank==4.or.rank==7) then
+! if(rank==4.or.rank==7) then 
+ if(rank==5.or.rank==6.or.rank==9.or.rank==10) then
 print*,'----------------------------------'
 	write(*,*)'rank:',rank, 'COUNTER_inside', COUNTER_inside(rank)
 	write(*,*)'              				   UP	','	DOWN	','  RIGHT','       LEFT	',' UP-LEFT  ',' DOWN-RIGHT','    DOWN-LEFT','  UP-RIGHT'	
 	write(*,*)'rank:',rank, 'COUNTER_overlap', COUNTER_overlap(:,rank)
 	write(*,*)'rank:',rank, 'COUNTER_danger', COUNTER_danger(:,rank)
 
+!DO i=1,number_of_particles
+!		print*,ALL_PARTICLES(i)%Xp,ALL_PARTICLES(i)%Yp
+!	END DO
 end if
+
+
 DO WHILE(T_start<=T_end)
+
 
 
 	CALL send_overlap_and_danger_particle
 
 	CALL block_loop_on_block_global_table
-
+	
 	!-------------------------------------------------------------------!
 	!!!              UPDATE ALL PARTICLES INFORMATIONS                !!!
 	!-------------------------------------------------------------------!
 
 	CALL update_ALL_particles
-	 if(rank==4.or.rank==7 .or.rank==0) then
+!	 if(rank==4.or.rank==7) then 
+if(rank==5.or.rank==6.or.rank==9.or.rank==10) then
 print*,'STEP: ',Npic
 print*,'----------------------------------'
 	write(*,*)'rank:',rank, 'COUNTER_inside', COUNTER_inside(rank)
@@ -99,6 +107,9 @@ print*,'----------------------------------'
 	write(*,*)'rank:',rank, 'COUNTER_overlap', COUNTER_overlap(:,rank)
 	write(*,*)'rank:',rank, 'COUNTER_danger', COUNTER_danger(:,rank)
 write(*,*)'rank:',rank, 'COUNTER_leave', COUNTER_leave(:,rank)
+	
+
+	
 end if
 
 
@@ -131,7 +142,7 @@ OPEN(unit= 4, FILE='trunk/fortran_srcs/temp_out.txt')
 	!!!                         DEALLOCATION                          !!!
 	!-------------------------------------------------------------------!
 		
-!	CALL dealloc_XMD
+	CALL dealloc_XMD
 !	CALL dealloc_all_particle_table
 
 

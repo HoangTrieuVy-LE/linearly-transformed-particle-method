@@ -995,7 +995,7 @@ end if
 !~         !$OMP END PARALLEL 
         
         diff_field = 0.
-                
+	print*,"im here"                
 !~      !$OMP PARALLEL DO shared(chunk) private(j, rho, grad_rho) schedule(dynamic,chunk)
         do j=1,N_part                        
             rho = 0.
@@ -1007,6 +1007,8 @@ end if
             diff_field(2,j) = grad_rho(2) / rho
         end do
 !~ 	    !$OMP END PARALLEL DO
+
+	print*,"im here"
     end subroutine
 
   !-------------------------------------------------------

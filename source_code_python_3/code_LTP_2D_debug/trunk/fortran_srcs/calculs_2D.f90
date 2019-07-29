@@ -1,9 +1,10 @@
 module calculsfor_var_modf90
 
-use calculsfor_rec_modf90, only : diffusion_field_barenblatt, diffusion_field_jacobian_barenblatt, &
-								  rec_ltp_at_coordinate, rec_ltp_grad_at_coordinate, &
-								  rec_ltp_hess_at_coordinate, &
-                                  rec_ltp_on_convolution_grid, hess_convolution
+use calculsfor_rec_modf90
+!, only : diffusion_field_barenblatt, diffusion_field_jacobian_barenblatt, &
+!								  rec_ltp_at_coordinate, rec_ltp_grad_at_coordinate, &
+!								  rec_ltp_hess_at_coordinate, &
+!                                  rec_ltp_on_convolution_grid, hess_convolution
 
 implicit none
     integer :: flot
@@ -248,6 +249,8 @@ contains
                 Dout(3,k) = Dk(2,1)
                 Dout(4,k) = Dk(2,2)
                 det_Dk =Dk(1,1)*Dk(2,2) - Dk(1,2)*Dk(2,1)
+
+			
             end do    
             !$OMP END PARALLEL DO         
         end if 
