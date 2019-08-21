@@ -18,7 +18,7 @@ type PARTTYPE
 real(kind=8) :: Xp
 real(kind=8) :: Yp
 
-!1. Deformation Matrix of k-th particle Dk: TODO find eigenvalues, eigenvector????
+!1. Deformation Matrix of k-th particle Dk:
 real(kind=8) :: Dp1 
 real(kind=8) :: Dp2
 real(kind=8) :: Dp3
@@ -30,7 +30,7 @@ real(kind=8),dimension(2) :: pointu2
 real(kind=8),dimension(2) :: pointu3
 real(kind=8),dimension(2) :: pointu4
 
-!3. Maximum of
+!3. Maximum of axe
 real(kind=8) :: axe
 
 !4. Mass

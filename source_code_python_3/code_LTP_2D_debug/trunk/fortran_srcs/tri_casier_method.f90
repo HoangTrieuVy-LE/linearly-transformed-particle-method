@@ -71,7 +71,7 @@ CALL particle_distribution
 !	!-------------------------------------------------------------------!
 !	!!!LOOP ON PARTICLES INSIDE BLOCK AND THE OTHERS IN OVERLAP TABLES!!!
 !	!-------------------------------------------------------------------!
-! if(rank==4.or.rank==7) then 
+
  if(rank==5.or.rank==6.or.rank==9.or.rank==10) then
 print*,'----------------------------------'
 	write(*,*)'rank:',rank, 'COUNTER_inside', COUNTER_inside(rank)
@@ -79,9 +79,14 @@ print*,'----------------------------------'
 	write(*,*)'rank:',rank, 'COUNTER_overlap', COUNTER_overlap(:,rank)
 	write(*,*)'rank:',rank, 'COUNTER_danger', COUNTER_danger(:,rank)
 
-!DO i=1,number_of_particles
-!		print*,ALL_PARTICLES(i)%Xp,ALL_PARTICLES(i)%Yp
-!	END DO
+
+end if
+
+
+if(rank==4) then
+DO i=1,number_of_particles
+		print*,ALL_PARTICLES(i)%ID,ALL_PARTICLES(i)%Xp,ALL_PARTICLES(i)%Yp
+	END DO
 end if
 
 
@@ -98,7 +103,7 @@ DO WHILE(T_start<=T_end)
 	!-------------------------------------------------------------------!
 
 	CALL update_ALL_particles
-!	 if(rank==4.or.rank==7) then 
+
 if(rank==5.or.rank==6.or.rank==9.or.rank==10) then
 print*,'STEP: ',Npic
 print*,'----------------------------------'
