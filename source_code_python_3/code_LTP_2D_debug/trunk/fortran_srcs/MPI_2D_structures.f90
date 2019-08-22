@@ -802,6 +802,7 @@ END IF
 		integer, dimension(NB_NEIGHBOURS) :: OPP
 		
 		OPP = (/2,1,4,3,6,5,8,7/)		
+
 		COUNTER_recv_danger = 0
 		
 		COUNTER_recv_overlap =0
@@ -812,42 +813,44 @@ END IF
 			IF (NEIGHBOUR(neighloop)<0) THEN
 						cycle
 					END IF
-
-!================================================================================================
-
 				DO i=1,COUNTER_overlap(neighloop,rank)
 					
 					IF (NEIGHBOUR(neighloop)<0) THEN
 						cycle
 					END IF
-					call MPI_SEND(IND_overlap(i,neighloop),1,MPI_INTEGER,NEIGHBOUR(neighloop),4,MPI_COMM_WORLD,code)
-														
+					call MPI_SEND(IND_overlap(i,neighloop),1,MPI_INTEGER,NEIGHBOUR(neighloop),4,MPI_COMM_WORLD,code)				
 				END DO
-
 			END DO
-
+			
+!================================================================================================
 			DO neighloop = 1,8
 			IF (NEIGHBOUR(neighloop)<0) THEN
 						cycle
 					END IF
 
-!================================================================================================			
+			
 				DO i= 1,COUNTER_overlap(OPP(neighloop),NEIGHBOUR(neighloop))
 					IF (NEIGHBOUR(neighloop)<0) THEN
 						CYCLE
 					END IF
 					call MPI_RECV(IND_recv_overlap(i,neighloop),1,MPI_INTEGER,NEIGHBOUR(neighloop),4, & 
-					MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
+					MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)	
 					
 				END DO
+				
 				IF (NEIGHBOUR(neighloop)<0) THEN
 						CYCLE
 				ELSE
 				COUNTER_recv_overlap = COUNTER_recv_overlap + COUNTER_overlap(OPP(neighloop),NEIGHBOUR(neighloop))
 				END IF
 				
-				
+			END DO	
 !================================================================================================
+			
+			DO neighloop = 1,8
+				IF (NEIGHBOUR(neighloop)<0) THEN
+					cycle
+				END IF
 				DO i=1,COUNTER_danger(neighloop,rank)
 					IF (NEIGHBOUR(neighloop)<0) THEN
 						cycle
@@ -855,7 +858,14 @@ END IF
 					call MPI_SEND(IND_danger(i,neighloop),1,MPI_INTEGER,NEIGHBOUR(neighloop),5,MPI_COMM_WORLD,code)
 					
 				END DO
+			END DO
+			
 !================================================================================================			
+			DO neighloop = 1,8
+				IF (NEIGHBOUR(neighloop)<0) THEN
+					cycle
+				END IF
+				
 				DO i= 1,COUNTER_danger(OPP(neighloop),NEIGHBOUR(neighloop))
 					IF (NEIGHBOUR(neighloop)<0) THEN
 						CYCLE
@@ -1051,11 +1061,11 @@ END IF
 !	print*,'npic:',Npic,Npart_block
 !END IF	
 
-if(rank==6) then
-DO i=1,9
-print*,	Xpart_block(:,i)
-END DO
-end if
+!if(rank==6) then
+!DO i=1,9
+!print*,	Xpart_block(:,i)
+!END DO
+!end if
 
 		call diffusion_field_ltp(Xpart_block,Mblock,Dblock,hx,hy,velocity_field,Npart_block)
 
