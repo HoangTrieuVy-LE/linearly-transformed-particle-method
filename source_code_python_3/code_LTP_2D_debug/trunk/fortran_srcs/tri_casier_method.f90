@@ -72,82 +72,88 @@ CALL particle_distribution
 !	!!!LOOP ON PARTICLES INSIDE BLOCK AND THE OTHERS IN OVERLAP TABLES!!!
 !	!-------------------------------------------------------------------!
 
- if(rank==5.or.rank==6.or.rank==9.or.rank==10) then
+if(rank==6.or.rank==7.or.rank==8.or.rank==11.or.rank==12.or.rank==13.or.rank==16.or.rank==17.or.rank==18) then
 print*,'----------------------------------'
 	write(*,*)'rank:',rank, 'COUNTER_inside', COUNTER_inside(rank)
 	write(*,*)'              				   UP	','	DOWN	','  RIGHT','       LEFT	',' UP-LEFT  ',' DOWN-RIGHT','    DOWN-LEFT','  UP-RIGHT'	
 	write(*,*)'rank:',rank, 'COUNTER_overlap', COUNTER_overlap(:,rank)
 	write(*,*)'rank:',rank, 'COUNTER_danger', COUNTER_danger(:,rank)
-
+!print*,'IND inside',IND_inside(1:4)
 
 end if
 
 
-if(rank==4) then
-DO i=1,number_of_particles
-		print*,ALL_PARTICLES(i)%ID,ALL_PARTICLES(i)%Xp,ALL_PARTICLES(i)%Yp
-	END DO
+if(rank==8) then
+!DO i=1,number_of_particles
+!		print*,ALL_PARTICLES(i)%ID,ALL_PARTICLES(i)%Xp,ALL_PARTICLES(i)%Yp
+!	END DO
+!DO i=1,8
+!	write(*,*)'rank:',rank,neighbour_limit(:,i)
+!END DO
 end if
 
 
-DO WHILE(T_start<=T_end)
+CALL send_overlap_and_danger_particle
+
+
+!DO WHILE(T_start<=T_end)
 
 
 
-	CALL send_overlap_and_danger_particle
+!	CALL send_overlap_and_danger_particle
 
 
 
-	CALL block_loop_on_block_global_table
-!	
+!	CALL block_loop_on_block_global_table
+!!	
+!!	!-------------------------------------------------------------------!
+!!	!!!              UPDATE ALL PARTICLES INFORMATIONS                !!!
+!!	!-------------------------------------------------------------------!
+
+!	CALL update_ALL_particles
+
+!!if(rank==5.or.rank==6.or.rank==9.or.rank==10) then
+!!print*,'STEP: ',Npic
+!!print*,'----------------------------------'
+!!	write(*,*)'rank:',rank, 'COUNTER_inside', COUNTER_inside(rank)
+!!	write(*,*)'              				   UP	','	DOWN	','  RIGHT','       LEFT	',' UP-LEFT  ',' DOWN-RIGHT','    DOWN-LEFT','  UP-RIGHT'	
+!!	write(*,*)'rank:',rank, 'COUNTER_overlap', COUNTER_overlap(:,rank)
+!!	write(*,*)'rank:',rank, 'COUNTER_danger', COUNTER_danger(:,rank)
+!!write(*,*)'rank:',rank, 'COUNTER_leave', COUNTER_leave(:,rank)
+!!end if
+
+
+
+!	T_start = T_start + time_step
+
+!	Npic = Npic + 1
+!	Nboucle = Nboucle + 1
+
+!END DO	
+
 !	!-------------------------------------------------------------------!
-!	!!!              UPDATE ALL PARTICLES INFORMATIONS                !!!
+!	!!!                        UPDATE FILE IN                         !!!
 !	!-------------------------------------------------------------------!
-
-	CALL update_ALL_particles
-
-!if(rank==5.or.rank==6.or.rank==9.or.rank==10) then
-!print*,'STEP: ',Npic
-!print*,'----------------------------------'
-!	write(*,*)'rank:',rank, 'COUNTER_inside', COUNTER_inside(rank)
-!	write(*,*)'              				   UP	','	DOWN	','  RIGHT','       LEFT	',' UP-LEFT  ',' DOWN-RIGHT','    DOWN-LEFT','  UP-RIGHT'	
-!	write(*,*)'rank:',rank, 'COUNTER_overlap', COUNTER_overlap(:,rank)
-!	write(*,*)'rank:',rank, 'COUNTER_danger', COUNTER_danger(:,rank)
-!write(*,*)'rank:',rank, 'COUNTER_leave', COUNTER_leave(:,rank)
-!end if
+!CALL update_all_particle_information
 
 
-
-	T_start = T_start + time_step
-
-	Npic = Npic + 1
-	Nboucle = Nboucle + 1
-
-END DO	
-
-	!-------------------------------------------------------------------!
-	!!!                        UPDATE FILE IN                         !!!
-	!-------------------------------------------------------------------!
-CALL update_all_particle_information
-
-
-OPEN(unit= 4, FILE='trunk/fortran_srcs/temp_out.txt')			
-	write(4,5) T_start
-	write(4,6) Npic
-	write(4,7) Nboucle
-	5 	format (f16.10)
-	6	format (10i7)
-	7	format (10i7)
-	close(4)
+!OPEN(unit= 4, FILE='trunk/fortran_srcs/temp_out.txt')			
+!	write(4,5) T_start
+!	write(4,6) Npic
+!	write(4,7) Nboucle
+!	5 	format (f16.10)
+!	6	format (10i7)
+!	7	format (10i7)
+!	close(4)
 
 
 
-	!-------------------------------------------------------------------!
-	!!!                         DEALLOCATION                          !!!
-	!-------------------------------------------------------------------!
-		
-	CALL dealloc_XMD
-	CALL dealloc_all_particle_table
+!	!-------------------------------------------------------------------!
+!	!!!                         DEALLOCATION                          !!!
+!	!-------------------------------------------------------------------!
+!		
+!	CALL dealloc_XMD
+!	CALL dealloc_all_particle_table
 
 
 CALL environnement_finalization

@@ -237,21 +237,28 @@ MODULE mpi_2d_structures_modf90
 
 		IF (particle_k%Xp>=start_x .and. particle_k%Xp<end_x &
 		.and. particle_k%Yp>=start_y .and. particle_k%Yp<end_y) THEN
+		
 			inside_check = .true.
+			
 			IF(pointu1inside.and.pointu2inside.and.pointu3inside.and.pointu4inside)then
+			
 				overlap_check = .false.
 				d1 = particle_k%Xp - start_x
 				d2 = -particle_k%Xp + end_x
 				d3 = particle_k%Yp - start_y
 				d4 = -particle_k%Yp + end_y
+				
 		  		IF (d1<2*axe .or. d2<2*axe .or. d3<2*axe .or. d4 <2*axe) THEN
 					danger_check = .true.
 				ELSE
 					danger_check = .false.
 				END IF
+			
 			ELSE
+			
 				overlap_check = .true.
 				danger_check  = .false.
+			
 			END IF
 			
 		
@@ -287,6 +294,11 @@ MODULE mpi_2d_structures_modf90
 			DO i =1,number_of_particles
 				CALL overlap_criterion(ALL_PARTICLES(i),local_overlapcheck,local_insidecheck,local_dangercheck & 
 				,pointu1,pointu2,pointu3,pointu4,axe)
+!				IF(rank==8) THEN
+!					
+!					print*,ALL_PARTICLES(i)%ID,local_overlapcheck,local_insidecheck,local_dangercheck
+!					
+!				END IF
 
 				ALL_PARTICLES(i)%pointu1 = pointu1
 				ALL_PARTICLES(i)%pointu2 = pointu2
@@ -296,11 +308,9 @@ MODULE mpi_2d_structures_modf90
 
 				IF (local_insidecheck) then
 					COUNTER_inside(rank)         = COUNTER_inside(rank) + 1
-					IND_inside(COUNTER_inside(rank)) = i
+					IND_inside(COUNTER_inside(rank)) = ALL_PARTICLES(i)%ID
 					
 
-					call particle_screening(ALL_PARTICLES(i),local_overlapcheck,local_dangercheck,local_leave_check)
-				else 
 					call particle_screening(ALL_PARTICLES(i),local_overlapcheck,local_dangercheck,local_leave_check)
 
 				END IF
@@ -664,74 +674,78 @@ END IF
 				p3 = particle_k%pointu3
 				p4 = particle_k%pointu4
 				
+				in_up =((p1(2) > neighbour_limit(3,1) .and. p1(2) < neighbour_limit(4,1)) & 
+					.and. (p1(1) > neighbour_limit(1,1) .and. p1(1) < neighbour_limit(2,1)) .or. &
+						(p2(2) > neighbour_limit(3,1) .and. p2(2) < neighbour_limit(4,1)) & 
+					.and. (p2(1) > neighbour_limit(1,1) .and. p3(1) < neighbour_limit(2,1)) .or. &
+						(p3(2) > neighbour_limit(3,1) .and. p3(2) < neighbour_limit(4,1)) & 
+					.and. (p3(1) > neighbour_limit(1,1) .and. p3(1) < neighbour_limit(2,1)) .or. &
+						(p4(2) > neighbour_limit(3,1) .and. p4(2) < neighbour_limit(4,1)) & 
+					.and. (p4(1) > neighbour_limit(1,1) .and. p4(1) < neighbour_limit(2,1)))
+					
+				in_down = ((p1(2) >  neighbour_limit(3,2) .and. p1(2) < neighbour_limit(4,2)) &
+					.and. (p1(1) > neighbour_limit(1,2)  .and. p1(1) < neighbour_limit(2,2)) .or.&
+						   (p2(2) >  neighbour_limit(3,2) .and. p2(2) < neighbour_limit(4,2)) &
+					.and. (p2(1) > neighbour_limit(1,2)  .and. p2(1) < neighbour_limit(2,2)) .or.&
+						   (p3(2) >  neighbour_limit(3,2) .and. p3(2) < neighbour_limit(4,2)) &
+					.and. (p3(1) > neighbour_limit(1,2)  .and. p3(1) < neighbour_limit(2,2)) .or.&
+						   (p4(2) >  neighbour_limit(3,2) .and. p4(2) < neighbour_limit(4,2)) &
+					.and. (p4(1) > neighbour_limit(1,2)  .and. p4(1) < neighbour_limit(2,2)))
 				
-				in_up =((p1(2) > start_y+block_step_y .and. p1(2) < END_y+block_step_y) & 
-					.and. (p1(1) > start_x .and. p1(1) < END_x)) .or. &
-					((p2(2) > start_y+block_step_y .and. p2(2) < END_y+block_step_y) & 
-					.and. (p2(1) > start_x .and. p2(1) < END_x)) .or. & 
-					((p3(2) > start_y+block_step_y .and. p3(2) < END_y+block_step_y) & 
-					.and. (p3(1) > start_x .and. p3(1) < END_x)) .or. &
-					((p4(2) > start_y+block_step_y .and. p4(2) < END_y+block_step_y) & 
-					.and. (p4(1) > start_x .and. p4(1) < END_x))
-!================================================================================================					
-				in_down = (( (p1(2) > start_y-block_step_y .and. p1(2) < END_y-block_step_y) &
-					.and. (p1(1) > start_x .and. p1(1) < END_x) ) .or.&
-					 ( (p2(2) > start_y-block_step_y .and. p2(2) < END_y-block_step_y) &
-					.and. (p2(1) > start_x .and. p2(1) < END_x) ) .or.&
-					 ( (p3(2) > start_y-block_step_y .and. p3(2) < END_y-block_step_y) &
-					.and. (p3(1) > start_x .and. p3(1) < END_x) ) .or.&
-					 ( (p4(2) > start_y-block_step_y .and. p4(2) < END_y-block_step_y) &
-					.and. (p4(1) > start_x .and. p4(1) < END_x) ))
-!================================================================================================				
-				in_left =((p1(2) > start_y .and. p1(2) < END_y) .and. (p1(1) > start_x-block_step_x .and. p1(1) < END_x-block_step_x) ) .or. & 
-				( (p2(2) > start_y .and. p2(2) < END_y) .and. (p2(1) > start_x-block_step_x .and. p2(1) < END_x-block_step_x) ) .or. & 
-				( (p3(2) > start_y .and. p3(2) < END_y) .and. (p3(1) > start_x-block_step_x .and. p3(1) < END_x-block_step_x) ) .or. & 
-				( (p4(2) > start_y .and. p4(2) < END_y) .and. (p4(1) > start_x-block_step_x .and. p4(1) < END_x-block_step_x) )
-!================================================================================================				
-				in_right = (( (p1(2) > start_y .and. p1(2) < END_y) & 
-					.and. (p1(1) > start_x+block_step_x .and. p1(1) < END_x+block_step_x) ).or. &
-					( (p2(2) > start_y .and. p2(2) < END_y) & 
-					.and. (p2(1) > start_x+block_step_x .and. p2(1) < END_x+block_step_x) ).or. &
-					( (p3(2) > start_y .and. p3(2) < END_y) & 
-					.and. (p3(1) > start_x+block_step_x .and. p3(1) < END_x+block_step_x) ).or. &
-					( (p4(2) > start_y .and. p4(2) < END_y) & 
-					.and. (p4(1) > start_x+block_step_x .and. p4(1) < END_x+block_step_x) )) 
-!================================================================================================				
-				in_up_left = (( (p1(2) > start_y+block_step_y .and. p1(2) < END_y+block_step_y) &
-			       .and. (p1(1) > start_x-block_step_x .and. p1(1) < END_x-block_step_x) ).or.&
-			       	( (p2(2) > start_y+block_step_y .and. p2(2) < END_y+block_step_y) &
-			       .and. (p2(1) > start_x-block_step_x .and. p2(1) < END_x-block_step_x) ).or.&
-			       ( (p3(2) > start_y+block_step_y .and. p3(2) < END_y+block_step_y) &
-			       .and. (p3(1) > start_x-block_step_x .and. p3(1) < END_x-block_step_x) ).or.&
-			       ( (p4(2) > start_y+block_step_y .and. p4(2) < END_y+block_step_y) &
-			       .and. (p4(1) > start_x-block_step_x .and. p4(1) < END_x-block_step_x) ))
-!================================================================================================			       
-				in_up_right = (( (p1(2) > start_y+block_step_y .and. p1(2) < END_y+block_step_y) &
-			       .and. (p1(1) > start_x+block_step_x .and. p1(1) < END_x+block_step_x) ).or. &
-			       ( (p2(2) > start_y+block_step_y .and. p2(2) < END_y+block_step_y) &
-			       .and. (p2(1) > start_x+block_step_x .and. p2(1) < END_x+block_step_x) ).or. &
-			       ( (p3(2) > start_y+block_step_y .and. p3(2) < END_y+block_step_y) &
-			       .and. (p3(1) > start_x+block_step_x .and. p3(1) < END_x+block_step_x) ).or. &
-			       ( (p4(2) > start_y+block_step_y .and. p4(2) < END_y+block_step_y) &
-			       .and. (p4(1) > start_x+block_step_x .and. p4(1) < END_x+block_step_x) ))
-!================================================================================================				
-				in_down_left = (( (p1(2) > start_y-block_step_y .and. p1(2) < END_y-block_step_y) &
-			       .and. (p1(1) > start_x-block_step_x .and. p1(1) < END_x-block_step_x) ).or. &
-			       ( (p2(2) > start_y-block_step_y .and. p2(2) < END_y-block_step_y) &
-			       .and. (p2(1) > start_x-block_step_x .and. p2(1) < END_x-block_step_x) ).or. &
-			       ( (p3(2) > start_y-block_step_y .and. p3(2) < END_y-block_step_y) &
-			       .and. (p3(1) > start_x-block_step_x .and. p3(1) < END_x-block_step_x) ).or. &
-			       ( (p4(2) > start_y-block_step_y .and. p4(2) < END_y-block_step_y) &
-			       .and. (p4(1) > start_x-block_step_x .and. p4(1) < END_x-block_step_x) ))
-!================================================================================================				
-				in_down_right = ((p1(2) > start_y-block_step_y .and. p1(2) < END_y-block_step_y) &
-			       .and. (p1(1) > start_x+block_step_x .and. p1(1) < END_x+block_step_x) ).or.&
-			       ( (p2(2) > start_y-block_step_y .and. p2(2) < END_y-block_step_y) &
-			       .and. (p2(1) > start_x+block_step_x .and. p2(1) < END_x+block_step_x) ).or.&
-			       ( (p3(2) > start_y-block_step_y .and. p3(2) < END_y-block_step_y) &
-			       .and. (p3(1) > start_x+block_step_x .and. p3(1) < END_x+block_step_x) ).or.&
-			       ( (p4(2) > start_y-block_step_y .and. p4(2) < END_y-block_step_y) &
-			       .and. (p4(1) > start_x+block_step_x .and. p4(1) < END_x+block_step_x) )
+				in_left = ((p1(2) > neighbour_limit(3,4) .and. p1(2) < neighbour_limit(4,4)) &
+				    .and. (p1(1) > neighbour_limit(1,4)  .and. p1(1)< neighbour_limit(2,4)) .or.&
+				    	   (p2(2) > neighbour_limit(3,4) .and. p2(2) < neighbour_limit(4,4)) &
+				    .and. (p2(1) > neighbour_limit(1,4)  .and. p2(1)< neighbour_limit(2,4)) .or.&
+				    	   (p3(2) > neighbour_limit(3,4) .and. p3(2) < neighbour_limit(4,4)) &
+				    .and. (p3(1) > neighbour_limit(1,4)  .and. p3(1)< neighbour_limit(2,4)) .or.&
+				    	   (p4(2) > neighbour_limit(3,4) .and. p4(2) < neighbour_limit(4,4)) &
+				    .and. (p4(1) > neighbour_limit(1,4)  .and. p4(1)< neighbour_limit(2,4)))
+				
+				in_right = ((p1(2) >  neighbour_limit(3,3) .and. p1(2) < neighbour_limit(4,3)) & 
+					.and. (p1(1) > neighbour_limit(1,3)  .and. p1(1) < neighbour_limit(2,3)) .or. &
+							(p2(2) >  neighbour_limit(3,3) .and. p2(2) < neighbour_limit(4,3)) & 
+					.and. (p2(1) > neighbour_limit(1,3)  .and. p2(1) < neighbour_limit(2,3)) .or. &
+							(p3(2) >  neighbour_limit(3,3) .and. p3(2) < neighbour_limit(4,3)) & 
+					.and. (p3(1) > neighbour_limit(1,3)  .and. p3(1) < neighbour_limit(2,3)) .or.&
+							(p4(2) >  neighbour_limit(3,3) .and. p4(2) < neighbour_limit(4,3)) & 
+					.and. (p4(1) > neighbour_limit(1,3)  .and. p4(1) < neighbour_limit(2,3))) 
+				
+				in_up_left = ((p1(2) >  neighbour_limit(3,5) .and. p1(2) <neighbour_limit(4,5)) &
+			       .and. (p1(1) > neighbour_limit(1,5)  .and. p1(1) < neighbour_limit(2,5)) .or.&
+			       			  (p2(2) >  neighbour_limit(3,5) .and. p2(2) <neighbour_limit(4,5)) &
+			       .and. (p2(1) > neighbour_limit(1,5)  .and. p2(1) < neighbour_limit(2,5)) .or.&
+			       		  	  (p3(2) >  neighbour_limit(3,5) .and. p3(2) <neighbour_limit(4,5)) &
+			       .and. (p3(1) > neighbour_limit(1,5)  .and. p3(1) < neighbour_limit(2,5)) .or. &
+			       			  (p4(2) >  neighbour_limit(3,5) .and. p4(2) <neighbour_limit(4,5)) &
+			       .and. (p4(1) > neighbour_limit(1,5)  .and. p4(1) < neighbour_limit(2,5)))
+			       
+				in_up_right = ((p1(2) >  neighbour_limit(3,8) .and. p1(2) < neighbour_limit(4,8)) &
+			       .and. (p1(1) >neighbour_limit(1,8)  .and. p1(1) < neighbour_limit(2,8)) .or. &
+			    				(p2(2) >  neighbour_limit(3,8) .and. p2(2) < neighbour_limit(4,8)) &
+			       .and. (p2(1) >neighbour_limit(1,8)  .and. p2(1) < neighbour_limit(2,8)) .or. &
+			       				(p3(2) >  neighbour_limit(3,8) .and. p3(2) < neighbour_limit(4,8)) &
+			       .and. (p3(1) >neighbour_limit(1,8)  .and. p3(1) < neighbour_limit(2,8)) .or. &
+			       				(p4(2) >  neighbour_limit(3,8) .and. p4(2) < neighbour_limit(4,8)) &
+			       .and. (p4(1) >neighbour_limit(1,8)  .and. p4(1) < neighbour_limit(2,8)))
+				
+				in_down_left = ((p1(2) >  neighbour_limit(3,7) .and. p1(2) < neighbour_limit(4,7)) &
+			       .and. (p1(1) > neighbour_limit(1,7) .and. p1(1) < neighbour_limit(2,7)) .or. &
+			       				(p2(2) >  neighbour_limit(3,7) .and. p2(2) < neighbour_limit(4,7)) &
+			       .and. (p2(1) > neighbour_limit(1,7) .and. p2(1) < neighbour_limit(2,7)) .or. &
+			       				(p3(2) >  neighbour_limit(3,7) .and. p3(2) < neighbour_limit(4,7)) &
+			       .and. (p3(1) > neighbour_limit(1,7) .and. p3(1) < neighbour_limit(2,7)) .or. &
+			       				(p4(2) >  neighbour_limit(3,7) .and. p4(2) < neighbour_limit(4,7)) &
+			       .and. (p4(1) > neighbour_limit(1,7) .and. p4(1) < neighbour_limit(2,7)))
+				
+				in_down_right = ((p1(2) >  neighbour_limit(3,6) .and. p1(2) < neighbour_limit(4,6)) &
+			       .and. (p1(1) > neighbour_limit(1,6)  .and. p1(1) < neighbour_limit(2,6)) .or. &
+			       				(p2(2) >  neighbour_limit(3,6) .and. p2(2) < neighbour_limit(4,6)) &
+			       .and. (p2(1) > neighbour_limit(1,6)  .and. p2(1) < neighbour_limit(2,6)) .or. &
+			       				(p3(2) >  neighbour_limit(3,6) .and. p3(2) < neighbour_limit(4,6)) &
+			       .and. (p3(1) > neighbour_limit(1,6)  .and. p3(1) < neighbour_limit(2,6)) .or. &
+			       				(p4(2) >  neighbour_limit(3,6) .and. p4(2) < neighbour_limit(4,6)) &
+			       .and. (p4(1) > neighbour_limit(1,6)  .and. p4(1) < neighbour_limit(2,6)))
+			       
 !================================================================================================			       
 			     IF (rank_up /= -1) then  
 

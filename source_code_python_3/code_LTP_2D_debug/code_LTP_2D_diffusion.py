@@ -648,7 +648,7 @@ if (config.problem == "diffusion") and (config.method == "LTP_casier"):
                      trunk/fortran_srcs/pack.o \
                      trunk/fortran_srcs/jacobi_method.o   '
             os.system(str(cmd)) 
-            cmd = 'mpiexec  -n 16 ./outfile'
+            cmd = 'mpiexec  -n 25 ./outfile'
             os.system(str(cmd))
             
             Xread = numpy.fromfile('trunk/fortran_srcs/coords4fortran.bin')

@@ -36,7 +36,7 @@ real(kind=8) :: axe
 !4. Mass
 real(kind=8) :: mass
 
-!5. Particle dentity
+!5. Particle identity
 integer :: ID
 !integer :: PROC_ID
 
