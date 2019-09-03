@@ -11,7 +11,7 @@ IMPLICIT NONE
 	
 	INTEGER                      :: nb_proc
 
-	INTEGER                      :: i
+	INTEGER                      :: i,j
 
 	! COMMUNICATOR OF THE CARTESIAN TOPOLOGY
   	INTEGER                      :: comm2d

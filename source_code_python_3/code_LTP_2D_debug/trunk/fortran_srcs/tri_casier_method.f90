@@ -96,6 +96,9 @@ end if
 CALL send_overlap_and_danger_particle
 
 
+
+CALL block_loop_on_block_global_table
+
 !DO WHILE(T_start<=T_end)
 
 

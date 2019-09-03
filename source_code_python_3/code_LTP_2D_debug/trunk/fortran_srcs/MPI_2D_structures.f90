@@ -841,7 +841,6 @@ END IF
 			IF (NEIGHBOUR(neighloop)<0) THEN
 						cycle
 					END IF
-
 			
 				DO i= 1,COUNTER_overlap(OPP(neighloop),NEIGHBOUR(neighloop))
 					IF (NEIGHBOUR(neighloop)<0) THEN
@@ -940,10 +939,21 @@ END IF
 		
 		! Where COUNTER_recv_overlap = sum of COUNTER_overlap from neigbour 
 
-		Npart_block = COUNTER_inside(rank) + SUM(COUNTER_overlap(:,rank)) + COUNTER_recv_danger + COUNTER_recv_overlap
+		Npart_block = COUNTER_inside(rank) + COUNTER_recv_danger + COUNTER_recv_overlap  
+!		+ SUM(COUNTER_overlap(:,rank))
 		
 
+if(rank==12) then
+!DO i =1,8
+!	
+!	print*,'neighbour',i,IND_recv_overlap(:,i)
+!	
+!END DO*
 
+
+end if
+
+print*,rank,'Npart',Npart_block
 		
 			ALLOCATE(Xpart_block(2,Npart_block))
 			ALLOCATE(Mblock(Npart_block))
@@ -968,8 +978,8 @@ END IF
 			end if
 		DO j=1,COUNTER_overlap(OPP(neighloop),NEIGHBOUR(neighloop))
 				Xpart_block(1,j+Ncum1) = ALL_PARTICLES(IND_recv_overlap(j,neighloop))%Xp
-				Xpart_block(1,j+Ncum1) = ALL_PARTICLES(IND_recv_overlap(j,neighloop))%Yp	
-				Xpart_block(1,j+Ncum1) = ALL_PARTICLES(IND_recv_overlap(j,neighloop))%Yp
+				Xpart_block(2,j+Ncum1) = ALL_PARTICLES(IND_recv_overlap(j,neighloop))%Yp	
+
 
 
 			END DO
@@ -1075,11 +1085,11 @@ END IF
 !	print*,'npic:',Npic,Npart_block
 !END IF	
 
-!if(rank==6) then
-!DO i=1,9
-!print*,	Xpart_block(:,i)
-!END DO
-!end if
+if(rank==8) then
+DO i=1,9
+print*,	Xpart_block(:,i)
+END DO
+end if
 
 		call diffusion_field_ltp(Xpart_block,Mblock,Dblock,hx,hy,velocity_field,Npart_block)
 
