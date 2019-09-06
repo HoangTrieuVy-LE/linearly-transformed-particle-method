@@ -90,64 +90,65 @@ if(rank==8) then
 !DO i=1,8
 !	write(*,*)'rank:',rank,neighbour_limit(:,i)
 !END DO
+
+print*,T_start,T_end
+
 end if
 
 
 CALL send_overlap_and_danger_particle
 
+!CALL block_loop_on_block_global_table
 
 
-CALL block_loop_on_block_global_table
+!CALL update_ALL_particles
 
-!DO WHILE(T_start<=T_end)
-
-
-
-!	CALL send_overlap_and_danger_particle
-
-
-
-!	CALL block_loop_on_block_global_table
-!!	
-!!	!-------------------------------------------------------------------!
-!!	!!!              UPDATE ALL PARTICLES INFORMATIONS                !!!
-!!	!-------------------------------------------------------------------!
-
-!	CALL update_ALL_particles
-
-!!if(rank==5.or.rank==6.or.rank==9.or.rank==10) then
-!!print*,'STEP: ',Npic
-!!print*,'----------------------------------'
-!!	write(*,*)'rank:',rank, 'COUNTER_inside', COUNTER_inside(rank)
-!!	write(*,*)'              				   UP	','	DOWN	','  RIGHT','       LEFT	',' UP-LEFT  ',' DOWN-RIGHT','    DOWN-LEFT','  UP-RIGHT'	
-!!	write(*,*)'rank:',rank, 'COUNTER_overlap', COUNTER_overlap(:,rank)
-!!	write(*,*)'rank:',rank, 'COUNTER_danger', COUNTER_danger(:,rank)
-!!write(*,*)'rank:',rank, 'COUNTER_leave', COUNTER_leave(:,rank)
-!!end if
-
-
-
-!	T_start = T_start + time_step
-
-!	Npic = Npic + 1
-!	Nboucle = Nboucle + 1
-
-!END DO	
-
-!	!-------------------------------------------------------------------!
-!	!!!                        UPDATE FILE IN                         !!!
-!	!-------------------------------------------------------------------!
 !CALL update_all_particle_information
 
 
-!OPEN(unit= 4, FILE='trunk/fortran_srcs/temp_out.txt')			
-!	write(4,5) T_start
-!	write(4,6) Npic
-!	write(4,7) Nboucle
-!	5 	format (f16.10)
-!	6	format (10i7)
-!	7	format (10i7)
-!	close(4)
+DO WHILE(T_start<=T_end)
+
+	CALL block_loop_on_block_global_table
+!	
+!	!-------------------------------------------------------------------!
+!	!!!              UPDATE ALL PARTICLES INFORMATIONS                !!!
+!	!-------------------------------------------------------------------!
+
+	CALL update_ALL_particles
+
+!if(rank==5.or.rank==6.or.rank==9.or.rank==10) then
+!print*,'STEP: ',Npic
+!print*,'----------------------------------'
+!	write(*,*)'rank:',rank, 'COUNTER_inside', COUNTER_inside(rank)
+!	write(*,*)'              				   UP	','	DOWN	','  RIGHT','       LEFT	',' UP-LEFT  ',' DOWN-RIGHT','    DOWN-LEFT','  UP-RIGHT'	
+!	write(*,*)'rank:',rank, 'COUNTER_overlap', COUNTER_overlap(:,rank)
+!	write(*,*)'rank:',rank, 'COUNTER_danger', COUNTER_danger(:,rank)
+!write(*,*)'rank:',rank, 'COUNTER_leave', COUNTER_leave(:,rank)
+!end if
+
+
+
+	T_start = T_start + time_step
+
+	Npic = Npic + 1
+	Nboucle = Nboucle + 1
+
+END DO	
+
+	!-------------------------------------------------------------------!
+	!!!                        UPDATE FILE IN                         !!!
+	!-------------------------------------------------------------------!
+CALL update_all_particle_information
+
+
+OPEN(unit= 4, FILE='trunk/fortran_srcs/temp_out.txt')			
+	write(4,5) T_start
+	write(4,6) Npic
+	write(4,7) Nboucle
+	5 	format (f16.10)
+	6	format (10i7)
+	7	format (10i7)
+	close(4)
 
 
 
@@ -156,7 +157,7 @@ CALL block_loop_on_block_global_table
 !	!-------------------------------------------------------------------!
 !		
 !	CALL dealloc_XMD
-!	CALL dealloc_all_particle_table
+	CALL dealloc_all_particle_table
 
 
 CALL environnement_finalization

@@ -1085,11 +1085,11 @@ print*,rank,'Npart',Npart_block
 !	print*,'npic:',Npic,Npart_block
 !END IF	
 
-if(rank==8) then
-DO i=1,9
-print*,	Xpart_block(:,i)
-END DO
-end if
+!if(rank==8) then
+!DO i=1,9
+!print*,	Xpart_block(:,i)
+!END DO
+!end if
 
 		call diffusion_field_ltp(Xpart_block,Mblock,Dblock,hx,hy,velocity_field,Npart_block)
 
