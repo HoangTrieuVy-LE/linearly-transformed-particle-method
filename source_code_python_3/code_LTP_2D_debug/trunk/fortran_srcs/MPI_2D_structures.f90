@@ -403,11 +403,10 @@ IF((coords(1)>=1 .and. coords(1)<=dims(1)-2) .and.(coords(2)>=1 .and. coords(2)<
 					COUNTER_inside(rank)         = COUNTER_inside(rank) + 1
 					IND_inside(COUNTER_inside(rank)) = ind
 					
-
 					call particle_screening(ALL_PARTICLES(ind),local_overlapcheck,local_dangercheck,local_leave_check)
-				else 
-					call particle_screening(ALL_PARTICLES(ind),local_overlapcheck,local_dangercheck,local_leave_check)
-
+					if(rank==8)then
+						print*,ind,local_overlapcheck,local_dangercheck,local_leave_check
+					end if
 				END IF
 		END DO
 	END DO
@@ -805,7 +804,10 @@ END IF
 					END IF
 				END IF
 
-			
+			if(particle_k%ID==3) then
+				print*,'ssssssssss',in_up,particle_k%pointu1,particle_k%pointu2,particle_k%pointu3,particle_k%pointu4
+			end if			
+
 			END IF 
 !================================================================================================
 		END SUBROUTINE

@@ -66,7 +66,7 @@ CALL neighbouring
 
 CALL neighbour_limit_finding
 
-CALL particle_distribution
+CALL particle_distribution_v2
 
 !	!-------------------------------------------------------------------!
 !	!!!LOOP ON PARTICLES INSIDE BLOCK AND THE OTHERS IN OVERLAP TABLES!!!
@@ -90,8 +90,6 @@ if(rank==8) then
 !DO i=1,8
 !	write(*,*)'rank:',rank,neighbour_limit(:,i)
 !END DO
-
-print*,T_start,T_end
 
 end if
 
