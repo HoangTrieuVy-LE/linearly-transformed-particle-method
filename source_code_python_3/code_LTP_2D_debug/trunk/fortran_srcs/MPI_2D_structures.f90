@@ -149,7 +149,7 @@ MODULE mpi_2d_structures_modf90
 		!----------------------------------------!
 			
 		SUBROUTINE overlap_criterion(particle_k,overlap_check,inside_check,danger_check, & 
-		pointu1,pointu2,pointu3,pointu4,axe)
+		pointu1,pointu2,pointu3,pointu4,pointu5,pointu6,pointu7,pointu8,axe)
 		
 		! Retrieve the eigenvalues and eigenvectors to determine the direction movement of particles, 	then decide its status
 		
@@ -164,7 +164,10 @@ MODULE mpi_2d_structures_modf90
 			LOGICAL, INTENT(out)                            :: danger_check
 			DOUBLE PRECISION, INTENT(out)                   :: axe
 			DOUBLE PRECISION, dimension(2), intent(out)     :: pointu1, pointu2, & 
-															   pointu3,pointu4
+															   pointu3, pointu4, &
+															   pointu5, pointu6, &
+															   pointu7, pointu8
+
 																	   
 			LOGICAL                                         :: partial_inside_check			
 			DOUBLE PRECISION                                :: a(2,2), x(2,2)
@@ -182,7 +185,9 @@ MODULE mpi_2d_structures_modf90
 			
 			
 			LOGICAL                                         :: pointu1inside,pointu2inside, & 
-					                                           pointu3inside,pointu4inside
+					                                           pointu3inside,pointu4inside, &
+					                                           pointu5inside,pointu6inside, &
+					                                           pointu7inside,pointu8inside
 			
 
 				
@@ -210,12 +215,28 @@ MODULE mpi_2d_structures_modf90
 				
 			pointu1(1) =  eigenvector_1(1) + eigenvector_2(1) + particle_k%Xp
 			pointu1(2) =  eigenvector_1(2) + eigenvector_2(2) + particle_k%Yp
+			
 			pointu2(1) = -eigenvector_1(1)- eigenvector_2(1) + particle_k%Xp
 			pointu2(2) = -eigenvector_1(2) - eigenvector_2(2) + particle_k%Yp
+			
 			pointu3(1) = -eigenvector_1(1)+ eigenvector_2(1) + particle_k%Xp
 			pointu3(2) = -eigenvector_1(2) + eigenvector_2(2) + particle_k%Yp
+			
 			pointu4(1) =  eigenvector_1(1) - eigenvector_2(1) + particle_k%Xp
 			pointu4(2) =  eigenvector_1(2) - eigenvector_2(2) + particle_k%Yp
+
+			pointu5(1) =  eigenvector_1(1) + particle_k%Xp
+			pointu5(2) =  eigenvector_1(2) + particle_k%Yp
+			
+			pointu6(1) =  -eigenvector_1(1) + particle_k%Xp
+			pointu6(2) =  -eigenvector_1(2) + particle_k%Yp
+			
+			pointu7(1) =  eigenvector_2(1) + particle_k%Xp
+			pointu7(2) =  eigenvector_2(2) + particle_k%Yp
+			
+			pointu8(1) =  -eigenvector_2(1) + particle_k%Xp
+			pointu8(2) =  -eigenvector_2(2) + particle_k%Yp
+			
 			
 			pointu1inside = (pointu1(1)-start_x>=0) &
 				.and.(pointu1(1)-END_x<=0)          &
@@ -233,6 +254,23 @@ MODULE mpi_2d_structures_modf90
 				.and.(pointu4(1)-END_x<=0)          &
 				.and.(pointu4(2)-start_y>=0)        &
 				.and.(pointu4(2)-END_y<=0)		
+			pointu5inside = (pointu5(1)-start_x>=0) &
+				.and.(pointu5(1)-END_x<=0)          &
+				.and.(pointu5(2)-start_y>=0)        &
+				.and.(pointu5(2)-END_y<=0)	
+			pointu6inside = (pointu6(1)-start_x>=0) &
+				.and.(pointu6(1)-END_x<=0)          &
+				.and.(pointu6(2)-start_y>=0)        &
+				.and.(pointu6(2)-END_y<=0)	
+			pointu7inside = (pointu7(1)-start_x>=0) &
+				.and.(pointu7(1)-END_x<=0)          &
+				.and.(pointu7(2)-start_y>=0)        &
+				.and.(pointu7(2)-END_y<=0)	
+			pointu8inside = (pointu8(1)-start_x>=0) &
+				.and.(pointu8(1)-END_x<=0)          &
+				.and.(pointu8(2)-start_y>=0)        &
+				.and.(pointu8(2)-END_y<=0)	
+			
 			
 
 		IF (particle_k%Xp>=start_x .and. particle_k%Xp<end_x &
@@ -240,7 +278,8 @@ MODULE mpi_2d_structures_modf90
 		
 			inside_check = .true.
 			
-			IF(pointu1inside.and.pointu2inside.and.pointu3inside.and.pointu4inside)then
+			IF(pointu1inside.and.pointu2inside.and.pointu3inside.and.pointu4inside&
+			.and.pointu5inside.and.pointu6inside.and.pointu7inside.and.pointu8inside)then
 			
 				overlap_check = .false.
 				d1 = particle_k%Xp - start_x
@@ -277,7 +316,8 @@ MODULE mpi_2d_structures_modf90
 			IMPLICIT NONE
 			logical                           :: local_overlapcheck, local_insidecheck, & 
 												 local_dangercheck,local_leave_check
-			DOUBLE PRECISION, dimension(2)    :: pointu1, pointu2,pointu3,pointu4
+			DOUBLE PRECISION, dimension(2)    :: pointu1, pointu2,pointu3,pointu4,&
+												 pointu5, pointu6,pointu7,pointu8
 			DOUBLE PRECISION                  :: axe
 			integer                           :: ID
 			
@@ -293,17 +333,16 @@ MODULE mpi_2d_structures_modf90
 
 			DO i =1,number_of_particles
 				CALL overlap_criterion(ALL_PARTICLES(i),local_overlapcheck,local_insidecheck,local_dangercheck & 
-				,pointu1,pointu2,pointu3,pointu4,axe)
-!				IF(rank==8) THEN
-!					
-!					print*,ALL_PARTICLES(i)%ID,local_overlapcheck,local_insidecheck,local_dangercheck
-!					
-!				END IF
-
+				,pointu1,pointu2,pointu3,pointu4,pointu5, pointu6,pointu7,pointu8,axe)
+				
 				ALL_PARTICLES(i)%pointu1 = pointu1
 				ALL_PARTICLES(i)%pointu2 = pointu2
 				ALL_PARTICLES(i)%pointu3 = pointu3
 				ALL_PARTICLES(i)%pointu4 = pointu4
+				ALL_PARTICLES(i)%pointu5 = pointu5
+				ALL_PARTICLES(i)%pointu6 = pointu6
+				ALL_PARTICLES(i)%pointu7 = pointu7
+				ALL_PARTICLES(i)%pointu8 = pointu8
 				ALL_PARTICLES(i)%axe     = axe
 
 				IF (local_insidecheck) then
@@ -366,7 +405,8 @@ SUBROUTINE particle_distribution_v2
 
 	logical                           :: local_overlapcheck, local_insidecheck, & 
 												 local_dangercheck,local_leave_check
-			DOUBLE PRECISION, dimension(2)    :: pointu1, pointu2,pointu3,pointu4
+			DOUBLE PRECISION, dimension(2)    :: pointu1, pointu2,pointu3,pointu4,&
+												 pointu5, pointu6,pointu7,pointu8
 			DOUBLE PRECISION                  :: axe
 			integer                           :: ID
 			
@@ -391,12 +431,16 @@ IF((coords(1)>=1 .and. coords(1)<=dims(1)-2) .and.(coords(2)>=1 .and. coords(2)<
 		DO i=1,number_of_columns
 			ind = step_y*(dims(2)-2-coords(2))+step_x*(coords(1)-1)+i+(j-1)*nxg
 			CALL overlap_criterion(ALL_PARTICLES(ind),local_overlapcheck,local_insidecheck,local_dangercheck & 
-				,pointu1,pointu2,pointu3,pointu4,axe)
+				,pointu1,pointu2,pointu3,pointu4,pointu5, pointu6,pointu7,pointu8,axe)
 			
 				ALL_PARTICLES(ind)%pointu1 = pointu1
 				ALL_PARTICLES(ind)%pointu2 = pointu2
 				ALL_PARTICLES(ind)%pointu3 = pointu3
 				ALL_PARTICLES(ind)%pointu4 = pointu4
+				ALL_PARTICLES(ind)%pointu1 = pointu5
+				ALL_PARTICLES(ind)%pointu2 = pointu6
+				ALL_PARTICLES(ind)%pointu3 = pointu7
+				ALL_PARTICLES(ind)%pointu4 = pointu8
 				ALL_PARTICLES(ind)%axe     = axe
 
 				IF (local_insidecheck) then
@@ -404,9 +448,9 @@ IF((coords(1)>=1 .and. coords(1)<=dims(1)-2) .and.(coords(2)>=1 .and. coords(2)<
 					IND_inside(COUNTER_inside(rank)) = ind
 					
 					call particle_screening(ALL_PARTICLES(ind),local_overlapcheck,local_dangercheck,local_leave_check)
-					if(rank==8)then
-						print*,ind,local_overlapcheck,local_dangercheck,local_leave_check
-					end if
+!					if(rank==8)then
+!						print*,ind,local_overlapcheck,local_dangercheck,local_leave_check
+!					end if
 				END IF
 		END DO
 	END DO
@@ -495,8 +539,8 @@ END IF
 			! Idea, we make a loop in overlap table, and condition for an overlap particle access in
 			! a neighbour block is JUST ONE of 4 pointu locate inside of the neigbour.
 			type(PARTTYPE), INTENT(in)     :: particle_k
-			double precision, dimension(2) :: p1,p2,p3,p4
-			double precision               :: d1,d2,d3,d4,  axe_k, xk,yk
+			double precision, dimension(2) :: p1,p2,p3,p4,p5,p6,p7,p8
+			double precision               :: d1,d2,d3,d4, axe_k, xk,yk
 			logical, intent(in)            :: overlap, danger, leave
 			logical                        :: in_up,in_down,in_left,in_right, & 
 			                                  in_up_left,in_up_right,in_down_left,in_down_right
@@ -672,6 +716,10 @@ END IF
 				p2 = particle_k%pointu2
 				p3 = particle_k%pointu3
 				p4 = particle_k%pointu4
+				p5 = particle_k%pointu5
+				p6 = particle_k%pointu6
+				p7 = particle_k%pointu7
+				p8 = particle_k%pointu8
 				
 				in_up =((p1(2) > neighbour_limit(3,1) .and. p1(2) < neighbour_limit(4,1)) & 
 					.and. (p1(1) > neighbour_limit(1,1) .and. p1(1) < neighbour_limit(2,1)) .or. &
@@ -680,7 +728,15 @@ END IF
 						(p3(2) > neighbour_limit(3,1) .and. p3(2) < neighbour_limit(4,1)) & 
 					.and. (p3(1) > neighbour_limit(1,1) .and. p3(1) < neighbour_limit(2,1)) .or. &
 						(p4(2) > neighbour_limit(3,1) .and. p4(2) < neighbour_limit(4,1)) & 
-					.and. (p4(1) > neighbour_limit(1,1) .and. p4(1) < neighbour_limit(2,1)))
+					.and. (p4(1) > neighbour_limit(1,1) .and. p4(1) < neighbour_limit(2,1)) .or. &
+						(p5(2) > neighbour_limit(3,1) .and. p5(2) < neighbour_limit(4,1)) & 
+					.and. (p5(1) > neighbour_limit(1,1) .and. p5(1) < neighbour_limit(2,1)) .or. &
+						(p6(2) > neighbour_limit(3,1) .and. p6(2) < neighbour_limit(4,1)) & 
+					.and. (p6(1) > neighbour_limit(1,1) .and. p6(1) < neighbour_limit(2,1)) .or. &
+						(p7(2) > neighbour_limit(3,1) .and. p7(2) < neighbour_limit(4,1)) & 
+					.and. (p7(1) > neighbour_limit(1,1) .and. p7(1) < neighbour_limit(2,1)) .or. &
+						(p8(2) > neighbour_limit(3,1) .and. p8(2) < neighbour_limit(4,1)) & 
+					.and. (p8(1) > neighbour_limit(1,1) .and. p8(1) < neighbour_limit(2,1)))
 					
 				in_down = ((p1(2) >  neighbour_limit(3,2) .and. p1(2) < neighbour_limit(4,2)) &
 					.and. (p1(1) > neighbour_limit(1,2)  .and. p1(1) < neighbour_limit(2,2)) .or.&
@@ -689,7 +745,15 @@ END IF
 						   (p3(2) >  neighbour_limit(3,2) .and. p3(2) < neighbour_limit(4,2)) &
 					.and. (p3(1) > neighbour_limit(1,2)  .and. p3(1) < neighbour_limit(2,2)) .or.&
 						   (p4(2) >  neighbour_limit(3,2) .and. p4(2) < neighbour_limit(4,2)) &
-					.and. (p4(1) > neighbour_limit(1,2)  .and. p4(1) < neighbour_limit(2,2)))
+					.and. (p4(1) > neighbour_limit(1,2)  .and. p4(1) < neighbour_limit(2,2)) .or.&
+							(p5(2) >  neighbour_limit(3,2) .and. p5(2) < neighbour_limit(4,2)) &
+					.and. (p5(1) > neighbour_limit(1,2)  .and. p5(1) < neighbour_limit(2,2)) .or.&
+							(p6(2) >  neighbour_limit(3,2) .and. p6(2) < neighbour_limit(4,2)) &
+					.and. (p6(1) > neighbour_limit(1,2)  .and. p6(1) < neighbour_limit(2,2)) .or.&
+							(p7(2) >  neighbour_limit(3,2) .and. p7(2) < neighbour_limit(4,2)) &
+					.and. (p7(1) > neighbour_limit(1,2)  .and. p7(1) < neighbour_limit(2,2)) .or.&
+							(p8(2) >  neighbour_limit(3,2) .and. p8(2) < neighbour_limit(4,2)) &
+					.and. (p8(1) > neighbour_limit(1,2)  .and. p8(1) < neighbour_limit(2,2)))
 				
 				in_left = ((p1(2) > neighbour_limit(3,4) .and. p1(2) < neighbour_limit(4,4)) &
 				    .and. (p1(1) > neighbour_limit(1,4)  .and. p1(1)< neighbour_limit(2,4)) .or.&
@@ -698,7 +762,15 @@ END IF
 				    	   (p3(2) > neighbour_limit(3,4) .and. p3(2) < neighbour_limit(4,4)) &
 				    .and. (p3(1) > neighbour_limit(1,4)  .and. p3(1)< neighbour_limit(2,4)) .or.&
 				    	   (p4(2) > neighbour_limit(3,4) .and. p4(2) < neighbour_limit(4,4)) &
-				    .and. (p4(1) > neighbour_limit(1,4)  .and. p4(1)< neighbour_limit(2,4)))
+				    .and. (p4(1) > neighbour_limit(1,4)  .and. p4(1)< neighbour_limit(2,4)) .or.&
+				    		(p5(2) > neighbour_limit(3,4) .and. p5(2) < neighbour_limit(4,4)) &
+				    .and. (p5(1) > neighbour_limit(1,4)  .and. p5(1)< neighbour_limit(2,4)) .or.&
+				    		(p6(2) > neighbour_limit(3,4) .and. p6(2) < neighbour_limit(4,4)) &
+				    .and. (p6(1) > neighbour_limit(1,4)  .and. p6(1)< neighbour_limit(2,4)) .or.&
+				    		(p7(2) > neighbour_limit(3,4) .and. p7(2) < neighbour_limit(4,4)) &
+				    .and. (p7(1) > neighbour_limit(1,4)  .and. p7(1)< neighbour_limit(2,4)) .or.&
+				    		(p7(2) > neighbour_limit(3,4) .and. p8(2) < neighbour_limit(4,4)) &
+				    .and. (p7(1) > neighbour_limit(1,4)  .and. p8(1)< neighbour_limit(2,4)))
 				
 				in_right = ((p1(2) >  neighbour_limit(3,3) .and. p1(2) < neighbour_limit(4,3)) & 
 					.and. (p1(1) > neighbour_limit(1,3)  .and. p1(1) < neighbour_limit(2,3)) .or. &
@@ -707,7 +779,15 @@ END IF
 							(p3(2) >  neighbour_limit(3,3) .and. p3(2) < neighbour_limit(4,3)) & 
 					.and. (p3(1) > neighbour_limit(1,3)  .and. p3(1) < neighbour_limit(2,3)) .or.&
 							(p4(2) >  neighbour_limit(3,3) .and. p4(2) < neighbour_limit(4,3)) & 
-					.and. (p4(1) > neighbour_limit(1,3)  .and. p4(1) < neighbour_limit(2,3))) 
+					.and. (p4(1) > neighbour_limit(1,3)  .and. p4(1) < neighbour_limit(2,3)) .or.&
+							(p5(2) >  neighbour_limit(3,3) .and. p4(2) < neighbour_limit(4,3)) & 
+					.and. (p5(1) > neighbour_limit(1,3)  .and. p4(1) < neighbour_limit(2,3)) .or.&
+							(p6(2) >  neighbour_limit(3,3) .and. p4(2) < neighbour_limit(4,3)) & 
+					.and. (p6(1) > neighbour_limit(1,3)  .and. p4(1) < neighbour_limit(2,3)) .or.&
+							(p7(2) >  neighbour_limit(3,3) .and. p4(2) < neighbour_limit(4,3)) & 
+					.and. (p7(1) > neighbour_limit(1,3)  .and. p4(1) < neighbour_limit(2,3)) .or.&
+							(p8(2) >  neighbour_limit(3,3) .and. p4(2) < neighbour_limit(4,3)) & 
+					.and. (p8(1) > neighbour_limit(1,3)  .and. p4(1) < neighbour_limit(2,3))) 
 				
 				in_up_left = ((p1(2) >  neighbour_limit(3,5) .and. p1(2) <neighbour_limit(4,5)) &
 			       .and. (p1(1) > neighbour_limit(1,5)  .and. p1(1) < neighbour_limit(2,5)) .or.&
@@ -716,7 +796,15 @@ END IF
 			       		  	  (p3(2) >  neighbour_limit(3,5) .and. p3(2) <neighbour_limit(4,5)) &
 			       .and. (p3(1) > neighbour_limit(1,5)  .and. p3(1) < neighbour_limit(2,5)) .or. &
 			       			  (p4(2) >  neighbour_limit(3,5) .and. p4(2) <neighbour_limit(4,5)) &
-			       .and. (p4(1) > neighbour_limit(1,5)  .and. p4(1) < neighbour_limit(2,5)))
+			       .and. (p4(1) > neighbour_limit(1,5)  .and. p4(1) < neighbour_limit(2,5)) .or.&
+			       			  (p5(2) >  neighbour_limit(3,5) .and. p5(2) <neighbour_limit(4,5)) &
+			       .and. (p5(1) > neighbour_limit(1,5)  .and. p5(1) < neighbour_limit(2,5)) .or.&
+			       			  (p6(2) >  neighbour_limit(3,5) .and. p6(2) <neighbour_limit(4,5)) &
+			       .and. (p6(1) > neighbour_limit(1,5)  .and. p6(1) < neighbour_limit(2,5)) .or.&
+			       			  (p7(2) >  neighbour_limit(3,5) .and. p7(2) <neighbour_limit(4,5)) &
+			       .and. (p7(1) > neighbour_limit(1,5)  .and. p7(1) < neighbour_limit(2,5)) .or.&
+			       			  (p8(2) >  neighbour_limit(3,5) .and. p8(2) <neighbour_limit(4,5)) &
+			       .and. (p8(1) > neighbour_limit(1,5)  .and. p8(1) < neighbour_limit(2,5)))
 			       
 				in_up_right = ((p1(2) >  neighbour_limit(3,8) .and. p1(2) < neighbour_limit(4,8)) &
 			       .and. (p1(1) >neighbour_limit(1,8)  .and. p1(1) < neighbour_limit(2,8)) .or. &
@@ -725,7 +813,15 @@ END IF
 			       				(p3(2) >  neighbour_limit(3,8) .and. p3(2) < neighbour_limit(4,8)) &
 			       .and. (p3(1) >neighbour_limit(1,8)  .and. p3(1) < neighbour_limit(2,8)) .or. &
 			       				(p4(2) >  neighbour_limit(3,8) .and. p4(2) < neighbour_limit(4,8)) &
-			       .and. (p4(1) >neighbour_limit(1,8)  .and. p4(1) < neighbour_limit(2,8)))
+			       .and. (p4(1) >neighbour_limit(1,8)  .and. p4(1) < neighbour_limit(2,8)) .or. &
+			       				(p5(2) >  neighbour_limit(3,8) .and. p5(2) < neighbour_limit(4,8)) &
+			       .and. (p5(1) >neighbour_limit(1,8)  .and. p5(1) < neighbour_limit(2,8)) .or. &
+			       				(p6(2) >  neighbour_limit(3,8) .and. p6(2) < neighbour_limit(4,8)) &
+			       .and. (p6(1) >neighbour_limit(1,8)  .and. p6(1) < neighbour_limit(2,8)) .or. &
+			       				(p7(2) >  neighbour_limit(3,8) .and. p7(2) < neighbour_limit(4,8)) &
+			       .and. (p7(1) >neighbour_limit(1,8)  .and. p7(1) < neighbour_limit(2,8)) .or. &
+			       				(p8(2) >  neighbour_limit(3,8) .and. p8(2) < neighbour_limit(4,8)) &
+			       .and. (p8(1) >neighbour_limit(1,8)  .and. p8(1) < neighbour_limit(2,8)))
 				
 				in_down_left = ((p1(2) >  neighbour_limit(3,7) .and. p1(2) < neighbour_limit(4,7)) &
 			       .and. (p1(1) > neighbour_limit(1,7) .and. p1(1) < neighbour_limit(2,7)) .or. &
@@ -734,7 +830,15 @@ END IF
 			       				(p3(2) >  neighbour_limit(3,7) .and. p3(2) < neighbour_limit(4,7)) &
 			       .and. (p3(1) > neighbour_limit(1,7) .and. p3(1) < neighbour_limit(2,7)) .or. &
 			       				(p4(2) >  neighbour_limit(3,7) .and. p4(2) < neighbour_limit(4,7)) &
-			       .and. (p4(1) > neighbour_limit(1,7) .and. p4(1) < neighbour_limit(2,7)))
+			       .and. (p4(1) > neighbour_limit(1,7) .and. p4(1) < neighbour_limit(2,7)) .or. &
+			       				(p5(2) >  neighbour_limit(3,7) .and. p5(2) < neighbour_limit(4,7)) &
+			       .and. (p5(1) > neighbour_limit(1,7) .and. p5(1) < neighbour_limit(2,7)) .or. &
+			       				(p6(2) >  neighbour_limit(3,7) .and. p6(2) < neighbour_limit(4,7)) &
+			       .and. (p6(1) > neighbour_limit(1,7) .and. p6(1) < neighbour_limit(2,7)) .or. &
+			       				(p7(2) >  neighbour_limit(3,7) .and. p7(2) < neighbour_limit(4,7)) &
+			       .and. (p7(1) > neighbour_limit(1,7) .and. p7(1) < neighbour_limit(2,7)) .or. &
+			       				(p8(2) >  neighbour_limit(3,7) .and. p8(2) < neighbour_limit(4,7)) &
+			       .and. (p8(1) > neighbour_limit(1,7) .and. p8(1) < neighbour_limit(2,7)))
 				
 				in_down_right = ((p1(2) >  neighbour_limit(3,6) .and. p1(2) < neighbour_limit(4,6)) &
 			       .and. (p1(1) > neighbour_limit(1,6)  .and. p1(1) < neighbour_limit(2,6)) .or. &
@@ -743,7 +847,15 @@ END IF
 			       				(p3(2) >  neighbour_limit(3,6) .and. p3(2) < neighbour_limit(4,6)) &
 			       .and. (p3(1) > neighbour_limit(1,6)  .and. p3(1) < neighbour_limit(2,6)) .or. &
 			       				(p4(2) >  neighbour_limit(3,6) .and. p4(2) < neighbour_limit(4,6)) &
-			       .and. (p4(1) > neighbour_limit(1,6)  .and. p4(1) < neighbour_limit(2,6)))
+			       .and. (p4(1) > neighbour_limit(1,6)  .and. p4(1) < neighbour_limit(2,6)) .or. &
+			       				(p5(2) >  neighbour_limit(3,6) .and. p5(2) < neighbour_limit(4,6)) &
+			       .and. (p5(1) > neighbour_limit(1,6)  .and. p5(1) < neighbour_limit(2,6)) .or. &
+			       				(p6(2) >  neighbour_limit(3,6) .and. p6(2) < neighbour_limit(4,6)) &
+			       .and. (p6(1) > neighbour_limit(1,6)  .and. p6(1) < neighbour_limit(2,6)) .or. &
+			       				(p7(2) >  neighbour_limit(3,6) .and. p7(2) < neighbour_limit(4,6)) &
+			       .and. (p7(1) > neighbour_limit(1,6)  .and. p7(1) < neighbour_limit(2,6)) .or. &
+			       				(p8(2) >  neighbour_limit(3,6) .and. p8(2) < neighbour_limit(4,6)) &
+			       .and. (p8(1) > neighbour_limit(1,6)  .and. p8(1) < neighbour_limit(2,6)))
 			       
 !================================================================================================			       
 			     IF (rank_up /= -1) then  
@@ -804,9 +916,6 @@ END IF
 					END IF
 				END IF
 
-			if(particle_k%ID==3) then
-				print*,'ssssssssss',in_up,particle_k%pointu1,particle_k%pointu2,particle_k%pointu3,particle_k%pointu4
-			end if			
 
 			END IF 
 !================================================================================================
@@ -945,17 +1054,7 @@ END IF
 !		+ SUM(COUNTER_overlap(:,rank))
 		
 
-if(rank==12) then
-!DO i =1,8
-!	
-!	print*,'neighbour',i,IND_recv_overlap(:,i)
-!	
-!END DO*
-
-
-end if
-
-print*,rank,'Npart',Npart_block
+!print*,rank,'Npart',Npart_block
 		
 			ALLOCATE(Xpart_block(2,Npart_block))
 			ALLOCATE(Mblock(Npart_block))
@@ -1147,7 +1246,8 @@ end if
 												 danger_check, leave_check
 			logical                           :: local_overlapcheck, local_insidecheck, & 
 			 									 local_dangercheck,local_leave_check
-			double precision, dimension(2)    :: pointu1,pointu2,pointu3,pointu4
+			double precision, dimension(2)    :: pointu1,pointu2,pointu3,pointu4,&
+												 pointu5,pointu6,pointu7,pointu8
 			integer                           :: j,neighloop
 
 			integer, dimension(NB_NEIGHBOURS) :: OPP	
@@ -1169,7 +1269,7 @@ end if
 			DO WHILE (i<=COUNTER_inside(rank))
 			
 				call overlap_criterion(ALL_PARTICLES(IND_inside(i)),overlap_check,totally_inside_check,danger_check, & 
-				pointu1,pointu2,pointu3,pointu4,axe)
+				pointu1,pointu2,pointu3,pointu4,pointu5,pointu6,pointu7,pointu8,axe)
 
 					ALL_PARTICLES(IND_inside(i))%pointu1 = pointu1
 					ALL_PARTICLES(IND_inside(i))%pointu2 = pointu2
@@ -1331,7 +1431,8 @@ end if
 				DO j=1,COUNTER_leave(OPP(neighloop),NEIGHBOUR(neighloop))
 				
 					call overlap_criterion(ALL_PARTICLES(IND_recv_leave(j,neighloop)),local_overlapcheck, & 
-					local_insidecheck,local_dangercheck,pointu1,pointu2,pointu3,pointu4,axe)
+					local_insidecheck,local_dangercheck,pointu1,pointu2,pointu3,pointu4,&
+					pointu5,pointu6,pointu7,pointu8,axe)
 					
 					IF (local_insidecheck) then
 						COUNTER_inside(rank) = COUNTER_inside(rank) + 1

@@ -29,7 +29,10 @@ real(kind=8),dimension(2) :: pointu1
 real(kind=8),dimension(2) :: pointu2
 real(kind=8),dimension(2) :: pointu3
 real(kind=8),dimension(2) :: pointu4
-
+real(kind=8),dimension(2) :: pointu5
+real(kind=8),dimension(2) :: pointu6
+real(kind=8),dimension(2) :: pointu7
+real(kind=8),dimension(2) :: pointu8
 !3. Maximum of axe
 real(kind=8) :: axe
 
@@ -38,16 +41,14 @@ real(kind=8) :: mass
 
 !5. Particle identity
 integer :: ID
-!integer :: PROC_ID
 
 END TYPE PARTTYPE
 
 
-!integer :: NINTEGER = 2
 integer :: NINTEGER = 1
 
 ! NDOUBLE 
-integer :: NDOUBLE = 8 + 2*4
+integer :: NDOUBLE = 8 + 2*8
 
 !! MPI TYPE FOR PARTICLE EXCHANGE
 integer :: MPI_PARTICLETYPE
