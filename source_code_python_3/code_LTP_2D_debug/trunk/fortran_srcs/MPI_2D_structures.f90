@@ -36,7 +36,10 @@ MODULE mpi_2d_structures_modf90
 	
 	! IND_leave indicates the identity(in ALL_PARTICLES) of particles will leave the present block
 	INTEGER, DIMENSION(:,:), ALLOCATABLE                  :: IND_leave
-	
+		
+	! IND_oversize indicates the identity of particles overlapping the cell out of neighbour cells
+	INTEGER, DIMENSION(:), ALLOCATABLE                    :: IND_oversize
+
 	! IND_recv_danger indicates the identity of danger particles receving from neighbours
 	INTEGER, DIMENSION(:,:), ALLOCATABLE                  :: IND_recv_danger
 	
@@ -46,11 +49,17 @@ MODULE mpi_2d_structures_modf90
 	! IND_recv_overlap indicates the identity of particles receving from neighbours
 	INTEGER, DIMENSION(:,:), ALLOCATABLE                  :: IND_recv_overlap
 	
-	
-	
+	! IND_recv_oversize, this list containing all oversize particles
+	INTEGER, DIMENSION(:), ALLOCATABLE                    :: IND_recv_oversize 
 	
 	! COUNTER_inside indicates the number of particles inside the present block
 	INTEGER, DIMENSION(:), ALLOCATABLE                   :: COUNTER_inside 
+	
+	! COUNTER_oversize indicates the number of oversize particles inside the present block
+	INTEGER, DIMENSION(:), ALLOCATABLE                   :: COUNTER_oversize
+	
+	! COUNTER_recv_oversize indicates the number of oversize particle(ALL) in the simulation region  
+	INTEGER                                               :: COUNTER_recv_oversize
 	
 	! COUNTER_recv_danger indicates the number of overlap particles receiving in each direction 
 
@@ -109,12 +118,15 @@ MODULE mpi_2d_structures_modf90
 			ALLOCATE(IND_inside(number_of_particles))
 			ALLOCATE(IND_leave(number_of_particles,NB_NEIGHBOURS))
 			ALLOCATE(IND_overlap(number_of_particles,NB_NEIGHBOURS))
-			ALLOCATE(IND_danger(number_of_particles,NB_NEIGHBOURS))	
+			ALLOCATE(IND_danger(number_of_particles,NB_NEIGHBOURS))
+			ALLOCATE(IND_oversize(number_of_particles))
 			
 			ALLOCATE(IND_recv_overlap(number_of_particles,NB_NEIGHBOURS))
 			ALLOCATE(IND_recv_danger(number_of_particles,NB_NEIGHBOURS))
 			ALLOCATE(IND_recv_leave(number_of_particles,NB_NEIGHBOURS))
+			ALLOCATE(IND_recv_oversize(number_of_particles))
 			
+			ALLOCATE(COUNTER_oversize(0:nb_proc-1))
 			ALLOCATE(COUNTER_inside(0:nb_proc-1))
 			ALLOCATE(COUNTER_danger(NB_NEIGHBOURS,0:nb_proc-1))
 			ALLOCATE(COUNTER_overlap(NB_NEIGHBOURS,0:nb_proc-1))
@@ -149,7 +161,7 @@ MODULE mpi_2d_structures_modf90
 		!----------------------------------------!
 			
 		SUBROUTINE overlap_criterion(particle_k,overlap_check,inside_check,danger_check, & 
-		pointu1,pointu2,pointu3,pointu4,pointu5,pointu6,pointu7,pointu8,axe)
+		oversize_check,pointu1,pointu2,pointu3,pointu4,pointu5,pointu6,pointu7,pointu8,axe)
 		
 		! Retrieve the eigenvalues and eigenvectors to determine the direction movement of particles, 	then decide its status
 		
@@ -162,6 +174,7 @@ MODULE mpi_2d_structures_modf90
 			LOGICAL, INTENT(out)                            :: overlap_check
 			LOGICAL, INTENT(out)                            :: inside_check
 			LOGICAL, INTENT(out)                            :: danger_check
+			LOGICAL, INTENT(out)                            :: oversize_check
 			DOUBLE PRECISION, INTENT(out)                   :: axe
 			DOUBLE PRECISION, dimension(2), intent(out)     :: pointu1, pointu2, & 
 															   pointu3, pointu4, &
@@ -292,9 +305,19 @@ MODULE mpi_2d_structures_modf90
 				ELSE
 					danger_check = .false.
 				END IF
-			
+				
+				oversize_check= .false.
+				
+			ELSE IF(axe+(particle_k%Xp-start_x)>2*block_step_x .or.&
+				    axe+(particle_k%Yp-start_y)>2*block_step_y) THEN
+				
+				oversize_check= .true.
+				print*,particle_k%ID,oversize_check
+				overlap_check = .false.
+				danger_check  = .false.
+				
 			ELSE
-			
+				oversize_check= .false.	
 				overlap_check = .true.
 				danger_check  = .false.
 			
@@ -302,6 +325,7 @@ MODULE mpi_2d_structures_modf90
 			
 		
 		ELSE 
+			oversize_check= .false.
 			overlap_check = .false.
 			inside_check  = .false.
 			danger_check  = .false.
@@ -315,13 +339,15 @@ MODULE mpi_2d_structures_modf90
 		SUBROUTINE particle_distribution
 			IMPLICIT NONE
 			logical                           :: local_overlapcheck, local_insidecheck, & 
-												 local_dangercheck,local_leave_check
+												 local_dangercheck,local_leave_check, &
+												 local_oversizecheck
 			DOUBLE PRECISION, dimension(2)    :: pointu1, pointu2,pointu3,pointu4,&
 												 pointu5, pointu6,pointu7,pointu8
 			DOUBLE PRECISION                  :: axe
 			integer                           :: ID
 			
 			COUNTER_inside(:)         = 0
+			COUNTER_oversize(:)       = 0
 			COUNTER_leave(:,rank)     = 0
 			COUNTER_overlap(:,rank)   = 0
 			COUNTER_danger(:,rank)    = 0
@@ -333,7 +359,7 @@ MODULE mpi_2d_structures_modf90
 
 			DO i =1,number_of_particles
 				CALL overlap_criterion(ALL_PARTICLES(i),local_overlapcheck,local_insidecheck,local_dangercheck & 
-				,pointu1,pointu2,pointu3,pointu4,pointu5, pointu6,pointu7,pointu8,axe)
+				,local_oversizecheck,pointu1,pointu2,pointu3,pointu4,pointu5, pointu6,pointu7,pointu8,axe)
 				
 				ALL_PARTICLES(i)%pointu1 = pointu1
 				ALL_PARTICLES(i)%pointu2 = pointu2
@@ -350,11 +376,21 @@ MODULE mpi_2d_structures_modf90
 					IND_inside(COUNTER_inside(rank)) = ALL_PARTICLES(i)%ID
 					
 
-					call particle_screening(ALL_PARTICLES(i),local_overlapcheck,local_dangercheck,local_leave_check)
+					call particle_screening(ALL_PARTICLES(i),local_overlapcheck,local_dangercheck,local_leave_check,local_oversizecheck)
 
 				END IF
 			END DO			
 			
+!================================================================================================
+			IF(rank /= 0) then
+      			call MPI_SEND(COUNTER_oversize(rank),1,MPI_INTEGER,0,1,MPI_COMM_WORLD,code)
+    		else
+      			do ID = 1,nb_proc - 1
+       				call MPI_RECV(COUNTER_oversize(ID),1,MPI_INTEGER,ID,1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
+      			END do	
+    		END IF
+    		call MPI_BCAST(COUNTER_oversize,nb_proc,MPI_INTEGER,0,MPI_COMM_WORLD,code)
+
 !================================================================================================  		
 			IF(rank /= 0) then
       			call MPI_SEND(COUNTER_inside(rank),1,MPI_INTEGER,0,1,MPI_COMM_WORLD,code)
@@ -404,7 +440,7 @@ SUBROUTINE particle_distribution_v2
 	integer :: step_x,step_y,number_of_rows,number_of_columns,ind,j
 
 	logical                           :: local_overlapcheck, local_insidecheck, & 
-												 local_dangercheck,local_leave_check
+												 local_dangercheck,local_leave_check,local_oversizecheck
 			DOUBLE PRECISION, dimension(2)    :: pointu1, pointu2,pointu3,pointu4,&
 												 pointu5, pointu6,pointu7,pointu8
 			DOUBLE PRECISION                  :: axe
@@ -431,26 +467,24 @@ IF((coords(1)>=1 .and. coords(1)<=dims(1)-2) .and.(coords(2)>=1 .and. coords(2)<
 		DO i=1,number_of_columns
 			ind = step_y*(dims(2)-2-coords(2))+step_x*(coords(1)-1)+i+(j-1)*nxg
 			CALL overlap_criterion(ALL_PARTICLES(ind),local_overlapcheck,local_insidecheck,local_dangercheck & 
-				,pointu1,pointu2,pointu3,pointu4,pointu5, pointu6,pointu7,pointu8,axe)
+				,local_oversizecheck,pointu1,pointu2,pointu3,pointu4,pointu5, pointu6,pointu7,pointu8,axe)
 			
 				ALL_PARTICLES(ind)%pointu1 = pointu1
 				ALL_PARTICLES(ind)%pointu2 = pointu2
 				ALL_PARTICLES(ind)%pointu3 = pointu3
 				ALL_PARTICLES(ind)%pointu4 = pointu4
-				ALL_PARTICLES(ind)%pointu1 = pointu5
-				ALL_PARTICLES(ind)%pointu2 = pointu6
-				ALL_PARTICLES(ind)%pointu3 = pointu7
-				ALL_PARTICLES(ind)%pointu4 = pointu8
+				ALL_PARTICLES(ind)%pointu5 = pointu5
+				ALL_PARTICLES(ind)%pointu6 = pointu6
+				ALL_PARTICLES(ind)%pointu7 = pointu7
+				ALL_PARTICLES(ind)%pointu8 = pointu8
 				ALL_PARTICLES(ind)%axe     = axe
 
 				IF (local_insidecheck) then
 					COUNTER_inside(rank)         = COUNTER_inside(rank) + 1
 					IND_inside(COUNTER_inside(rank)) = ind
 					
-					call particle_screening(ALL_PARTICLES(ind),local_overlapcheck,local_dangercheck,local_leave_check)
-!					if(rank==8)then
-!						print*,ind,local_overlapcheck,local_dangercheck,local_leave_check
-!					end if
+					call particle_screening(ALL_PARTICLES(ind),local_overlapcheck,local_dangercheck,local_leave_check,local_oversizecheck)
+
 				END IF
 		END DO
 	END DO
@@ -519,7 +553,10 @@ END IF
 					cycle
 				END IF
 				call MPI_SEND(limit,4,MPI_DOUBLE_PRECISION,NEIGHBOUR(neighloop),111,MPI_COMM_WORLD,code)
-				
+			
+			
+	
+
 			END DO			
 			
 			DO neighloop=1,8
@@ -529,10 +566,14 @@ END IF
 				call MPI_RECV(neighbour_limit(1,neighloop),4,MPI_DOUBLE_PRECISION,NEIGHBOUR(neighloop),111,MPI_COMM_WORLD & 
 				,MPI_STATUS_IGNORE,code)
 			END DO
+			
+			DO neighloop=1,8
+
+			END DO
 		END SUBROUTINE neighbour_limit_finding
 
 	
-		SUBROUTINE particle_screening(particle_k,overlap,danger,leave)
+		SUBROUTINE particle_screening(particle_k,overlap,danger,leave,oversize)
 			! For an overlap table of a block, we will precise in which neighbour block, these overlap
 			! particles access.
 			
@@ -541,19 +582,22 @@ END IF
 			type(PARTTYPE), INTENT(in)     :: particle_k
 			double precision, dimension(2) :: p1,p2,p3,p4,p5,p6,p7,p8
 			double precision               :: d1,d2,d3,d4, axe_k, xk,yk
-			logical, intent(in)            :: overlap, danger, leave
+			logical, intent(in)            :: overlap, danger, leave,oversize
 			logical                        :: in_up,in_down,in_left,in_right, & 
 			                                  in_up_left,in_up_right,in_down_left,in_down_right
-			
-		
+
+
+!================================================================================================			                             
+			IF(oversize) then
+				COUNTER_oversize(rank) = COUNTER_oversize(rank) + 1
+				IND_oversize(COUNTER_oversize(rank)) = particle_k%ID
+			END IF
+!================================================================================================		
 			IF (leave) then
 				
 				xk = particle_k%Xp
 				yk = particle_k%Yp
-				
-!================================================================================================
-
-
+	
 				in_up =((yk > neighbour_limit(3,1) .and. yk < neighbour_limit(4,1)) & 
 					.and. (xk > neighbour_limit(1,1) .and. xk < neighbour_limit(2,1)))
 					
@@ -579,8 +623,6 @@ END IF
 			       .and. (xk > neighbour_limit(1,6)  .and. xk < neighbour_limit(2,6)))
 
 			     
-		 		
-!================================================================================================
 			    
 			  	IF (rank_up /= -1) then
 			    	IF(in_up) then
@@ -780,14 +822,14 @@ END IF
 					.and. (p3(1) > neighbour_limit(1,3)  .and. p3(1) < neighbour_limit(2,3)) .or.&
 							(p4(2) >  neighbour_limit(3,3) .and. p4(2) < neighbour_limit(4,3)) & 
 					.and. (p4(1) > neighbour_limit(1,3)  .and. p4(1) < neighbour_limit(2,3)) .or.&
-							(p5(2) >  neighbour_limit(3,3) .and. p4(2) < neighbour_limit(4,3)) & 
-					.and. (p5(1) > neighbour_limit(1,3)  .and. p4(1) < neighbour_limit(2,3)) .or.&
-							(p6(2) >  neighbour_limit(3,3) .and. p4(2) < neighbour_limit(4,3)) & 
-					.and. (p6(1) > neighbour_limit(1,3)  .and. p4(1) < neighbour_limit(2,3)) .or.&
-							(p7(2) >  neighbour_limit(3,3) .and. p4(2) < neighbour_limit(4,3)) & 
-					.and. (p7(1) > neighbour_limit(1,3)  .and. p4(1) < neighbour_limit(2,3)) .or.&
-							(p8(2) >  neighbour_limit(3,3) .and. p4(2) < neighbour_limit(4,3)) & 
-					.and. (p8(1) > neighbour_limit(1,3)  .and. p4(1) < neighbour_limit(2,3))) 
+							(p5(2) >  neighbour_limit(3,3) .and. p5(2) < neighbour_limit(4,3)) & 
+					.and. (p5(1) > neighbour_limit(1,3)  .and. p5(1) < neighbour_limit(2,3)) .or.&
+							(p6(2) >  neighbour_limit(3,3) .and. p6(2) < neighbour_limit(4,3)) & 
+					.and. (p6(1) > neighbour_limit(1,3)  .and. p6(1) < neighbour_limit(2,3)) .or.&
+							(p7(2) >  neighbour_limit(3,3) .and. p7(2) < neighbour_limit(4,3)) & 
+					.and. (p7(1) > neighbour_limit(1,3)  .and. p7(1) < neighbour_limit(2,3)) .or.&
+							(p8(2) >  neighbour_limit(3,3) .and. p8(2) < neighbour_limit(4,3)) & 
+					.and. (p8(1) > neighbour_limit(1,3)  .and. p8(1) < neighbour_limit(2,3))) 
 				
 				in_up_left = ((p1(2) >  neighbour_limit(3,5) .and. p1(2) <neighbour_limit(4,5)) &
 			       .and. (p1(1) > neighbour_limit(1,5)  .and. p1(1) < neighbour_limit(2,5)) .or.&
@@ -1243,9 +1285,9 @@ end if
 		SUBROUTINE update_ALL_particles
 			IMPLICIT NONE
 			LOGICAL                           :: overlap_check, totally_inside_check, & 
-												 danger_check, leave_check
+												 danger_check, leave_check,oversize_check
 			logical                           :: local_overlapcheck, local_insidecheck, & 
-			 									 local_dangercheck,local_leave_check
+			 									 local_dangercheck,local_leave_check,local_oversize_check
 			double precision, dimension(2)    :: pointu1,pointu2,pointu3,pointu4,&
 												 pointu5,pointu6,pointu7,pointu8
 			integer                           :: j,neighloop
@@ -1268,8 +1310,8 @@ end if
 			i=1
 			DO WHILE (i<=COUNTER_inside(rank))
 			
-				call overlap_criterion(ALL_PARTICLES(IND_inside(i)),overlap_check,totally_inside_check,danger_check, & 
-				pointu1,pointu2,pointu3,pointu4,pointu5,pointu6,pointu7,pointu8,axe)
+				call overlap_criterion(ALL_PARTICLES(IND_inside(i)),overlap_check,totally_inside_check,danger_check,& 
+				oversize_check,pointu1,pointu2,pointu3,pointu4,pointu5,pointu6,pointu7,pointu8,axe)
 
 					ALL_PARTICLES(IND_inside(i))%pointu1 = pointu1
 					ALL_PARTICLES(IND_inside(i))%pointu2 = pointu2
@@ -1278,19 +1320,19 @@ end if
 					ALL_PARTICLES(IND_inside(i))%axe = axe
 				IF (totally_inside_check) then
 					leave_check = .false.
-					call particle_screening(ALL_PARTICLES(IND_inside(i)),overlap_check,danger_check,leave_check)
+					call particle_screening(ALL_PARTICLES(IND_inside(i)),overlap_check,danger_check,leave_check,oversize_check)
 					i = i + 1
 				else
 					IF(overlap_check) then
 						leave_check = .false.
-						call particle_screening(ALL_PARTICLES(IND_inside(i)),overlap_check,danger_check,leave_check)
+						call particle_screening(ALL_PARTICLES(IND_inside(i)),overlap_check,danger_check,leave_check,oversize_check)
 						IND_inside(i:COUNTER_inside(rank)-1) = IND_inside(i+1:COUNTER_inside(rank))
 						COUNTER_inside(rank) = COUNTER_inside(rank) - 1
 					else
 						
 						leave_check = .true.
 						
-						call particle_screening(ALL_PARTICLES(IND_inside(i)),overlap_check,danger_check,leave_check)
+						call particle_screening(ALL_PARTICLES(IND_inside(i)),overlap_check,danger_check,leave_check,oversize_check)
 						
 						IND_inside(i:COUNTER_inside(rank)-1) = IND_inside(i+1:COUNTER_inside(rank))
 						COUNTER_inside(rank) = COUNTER_inside(rank) - 1
@@ -1431,19 +1473,19 @@ end if
 				DO j=1,COUNTER_leave(OPP(neighloop),NEIGHBOUR(neighloop))
 				
 					call overlap_criterion(ALL_PARTICLES(IND_recv_leave(j,neighloop)),local_overlapcheck, & 
-					local_insidecheck,local_dangercheck,pointu1,pointu2,pointu3,pointu4,&
-					pointu5,pointu6,pointu7,pointu8,axe)
+					local_insidecheck,local_dangercheck,local_oversize_check,&
+					pointu1,pointu2,pointu3,pointu4,pointu5,pointu6,pointu7,pointu8,axe)
 					
 					IF (local_insidecheck) then
 						COUNTER_inside(rank) = COUNTER_inside(rank) + 1
 						IND_inside(COUNTER_inside(rank)) = IND_recv_leave(j,neighloop)	
 						local_leave_check= .false.
 						call particle_screening(ALL_PARTICLES(IND_recv_leave(j,neighloop)), & 
-						local_overlapcheck,local_dangercheck,local_leave_check)
+						local_overlapcheck,local_dangercheck,local_leave_check,local_oversize_check)
 					else 
 						local_leave_check= .false.
 						call particle_screening(ALL_PARTICLES(IND_recv_leave(j,neighloop)), & 
-						local_overlapcheck,local_dangercheck,local_leave_check)
+						local_overlapcheck,local_dangercheck,local_leave_check,local_oversize_check)
 				END IF
 					
 				END DO

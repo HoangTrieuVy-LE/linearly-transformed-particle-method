@@ -67,7 +67,7 @@ CALL neighbouring
 
 CALL neighbour_limit_finding
 
-CALL particle_distribution_v2
+CALL particle_distribution
 
 !	!-------------------------------------------------------------------!
 !	!!!LOOP ON PARTICLES INSIDE BLOCK AND THE OTHERS IN OVERLAP TABLES!!!
@@ -79,30 +79,10 @@ print*,'----------------------------------'
 	write(*,*)'              				   UP	','	DOWN	','  RIGHT','       LEFT	',' UP-LEFT  ',' DOWN-RIGHT','    DOWN-LEFT','  UP-RIGHT'	
 	write(*,*)'rank:',rank, 'COUNTER_overlap', COUNTER_overlap(:,rank)
 	write(*,*)'rank:',rank, 'COUNTER_danger', COUNTER_danger(:,rank)
-!print*,'IND inside',IND_inside(1:4)
-
-end if
-
-
-if(rank==8) then
-!DO i=1,number_of_particles
-!		print*,ALL_PARTICLES(i)%ID,ALL_PARTICLES(i)%Xp,ALL_PARTICLES(i)%Yp
-!	END DO
-!DO i=1,8
-!	write(*,*)'rank:',rank,neighbour_limit(:,i)
-!END DO
-
 end if
 
 
 CALL send_overlap_and_danger_particle
-
-!CALL block_loop_on_block_global_table
-
-
-!CALL update_ALL_particles
-
-!CALL update_all_particle_information
 
 
 DO WHILE(T_start<=T_end)

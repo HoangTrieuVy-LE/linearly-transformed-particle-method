@@ -636,7 +636,8 @@ M.T.tofile('trunk/fortran_srcs/matrixM4fortran.bin')
 
 if (config.problem == "diffusion") and (config.method == "LTP_casier"):
         if (config.time_scheme == 'euler_explicit') : 
-            start = time.time()
+            start_LTP_casier = time.time()
+            
             cmd = 'mpif90 -g -fopenmp trunk/fortran_srcs/tri_casier_method.f90 -o outfile \
                     trunk/fortran_srcs/launchfortran.o \
                     trunk/fortran_srcs/mod_particle_2D.o \
@@ -650,6 +651,8 @@ if (config.problem == "diffusion") and (config.method == "LTP_casier"):
             os.system(str(cmd)) 
             cmd = 'mpiexec  -n 25 ./outfile'
             os.system(str(cmd))
+            
+            print 'LTP_caiser time compilation: ', time.time()-start_LTP_casier
             
             Xread = numpy.fromfile('trunk/fortran_srcs/coords4fortran.bin')
             Dread = numpy.fromfile('trunk/fortran_srcs/deformmatrix4fortran.bin')
