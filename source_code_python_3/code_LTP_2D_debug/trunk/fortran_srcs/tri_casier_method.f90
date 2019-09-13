@@ -79,6 +79,7 @@ print*,'----------------------------------'
 	write(*,*)'              				   UP	','	DOWN	','  RIGHT','       LEFT	',' UP-LEFT  ',' DOWN-RIGHT','    DOWN-LEFT','  UP-RIGHT'	
 	write(*,*)'rank:',rank, 'COUNTER_overlap', COUNTER_overlap(:,rank)
 	write(*,*)'rank:',rank, 'COUNTER_danger', COUNTER_danger(:,rank)
+	write(*,*)'rank:',rank, 'COUNTER_oversize', COUNTER_oversize(rank)
 end if
 
 
