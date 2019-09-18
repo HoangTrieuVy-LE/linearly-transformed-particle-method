@@ -978,14 +978,27 @@ END IF
 		SUBROUTINE send_overlap_and_danger_particle
 		integer :: i,neighloop
 		integer, dimension(NB_NEIGHBOURS) :: OPP
+		integer, dimension(nb_proc)       :: displacement_table
 		
 		OPP = (/2,1,4,3,6,5,8,7/)		
 
 		COUNTER_recv_danger = 0
 		
-		COUNTER_recv_overlap =0
-
-
+		COUNTER_recv_overlap = 0
+		
+		displacement_table(:) = 0
+		
+!================================================================================================
+		DO i = 2, nb_proc
+			displacement_table(i) = displacement_table(i-1) + COUNTER_oversize(i-2) 
+		END DO
+		
+		call MPI_GATHERV(IND_oversize(1:COUNTER_oversize(rank)),COUNTER_oversize(rank),MPI_INTEGER,&
+		IND_recv_oversize,COUNTER_oversize(rank),displacement_table,MPI_INTEGER,0,MPI_COMM_WORLD,code)
+		
+		
+		call MPI_BCAST(IND_recv_oversize,sum(COUNTER_oversize(:)),MPI_INTEGER,0,MPI_COMM_WORLD,code)
+			
 !================================================================================================
 			DO neighloop = 1,8
 			IF (NEIGHBOUR(neighloop)<0) THEN
