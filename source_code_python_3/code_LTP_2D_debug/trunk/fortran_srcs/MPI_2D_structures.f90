@@ -1116,8 +1116,7 @@ END IF
 		
 		! Where COUNTER_recv_overlap = sum of COUNTER_overlap from neigbour 
 
-		Npart_block = COUNTER_inside(rank) + COUNTER_recv_danger + COUNTER_recv_overlap  
-!		+ SUM(COUNTER_overlap(:,rank))
+		Npart_block = COUNTER_inside(rank) + COUNTER_recv_danger + COUNTER_recv_overlap + SUM(COUNTER_oversize(:))
 		
 
 !print*,rank,'Npart',Npart_block
@@ -1130,7 +1129,7 @@ END IF
 			
 
 !================================================================================================
-
+		
 		
 		DO i= 1,COUNTER_inside(rank)
 			Xpart_block(1,i) = ALL_PARTICLES(IND_inside(i))%Xp
@@ -1138,6 +1137,13 @@ END IF
 
 		END DO
 		Ncum1 = Ncum1 + COUNTER_inside(rank)
+		
+		DO i= 1,SUM(COUNTER_oversize(:))
+			Xpart_block(1,i) = ALL_PARTICLES(IND_recv_oversize(i))%Xp
+			Xpart_block(2,i) = ALL_PARTICLES(IND_recv_oversize(i))%Yp
+
+		END DO
+		Ncum1 = Ncum1 + SUM(COUNTER_oversize(:))
 		
 		DO neighloop=1,8
 		if (NEIGHBOUR(neighloop)<0) then
@@ -1172,11 +1178,18 @@ END IF
 
 !================================================================================================
 		
+		
 		DO i= 1,COUNTER_inside(rank)
 			Mblock(i) = ALL_PARTICLES(IND_inside(i))%mass
 
 		END DO
 		Ncum2 = Ncum2 + COUNTER_inside(rank)
+		
+		DO i= 1,SUM(COUNTER_oversize(:))
+		Mblock(i) = ALL_PARTICLES(IND_recv_oversize(i))%mass
+
+		END DO
+		Ncum2 = Ncum2 + SUM(COUNTER_oversize(:))
 		
 		DO neighloop=1,8
 		if (NEIGHBOUR(neighloop)<0) then
@@ -1200,7 +1213,7 @@ END IF
 		END DO
 
 !================================================================================================	
-
+		
 
 		DO i= 1,COUNTER_inside(rank)
 
@@ -1211,6 +1224,17 @@ END IF
 		END DO	
 
 		Ncum3 = Ncum3 + COUNTER_inside(rank)	
+		
+		DO i= 1,SUM(COUNTER_oversize(:))
+
+			Dblock(1,i) = ALL_PARTICLES(IND_recv_oversize(i))%Dp1
+			Dblock(2,i) = ALL_PARTICLES(IND_recv_oversize(i))%Dp2
+			Dblock(3,i) = ALL_PARTICLES(IND_recv_oversize(i))%Dp3
+			Dblock(4,i) = ALL_PARTICLES(IND_recv_oversize(i))%Dp4
+		END DO	
+
+		Ncum3 = Ncum3 + SUM(COUNTER_oversize(:))		
+		
 		
 		DO neighloop=1,8
 		if (NEIGHBOUR(neighloop)<0) then
