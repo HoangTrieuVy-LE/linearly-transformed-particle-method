@@ -95,7 +95,7 @@ DO WHILE(T_start<=T_end)
 !	!-------------------------------------------------------------------!
 
 	CALL update_ALL_particles
-
+!print*,'DONEEEEEEEEE',rank
 !if(rank==5.or.rank==6.or.rank==9.or.rank==10) then
 !print*,'STEP: ',Npic
 !print*,'----------------------------------'
