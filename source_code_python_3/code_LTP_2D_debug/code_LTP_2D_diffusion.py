@@ -647,7 +647,7 @@ if (config.problem == "diffusion") and (config.method == "LTP_casier"):
                     trunk/fortran_srcs/calculs_2D.o \
                     trunk/fortran_srcs/calculsfortran_ini.o \
                      trunk/fortran_srcs/pack.o \
-                     trunk/fortran_srcs/jacobi_method.o   '
+                     trunk/fortran_srcs/eigen_solver.o   '
             os.system(str(cmd)) 
             cmd = 'mpiexec  -n 25 ./outfile'
             os.system(str(cmd))

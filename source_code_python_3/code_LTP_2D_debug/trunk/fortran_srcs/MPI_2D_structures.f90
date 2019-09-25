@@ -12,7 +12,7 @@ MODULE mpi_2d_structures_modf90
 	USE calculsfor_var_modf90
 	USE calculsfor_ini_modf90
 	USE data_launch
-	USE Jacobi_method
+	USE eigen_solver
 	
 	IMPLICIT NONE
 	
@@ -210,7 +210,7 @@ MODULE mpi_2d_structures_modf90
 			D21 = particle_k%Dp3
 			D22 = particle_k%Dp4
 
-			! matrix D
+			! Matrix Deformation
   			a(1,1) = D11
   			a(1,2) = D12
   			a(2,1) = D21
@@ -218,7 +218,7 @@ MODULE mpi_2d_structures_modf90
 		
 			
 
-			call Jacobi(a,x,abserr,2)
+			call eigen_solver(a,x,abserr,2)
 
 			eigenvector_1 = x(1,:) 
 			eigenvector_2 = x(2,:)
@@ -227,29 +227,29 @@ MODULE mpi_2d_structures_modf90
 			
 			axe = max(abs(eigenvalue_1),abs(eigenvalue_2))
 				
-			pointu1(1) =  eigenvector_1(1) + eigenvector_2(1) + particle_k%Xp
-			pointu1(2) =  eigenvector_1(2) + eigenvector_2(2) + particle_k%Yp
+			pointu1(1) =  eigenvalue_1*eigenvector_1(1) + eigenvalue_1*eigenvector_2(1) + particle_k%Xp
+			pointu1(2) =  eigenvalue_2*eigenvector_1(2) + eigenvalue_2*eigenvector_2(2) + particle_k%Yp
 			
-			pointu2(1) = -eigenvector_1(1)- eigenvector_2(1) + particle_k%Xp
-			pointu2(2) = -eigenvector_1(2) - eigenvector_2(2) + particle_k%Yp
+			pointu2(1) = -eigenvalue_1*eigenvector_1(1) - eigenvalue_1*eigenvector_2(1) + particle_k%Xp
+			pointu2(2) = -eigenvalue_2*eigenvector_1(2) - eigenvalue_2*eigenvector_2(2) + particle_k%Yp
 			
-			pointu3(1) = -eigenvector_1(1)+ eigenvector_2(1) + particle_k%Xp
-			pointu3(2) = -eigenvector_1(2) + eigenvector_2(2) + particle_k%Yp
+			pointu3(1) = -eigenvalue_1*eigenvector_1(1) + eigenvalue_1*eigenvector_2(1) + particle_k%Xp
+			pointu3(2) = -eigenvalue_2*eigenvector_1(2) + eigenvalue_2*eigenvector_2(2) + particle_k%Yp
 			
-			pointu4(1) =  eigenvector_1(1) - eigenvector_2(1) + particle_k%Xp
-			pointu4(2) =  eigenvector_1(2) - eigenvector_2(2) + particle_k%Yp
+			pointu4(1) =  eigenvalue_1*eigenvector_1(1) - eigenvalue_1*eigenvector_2(1) + particle_k%Xp
+			pointu4(2) =  eigenvalue_2*eigenvector_1(2) - eigenvalue_2*eigenvector_2(2) + particle_k%Yp
 
-			pointu5(1) =  eigenvector_1(1) + particle_k%Xp
-			pointu5(2) =  eigenvector_1(2) + particle_k%Yp
+			pointu5(1) =  eigenvalue_1*eigenvector_1(1) + particle_k%Xp
+			pointu5(2) =  eigenvalue_2*eigenvector_1(2) + particle_k%Yp
 			
-			pointu6(1) =  -eigenvector_1(1) + particle_k%Xp
-			pointu6(2) =  -eigenvector_1(2) + particle_k%Yp
+			pointu6(1) =  -eigenvalue_1*eigenvector_1(1) + particle_k%Xp
+			pointu6(2) =  -eigenvalue_2*eigenvector_1(2) + particle_k%Yp
 			
-			pointu7(1) =  eigenvector_2(1) + particle_k%Xp
-			pointu7(2) =  eigenvector_2(2) + particle_k%Yp
+			pointu7(1) =  eigenvalue_1*eigenvector_2(1) + particle_k%Xp
+			pointu7(2) =  eigenvalue_2*eigenvector_2(2) + particle_k%Yp
 			
-			pointu8(1) =  -eigenvector_2(1) + particle_k%Xp
-			pointu8(2) =  -eigenvector_2(2) + particle_k%Yp
+			pointu8(1) =  -eigenvalue_1*eigenvector_2(1) + particle_k%Xp
+			pointu8(2) =  -eigenvalue_2*eigenvector_2(2) + particle_k%Yp
 			
 			
 			pointu1inside = (pointu1(1)-start_x>=0) &
@@ -374,10 +374,7 @@ MODULE mpi_2d_structures_modf90
 				IF (local_insidecheck) then
 					COUNTER_inside(rank)         = COUNTER_inside(rank) + 1
 					IND_inside(COUNTER_inside(rank)) = ALL_PARTICLES(i)%ID
-					
-!					print*,i,ALL_PARTICLES(i)%axe
-!					print*,i,ALL_PARTICLES(i)%Xp,start_x,block_step_x
-!					print*,i,ALL_PARTICLES(i)%Xp-start_x
+
 					call particle_screening(ALL_PARTICLES(i),local_overlapcheck,local_dangercheck,local_leave_check,local_oversizecheck)
 
 				END IF
@@ -566,9 +563,6 @@ END IF
 					cycle
 				END IF
 				call MPI_SEND(limit,4,MPI_DOUBLE_PRECISION,NEIGHBOUR(neighloop),111,MPI_COMM_WORLD,code)
-			
-			
-	
 
 			END DO			
 			

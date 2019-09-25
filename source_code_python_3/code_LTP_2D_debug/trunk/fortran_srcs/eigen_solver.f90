@@ -1,6 +1,6 @@
-module Jacobi_method
+module eigen_solver
 contains
-	subroutine Jacobi(a,x,abserr,n)
+	subroutine eigen_solver(a,x,abserr,n)
 	
 	implicit none
 	
@@ -11,7 +11,17 @@ contains
 	double precision :: trace
 	double precision :: lambda1,lambda2
 
-
+	!===========================================================
+	! Evaluate eigenvalues and eigenvectors
+	! of a real symmetric matrix a(2,2): a*x = lambda*x 
+	! method: systeme d'ordre 2
+	!-----------------------------------------------------------
+	! Input:
+	! a(n,n) - array of coefficients for matrix A
+	! abserr - abs tolerance [sum of (off-diagonal elements)^2]
+	! Output:
+	! a(i,i) - eigenvalues
+	! x(i,j) - eigenvectors
 	!===========================================================
 
 	det =  a(1,1)*a(2,2)-a(1,2)*a(2,1)
@@ -35,8 +45,6 @@ contains
 
  	a(1,1) = lambda1
  	a(2,2) = lambda2
-
-
 	!===========================================================
 
 
@@ -114,4 +122,4 @@ contains
 	!===========================================================
 	return 
 	end	
-end module Jacobi_method
+end module eigen_solver
