@@ -19,8 +19,8 @@ Nboucle = 0
 	!-------------------------------------------------------------------!
 	!!!                         INITIALISATION                        !!!
 	!-------------------------------------------------------------------!
-CALL environnement_initialisation
 
+CALL environnement_initialisation
 CALL setup_variables
 CALL setup_particle_information_matrix
 CALL set_Mesh
@@ -72,6 +72,7 @@ CALL particle_distribution
 !	!-------------------------------------------------------------------!
 !	!!!LOOP ON PARTICLES INSIDE BLOCK AND THE OTHERS IN OVERLAP TABLES!!!
 !	!-------------------------------------------------------------------!
+
 
 if(rank==6.or.rank==7.or.rank==8.or.rank==11.or.rank==12.or.rank==13.or.rank==16.or.rank==17.or.rank==18) then
 print*,'----------------------------------'

@@ -9,10 +9,12 @@
 MODULE mod_particle_2D_modf90
 USE PACKMPI
 
-
 type PARTTYPE
 
-!Stored particle informations
+!--------------------------------
+!    Particle informations      !
+!--------------------------------
+
 
 !0. Coordinates
 real(kind=8) :: Xp
@@ -33,6 +35,7 @@ real(kind=8),dimension(2) :: pointu5
 real(kind=8),dimension(2) :: pointu6
 real(kind=8),dimension(2) :: pointu7
 real(kind=8),dimension(2) :: pointu8
+
 !3. Maximum of axe
 real(kind=8) :: axe
 
@@ -44,10 +47,7 @@ integer :: ID
 
 END TYPE PARTTYPE
 
-
 integer :: NINTEGER = 1
-
-! NDOUBLE 
 integer :: NDOUBLE = 8 + 2*8
 
 !! MPI TYPE FOR PARTICLE EXCHANGE

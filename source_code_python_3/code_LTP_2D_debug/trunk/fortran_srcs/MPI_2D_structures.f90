@@ -67,7 +67,6 @@ MODULE mpi_2d_structures_modf90
 	! COUNTER_overlap indicates the number of danger particles in each direction
 	INTEGER, DIMENSION(:,:), ALLOCATABLE                  :: COUNTER_danger
 	
-	
 	! COUNTER_recv_oversize indicates the number of oversize particle(ALL) in the simulation region  
 	INTEGER                                               :: COUNTER_recv_oversize
 	
@@ -81,20 +80,11 @@ MODULE mpi_2d_structures_modf90
 	! COUNTER_recv_leave indicates the number of overlap particles leaving in each direction
 	INTEGER                                               :: COUNTER_recv_leave
 	
-
-	
-	
-	
-	
 	! ALL_PARTICLES stocks all particle informations and must be broadcasted after being updated all particles displacement.
 	TYPE(PARTTYPE), DIMENSION(:), ALLOCATABLE             :: ALL_PARTICLES
 	
 	! neighbour_limit give neighbour boundaries informations, each block has 8 neighbours, each neighbour must have 4 real values to identify its boundaries 
 	DOUBLE PRECISION, DIMENSION(4,8)                      :: neighbour_limit
-
-
-
-	
 
 	
 	CONTAINS
@@ -154,9 +144,6 @@ MODULE mpi_2d_structures_modf90
 		
 !================================================================================================
 
-
-
-
 		!----------------------------------------!
 		! OVERLAP CRITERION FOR JUST ONE PARTICLE!
 		!----------------------------------------!
@@ -164,7 +151,7 @@ MODULE mpi_2d_structures_modf90
 		SUBROUTINE overlap_criterion(particle_k,overlap_check,inside_check,danger_check, & 
 		oversize_check,pointu1,pointu2,pointu3,pointu4,pointu5,pointu6,pointu7,pointu8,axe)
 		
-		! Retrieve the eigenvalues and eigenvectors to determine the direction movement of particles, 	then decide its status
+		! Retrieve the eigenvalues and eigenvectors to determine the deformation of particles,then decide its status
 		
 		! Input: k-th_particle in "PARTYPE" type 
 		! Output: logical state
@@ -215,8 +202,6 @@ MODULE mpi_2d_structures_modf90
   			a(1,2) = D12
   			a(2,1) = D21
   			a(2,2) = D22
-		
-			
 
 			call eigen_solver(a,x,abserr,2)
 
@@ -253,39 +238,37 @@ MODULE mpi_2d_structures_modf90
 			
 			
 			pointu1inside = (pointu1(1)-start_x>=0) &
-				.and.(pointu1(1)-END_x<=0)          &
+				.and.(pointu1(1)-end_x<=0)          &
 				.and.(pointu1(2)-start_y>=0)        &
 				.and.(pointu2(2)-END_y<=0)
 			pointu2inside = (pointu2(1)-start_x>=0) &
-				.and.(pointu2(1)-END_x<=0)          &
+				.and.(pointu2(1)-end_x<=0)          &
 				.and.(pointu2(2)-start_y>=0)        &
 				.and.(pointu2(2)-END_y<=0)
 			pointu3inside = (pointu3(1)-start_x>=0) &
-				.and.(pointu3(1)-END_x<=0)          &
+				.and.(pointu3(1)-end_x<=0)          &
 				.and.(pointu3(2)-start_y>=0)        &
 				.and.(pointu3(2)-END_y<=0)
 			pointu4inside = (pointu4(1)-start_x>=0) &
-				.and.(pointu4(1)-END_x<=0)          &
+				.and.(pointu4(1)-end_x<=0)          &
 				.and.(pointu4(2)-start_y>=0)        &
 				.and.(pointu4(2)-END_y<=0)		
 			pointu5inside = (pointu5(1)-start_x>=0) &
-				.and.(pointu5(1)-END_x<=0)          &
+				.and.(pointu5(1)-end_x<=0)          &
 				.and.(pointu5(2)-start_y>=0)        &
 				.and.(pointu5(2)-END_y<=0)	
 			pointu6inside = (pointu6(1)-start_x>=0) &
-				.and.(pointu6(1)-END_x<=0)          &
+				.and.(pointu6(1)-end_x<=0)          &
 				.and.(pointu6(2)-start_y>=0)        &
 				.and.(pointu6(2)-END_y<=0)	
 			pointu7inside = (pointu7(1)-start_x>=0) &
-				.and.(pointu7(1)-END_x<=0)          &
+				.and.(pointu7(1)-end_x<=0)          &
 				.and.(pointu7(2)-start_y>=0)        &
 				.and.(pointu7(2)-END_y<=0)	
 			pointu8inside = (pointu8(1)-start_x>=0) &
-				.and.(pointu8(1)-END_x<=0)          &
+				.and.(pointu8(1)-end_x<=0)          &
 				.and.(pointu8(2)-start_y>=0)        &
 				.and.(pointu8(2)-END_y<=0)	
-			
-			
 
 		IF (particle_k%Xp>=start_x .and. particle_k%Xp<end_x &
 		.and. particle_k%Yp>=start_y .and. particle_k%Yp<end_y) THEN
@@ -555,7 +538,7 @@ END IF
 
 			
 			limit(1) = start_x
-			limit(2) = END_x
+			limit(2) = end_x
 			limit(3) = start_y
 			limit(4) = END_y
 			DO neighloop=1,8
@@ -692,7 +675,7 @@ END IF
 			IF(danger) then
 				
 				d1 = particle_k%Xp - start_x
-				d2 = -particle_k%Xp + END_x
+				d2 = -particle_k%Xp + end_x
 				d3 = particle_k%Yp - start_y
 				d4 = -particle_k%Yp + END_y
 				axe_k = particle_k%axe
@@ -839,7 +822,7 @@ END IF
 			       			  (p2(2) >  neighbour_limit(3,5) .and. p2(2) <neighbour_limit(4,5)) &
 			       .and. (p2(1) > neighbour_limit(1,5)  .and. p2(1) < neighbour_limit(2,5)) .or.&
 			       		  	  (p3(2) >  neighbour_limit(3,5) .and. p3(2) <neighbour_limit(4,5)) &
-			       .and. (p3(1) > neighbour_limit(1,5)  .and. p3(1) < neighbour_limit(2,5)) .or. &
+			       .and. (p3(1) > neighbour_limit(1,5)  .and. p3(1) < neighbour_limit(2,5)) .or.&
 			       			  (p4(2) >  neighbour_limit(3,5) .and. p4(2) <neighbour_limit(4,5)) &
 			       .and. (p4(1) > neighbour_limit(1,5)  .and. p4(1) < neighbour_limit(2,5)) .or.&
 			       			  (p5(2) >  neighbour_limit(3,5) .and. p5(2) <neighbour_limit(4,5)) &
