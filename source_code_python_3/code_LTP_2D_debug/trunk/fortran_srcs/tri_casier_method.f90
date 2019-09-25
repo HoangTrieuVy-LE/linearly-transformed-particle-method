@@ -96,16 +96,17 @@ DO WHILE(T_start<=T_end)
 !	!-------------------------------------------------------------------!
 
 	CALL update_ALL_particles
-!print*,'DONEEEEEEEEE',rank
-!if(rank==5.or.rank==6.or.rank==9.or.rank==10) then
-!print*,'STEP: ',Npic
-!print*,'----------------------------------'
-!	write(*,*)'rank:',rank, 'COUNTER_inside', COUNTER_inside(rank)
-!	write(*,*)'              				   UP	','	DOWN	','  RIGHT','       LEFT	',' UP-LEFT  ',' DOWN-RIGHT','    DOWN-LEFT','  UP-RIGHT'	
-!	write(*,*)'rank:',rank, 'COUNTER_overlap', COUNTER_overlap(:,rank)
-!	write(*,*)'rank:',rank, 'COUNTER_danger', COUNTER_danger(:,rank)
-!write(*,*)'rank:',rank, 'COUNTER_leave', COUNTER_leave(:,rank)
-!end if
+
+
+if(rank==6.or.rank==7.or.rank==8.or.rank==11.or.rank==12.or.rank==13.or.rank==16.or.rank==17.or.rank==18) then
+print*,'STEP: ',Npic
+print*,'----------------------------------'
+	write(*,*)'rank:',rank, 'COUNTER_inside', COUNTER_inside(rank)
+	write(*,*)'              				   UP	','	DOWN	','  RIGHT','       LEFT	',' UP-LEFT  ',' DOWN-RIGHT','    DOWN-LEFT','  UP-RIGHT'	
+	write(*,*)'rank:',rank, 'COUNTER_overlap', COUNTER_overlap(:,rank)
+	write(*,*)'rank:',rank, 'COUNTER_danger', COUNTER_danger(:,rank)
+write(*,*)'rank:',rank, 'COUNTER_leave', COUNTER_leave(:,rank)
+end if
 
 
 
@@ -137,7 +138,7 @@ OPEN(unit= 4, FILE='trunk/fortran_srcs/temp_out.txt')
 !	!!!                         DEALLOCATION                          !!!
 !	!-------------------------------------------------------------------!
 !		
-!	CALL dealloc_XMD
+	CALL dealloc_XMD
 	CALL dealloc_all_particle_table
 
 

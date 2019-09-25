@@ -1,4 +1,4 @@
-module eigen_solver
+module deformation_eigen_solver
 contains
 	subroutine eigen_solver(a,x,abserr,n)
 	
@@ -120,6 +120,5 @@ contains
 	!   end do
 	! end do
 	!===========================================================
-	return 
-	end	
-end module eigen_solver
+	end subroutine eigen_solver
+end module deformation_eigen_solver

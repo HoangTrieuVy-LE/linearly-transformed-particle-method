@@ -652,7 +652,7 @@ if (config.problem == "diffusion") and (config.method == "LTP_casier"):
             cmd = 'mpiexec  -n 25 ./outfile'
             os.system(str(cmd))
             
-            print 'LTP_caiser time compilation: ', time.time()-start_LTP_casier
+            print 'LTP_casier time compilation: ', time.time()-start_LTP_casier
             
             Xread = numpy.fromfile('trunk/fortran_srcs/coords4fortran.bin')
             Dread = numpy.fromfile('trunk/fortran_srcs/deformmatrix4fortran.bin')

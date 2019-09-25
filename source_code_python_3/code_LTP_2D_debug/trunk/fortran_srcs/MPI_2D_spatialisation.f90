@@ -6,7 +6,6 @@
 !> Decomposition of the domain, adapt number of block to number of process, determination of the neighbour.
 !--------------------------------------------------------------------------- 
 
-! IMPORT MODULE INSDE SOUBROUTINE, TODO decide which module would be necessary
 MODULE mpi_2D_spatialisation_modf90
 
 USE data_launch
