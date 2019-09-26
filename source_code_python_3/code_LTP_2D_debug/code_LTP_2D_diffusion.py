@@ -649,7 +649,7 @@ if (config.problem == "diffusion") and (config.method == "LTP_casier"):
                      trunk/fortran_srcs/pack.o \
                      trunk/fortran_srcs/eigen_solver.o   '
             os.system(str(cmd)) 
-            cmd = 'mpiexec  -n 25 ./outfile'
+            cmd = 'mpiexec -n 25 ./outfile'
             os.system(str(cmd))
             
             print 'LTP_casier time compilation: ', time.time()-start_LTP_casier

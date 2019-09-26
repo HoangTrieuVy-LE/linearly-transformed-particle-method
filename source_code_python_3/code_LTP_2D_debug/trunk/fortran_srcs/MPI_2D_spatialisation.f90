@@ -3,7 +3,8 @@
 !> HoangTrieuVy-LE.
 !
 ! DESCRIPTION: 
-!> Decomposition of the domain, adapt number of block to number of process, determination of the neighbour.
+!> Name: mpi_2D_spatialisation_modf90
+!> Decomposition of the domain, adapt number of block to number of process, determinate the neighbour block (proc).
 !--------------------------------------------------------------------------- 
 
 MODULE mpi_2D_spatialisation_modf90
@@ -17,6 +18,7 @@ IMPLICIT NONE
 CONTAINS
 	
 	SUBROUTINE environnement_initialisation
+		!> MPI environnement initialisation 
 		CALL MPI_INIT( code )
 
 		CALL MPI_COMM_SIZE(MPI_COMM_WORLD,nb_proc,code)
@@ -44,11 +46,13 @@ CONTAINS
 !		-------------
 !		! 0 ! 3 ! 6 !
 ! 		-------------
-		
 
 		CALL MPI_DIMS_CREATE(nb_proc, nbdims, dims, code)
+
 		! Creation of the 2D cartesian topology (no periodicity)
 		periods(:) = .false.
+
+
 		CALL MPI_CART_CREATE(MPI_COMM_WORLD, nbdims, dims, periods, reorder,comm2d,code)
 
 	END SUBROUTINE topology_initialisation
@@ -58,13 +62,7 @@ CONTAINS
 		DOUBLE PRECISION, INTENT(in) :: Lx1,Lx2,Ly1,Ly2		
 		INTEGER   :: STATUS=0		
 		
-
-!		print*,dims(1)
-!		print*,Lx2,Lx1
-!		print*,'block-step',block_step_x
-!		print*, rank, start_x,end_x
-
-		! calculate the block coordinates in the topology
+		! Calculate the block coordinates in the topology
 		CALL mpi_cart_coords(comm2d, rank, nbdims, coords, code)
 
 !                        !       !       !       !         
@@ -84,7 +82,7 @@ CONTAINS
 !                        !       !       !       !         
 
 
-! LES BLOCK SURROUNDING HAVE INFINITY LENGHT
+		! LES BLOCK SURROUNDING HAVE INFINITY LENGHT
 
 		if(dims(1) <=2 .or. dims(2)<=2) then
 			if(rank==0) then
@@ -128,15 +126,15 @@ CONTAINS
 		 
 		end if
 
-
-
-
 	END SUBROUTINE set_block_grid
 
 	SUBROUTINE neighbour_blocks
-		!!!!!!!!!!!!!!!!!!!!!!!
+
+	!> Determinate neighbour rank
+
+		!---------------------!
 		!    iniialisation    !
-		!!!!!!!!!!!!!!!!!!!!!!!
+		!---------------------!
 
 		! in 2d, maximum 8 neighbour blocks around 
 		rank_left = mpi_proc_null
@@ -150,9 +148,9 @@ CONTAINS
 
 		! TODO in 3d, maximum 26 neighbour block around
 	
-		!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		!-------------------------------------!
 		!     find neighbours - conditions    !
-		!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		!-------------------------------------!
 	
 		! neighbour in left_right positions
 		IF (dims(1)>1) THEN
@@ -198,14 +196,15 @@ CONTAINS
 		END IF ! end if for neighbour in plane x-y
 
 
-		!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		!-----------------------------------!
 		!  TODO add general case dims(3)>1  !
-		!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		!-----------------------------------!
 
 	END SUBROUTINE neighbour_blocks
 
 
 	SUBROUTINE neighbour_counter
+	!> Neighbour proc counter
 		nb_neighbours_actually = 0
 		if (rank_left .ge. 0) then 
 			nb_neighbours_actually = nb_neighbours_actually+ 1

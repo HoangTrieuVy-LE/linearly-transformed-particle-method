@@ -3,7 +3,8 @@
 !> HoangTrieuVy-LE.
 !
 ! DESCRIPTION: 
-!> MPI 2D structures 
+!> Name: mpi_2d_structures_modf90 
+!> Contains: Main process subroutine, particles lists declaration
 !--------------------------------------------------------------------------- 
 
 
@@ -15,8 +16,6 @@ MODULE mpi_2d_structures_modf90
 	USE deformation_eigen_solver
 	
 	IMPLICIT NONE
-	
-	! DECALARATIONS
 	
 	! NB_NEIGHBOURS is already declared in pack
 	
@@ -151,10 +150,10 @@ MODULE mpi_2d_structures_modf90
 		SUBROUTINE overlap_criterion(particle_k,overlap_check,inside_check,danger_check, & 
 		oversize_check,pointu1,pointu2,pointu3,pointu4,pointu5,pointu6,pointu7,pointu8,axe)
 		
-		! Retrieve the eigenvalues and eigenvectors to determine the deformation of particles,then decide its status
+		!> Description: Retrieve the eigenvalues and eigenvectors to determine the deformation of particles,then decide its status
 		
-		! Input: k-th_particle in "PARTYPE" type 
-		! Output: logical state
+		! Input: k-th_particle in "PARTYPE" type, overlap_check,inside_check,danger_check,oversize_check,pointu1,pointu2,pointu3,pointu4,pointu5,pointu6,pointu7,pointu8,axe
+		! Output: logical state for overlap_check,inside_check,danger_check, oversize_check
 		
 		
 			IMPLICIT NONE
@@ -190,8 +189,6 @@ MODULE mpi_2d_structures_modf90
 					                                           pointu5inside,pointu6inside, &
 					                                           pointu7inside,pointu8inside
 			
-
-				
 			D11 = particle_k%Dp1
 			D12 = particle_k%Dp2
 			D21 = particle_k%Dp3
@@ -320,6 +317,9 @@ MODULE mpi_2d_structures_modf90
 !================================================================================================	
 		
 		SUBROUTINE particle_distribution
+		!> Description: Particles distribution for each responsible block
+		!> The subroutine excuted when all particles states are known, after the distribution s done, we count
+		!> the number for each type(overlap,oversize,danger) and create propre list for each blocks 
 			IMPLICIT NONE
 			logical                           :: local_overlapcheck, local_insidecheck, & 
 												 local_dangercheck,local_leave_check, &
@@ -475,49 +475,49 @@ END IF
 
 !================================================================================================  		
 			IF(rank /= 0) then
-      			call MPI_SEND(COUNTER_inside(rank),1,MPI_INTEGER,0,1,MPI_COMM_WORLD,code)
+      			call MPI_SEND(COUNTER_inside(rank),1,MPI_INTEGER,0,11,MPI_COMM_WORLD,code)
     		else
       			do ID = 1,nb_proc - 1
-       				call MPI_RECV(COUNTER_inside(ID),1,MPI_INTEGER,ID,1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
+       				call MPI_RECV(COUNTER_inside(ID),1,MPI_INTEGER,ID,11,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
       			END do	
     		END IF
     		call MPI_BCAST(COUNTER_inside,nb_proc,MPI_INTEGER,0,MPI_COMM_WORLD,code)
 					
 !================================================================================================  		
 			IF(rank /= 0) then
-      			call MPI_SEND(COUNTER_overlap(1,rank),NB_NEIGHBOURS,MPI_INTEGER,0,1,MPI_COMM_WORLD,code)
+      			call MPI_SEND(COUNTER_overlap(1,rank),NB_NEIGHBOURS,MPI_INTEGER,0,12,MPI_COMM_WORLD,code)
     		else
       			do ID = 1,nb_proc - 1
-       				call MPI_RECV(COUNTER_overlap(1,ID),NB_NEIGHBOURS,MPI_INTEGER,ID,1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
+       				call MPI_RECV(COUNTER_overlap(1,ID),NB_NEIGHBOURS,MPI_INTEGER,ID,12,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
       			END do	
     		END IF
     		call MPI_BCAST(COUNTER_overlap,NB_NEIGHBOURS*nb_proc,MPI_INTEGER,0,MPI_COMM_WORLD,code)
 !================================================================================================  		
     		IF(rank /= 0) then
-      			call MPI_SEND(COUNTER_leave(1,rank),NB_NEIGHBOURS,MPI_INTEGER,0,2,MPI_COMM_WORLD,code)
+      			call MPI_SEND(COUNTER_leave(1,rank),NB_NEIGHBOURS,MPI_INTEGER,0,13,MPI_COMM_WORLD,code)
     		else
       			do ID = 1,nb_proc - 1
-       				call MPI_RECV(COUNTER_leave(1,ID),NB_NEIGHBOURS,MPI_INTEGER,ID,2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
+       				call MPI_RECV(COUNTER_leave(1,ID),NB_NEIGHBOURS,MPI_INTEGER,ID,13,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
       			END do
     		END IF
     		call MPI_BCAST(COUNTER_leave,NB_NEIGHBOURS*nb_proc,MPI_INTEGER,0,MPI_COMM_WORLD,code)
     		
 !================================================================================================    		
     		IF(rank /= 0) then
-      			call MPI_SEND(COUNTER_danger(1,rank),NB_NEIGHBOURS,MPI_INTEGER,0,3,MPI_COMM_WORLD,code)
+      			call MPI_SEND(COUNTER_danger(1,rank),NB_NEIGHBOURS,MPI_INTEGER,0,14,MPI_COMM_WORLD,code)
     		else
       			do ID = 1,nb_proc - 1
-       				call MPI_RECV(COUNTER_danger(1,ID),NB_NEIGHBOURS,MPI_INTEGER,ID,3,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
+       				call MPI_RECV(COUNTER_danger(1,ID),NB_NEIGHBOURS,MPI_INTEGER,ID,14,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
       			END do
     		END IF
     		call MPI_BCAST(COUNTER_danger,NB_NEIGHBOURS*nb_proc,MPI_INTEGER,0,MPI_COMM_WORLD,code)
 
 !================================================================================================
 			IF(rank /= 0) then
-      			call MPI_SEND(COUNTER_oversize(rank),1,MPI_INTEGER,0,1,MPI_COMM_WORLD,code)
+      			call MPI_SEND(COUNTER_oversize(rank),1,MPI_INTEGER,0,15,MPI_COMM_WORLD,code)
     		else
       			do ID = 1,nb_proc - 1
-       				call MPI_RECV(COUNTER_oversize(ID),1,MPI_INTEGER,ID,1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
+       				call MPI_RECV(COUNTER_oversize(ID),1,MPI_INTEGER,ID,15,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
       			END do	
     		END IF
     		call MPI_BCAST(COUNTER_oversize,nb_proc,MPI_INTEGER,0,MPI_COMM_WORLD,code)
@@ -528,7 +528,7 @@ END IF
 !================================================================================================
 	
 		SUBROUTINE neighbour_limit_finding
-
+			!> Determinate all the neighbour limit
 			integer                           :: j,neighloop,ID
 
 			integer, dimension(NB_NEIGHBOURS) :: OPP	
@@ -545,7 +545,7 @@ END IF
 				IF (NEIGHBOUR(neighloop)<0)then
 					cycle
 				END IF
-				call MPI_SEND(limit,4,MPI_DOUBLE_PRECISION,NEIGHBOUR(neighloop),111,MPI_COMM_WORLD,code)
+				call MPI_SEND(limit,4,MPI_DOUBLE_PRECISION,NEIGHBOUR(neighloop),16,MPI_COMM_WORLD,code)
 
 			END DO			
 			
@@ -553,7 +553,7 @@ END IF
 				IF(NEIGHBOUR(neighloop)<0) then
 					cycle
 				END IF
-				call MPI_RECV(neighbour_limit(1,neighloop),4,MPI_DOUBLE_PRECISION,NEIGHBOUR(neighloop),111,MPI_COMM_WORLD & 
+				call MPI_RECV(neighbour_limit(1,neighloop),4,MPI_DOUBLE_PRECISION,NEIGHBOUR(neighloop),16,MPI_COMM_WORLD & 
 				,MPI_STATUS_IGNORE,code)
 			END DO
 			
@@ -621,7 +621,6 @@ END IF
 			    	IF(in_down) then
 			    		COUNTER_leave(BJ,rank) = COUNTER_leave(BJ,rank) + 1
 			    		IND_leave(COUNTER_leave(BJ,rank),BJ) = particle_k%ID
-
 			    	END IF
 			 	END IF
 !================================================================================================
@@ -1058,13 +1057,44 @@ END IF
 				END IF
 			END DO
 
-
-!================================================================================================
   			call MPI_BARRIER(MPI_COMM_WORLD,code)
 
-!		print*, 'done send_overlap_and_danger_particle',rank
 		END SUBROUTINE send_overlap_and_danger_particle
+!===============================================================================================
+	
+		SUBROUTINE send_all_block_information_to_rank_0_and_broadcast
 		
+		integer                          :: neighloop
+		integer                          :: i,j,ID
+		integer,dimension(1:nb_proc-1)   ::address
+		
+		
+		address(:) = 0
+
+		call MPI_PART_TYPE
+
+		
+
+		IF (rank /= 0) then
+			DO i=1,COUNTER_inside(rank)
+				address(rank) = IND_inside(i)
+				call MPI_SEND(address(rank),1,MPI_INTEGER,0,24,MPI_COMM_WORLD,code)
+				call MPI_SEND(ALL_PARTICLES(address(rank)),1,MPI_PARTICLETYPE,0,25,MPI_COMM_WORLD,code)
+			END DO
+		else
+			DO ID =1,nb_proc-1
+				DO i=1,COUNTER_inside(ID)
+					call MPI_RECV(address(ID),1,MPI_INTEGER,ID,24,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
+					call MPI_RECV(ALL_PARTICLES(address(ID)),1,MPI_PARTICLETYPE,ID,25,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
+				END DO
+			END DO
+		END IF	
+
+	call MPI_BCAST(ALL_PARTICLES,number_of_particles,MPI_PARTICLETYPE,0,MPI_COMM_WORLD,code)
+
+		END SUBROUTINE send_all_block_information_to_rank_0_and_broadcast		
+		
+!================================================================================================
 		
 		
 		SUBROUTINE block_loop_on_block_global_table	
@@ -1321,13 +1351,10 @@ end if
 !=================================================================================================
 			COUNTER_danger(:,:) = 0
 			COUNTER_leave(:,:)  = 0
-			COUNTER_overlap(:,:) = 0
+			COUNTER_overlap(:,:)= 0
 			COUNTER_oversize(:) = 0
-			
 			i=1
-			
 
-			
 			DO WHILE (i<=COUNTER_inside(rank))
 
 				call overlap_criterion(ALL_PARTICLES(IND_inside(i)),overlap_check,inside_check,danger_check,& 
@@ -1342,33 +1369,35 @@ end if
 					ALL_PARTICLES(IND_inside(i))%pointu7 = pointu7
 					ALL_PARTICLES(IND_inside(i))%pointu8 = pointu8
 					ALL_PARTICLES(IND_inside(i))%axe = axe
-
+					
 				IF (inside_check) then
 					leave_check = .false.
 					call particle_screening(ALL_PARTICLES(IND_inside(i)),overlap_check,danger_check,leave_check,oversize_check)
 					i = i + 1
 
 				else
-!					IF(overlap_check) then
-!						leave_check = .false.
-!						call particle_screening(ALL_PARTICLES(IND_inside(i)),overlap_check,danger_check,leave_check,oversize_check)
-!						IND_inside(i:COUNTER_inside(rank)-1) = IND_inside(i+1:COUNTER_inside(rank))
-!						COUNTER_inside(rank) = COUNTER_inside(rank) - 1
-!					else
-!						
 						leave_check = .true.
 
 						call particle_screening(ALL_PARTICLES(IND_inside(i)),overlap_check,danger_check,leave_check,oversize_check)
 						
 						IND_inside(i:COUNTER_inside(rank)-1) = IND_inside(i+1:COUNTER_inside(rank))
 						COUNTER_inside(rank) = COUNTER_inside(rank) - 1
-
 				END IF
 
 			END DO	
 
-!!!!!!!!!!!!!!!!! BUGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
 
+!================================================================================================    
+	
+    		IF(rank /= 0) then
+      			call MPI_SEND(COUNTER_leave(1,rank),NB_NEIGHBOURS,MPI_INTEGER,0,18,MPI_COMM_WORLD,code)
+    		else
+      			do ID = 1,nb_proc - 1
+
+       				call MPI_RECV(COUNTER_leave(1,ID),NB_NEIGHBOURS,MPI_INTEGER,ID,18,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
+      			END do
+    		END IF
+    		call MPI_BCAST(COUNTER_leave,NB_NEIGHBOURS*nb_proc,MPI_INTEGER,0,MPI_COMM_WORLD,code)
 
 !================================================================================================
 			DO neighloop = 1,8
@@ -1379,7 +1408,7 @@ end if
 				DO i=1,COUNTER_leave(neighloop,rank)
 					
 					
-					call MPI_SEND(IND_leave(i,neighloop),1,MPI_INTEGER,NEIGHBOUR(neighloop),10,MPI_COMM_WORLD,code)
+					call MPI_SEND(IND_leave(i,neighloop),1,MPI_INTEGER,NEIGHBOUR(neighloop),19,MPI_COMM_WORLD,code)
 					
 				END DO
 				
@@ -1387,7 +1416,7 @@ end if
 					IF(NEIGHBOUR(neighloop)<0) then
 						cycle
 					END IF
-					call MPI_RECV(IND_recv_leave(i,neighloop),1,MPI_INTEGER,NEIGHBOUR(neighloop),10 & 
+					call MPI_RECV(IND_recv_leave(i,neighloop),1,MPI_INTEGER,NEIGHBOUR(neighloop),19 & 
 					,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
 				
 						
@@ -1400,7 +1429,6 @@ end if
 					COUNTER_recv_leave = COUNTER_recv_leave + COUNTER_leave(OPP(neighloop),NEIGHBOUR(neighloop))
 				END IF	
 			END DO
-print*,'done',rank
 
 
 !================================================================================================
@@ -1422,124 +1450,79 @@ print*,'done',rank
 						local_leave_check= .false.
 						call particle_screening(ALL_PARTICLES(IND_recv_leave(j,neighloop)), & 
 						local_overlapcheck,local_dangercheck,local_leave_check,local_oversize_check)
-					else 
-						local_leave_check= .false.
-						call particle_screening(ALL_PARTICLES(IND_recv_leave(j,neighloop)), & 
-						local_overlapcheck,local_dangercheck,local_leave_check,local_oversize_check)
+!					else 
+!						local_leave_check= .false.
+!						call particle_screening(ALL_PARTICLES(IND_recv_leave(j,neighloop)), & 
+!						local_overlapcheck,local_dangercheck,local_leave_check,local_oversize_check)
 				END IF
 					
 				END DO
 		
 		END DO
+		
+		
+					
 
-	print*,'rankkkkkkkkk',rank,COUNTER_inside(rank)
+!!DO neighloop = 1,8
+!!print*,'rank',rank,'neighloop',neighloop,IND_leave(:,neighloop)
+!!END DO
+
+
 !================================================================================================ 
 
 			IF(rank /= 0) then
-      			call MPI_SEND(COUNTER_inside(rank),NB_NEIGHBOURS,MPI_INTEGER,0,777,MPI_COMM_WORLD,code)
+      			call MPI_SEND(COUNTER_inside(rank),NB_NEIGHBOURS,MPI_INTEGER,0,20,MPI_COMM_WORLD,code)
     		else
       			do ID = 1,nb_proc - 1
 
-       				call MPI_RECV(COUNTER_inside(ID),NB_NEIGHBOURS,MPI_INTEGER,ID,777,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
+       				call MPI_RECV(COUNTER_inside(ID),NB_NEIGHBOURS,MPI_INTEGER,ID,20,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
       			END do
     		END IF
     		call MPI_BCAST(COUNTER_inside,nb_proc,MPI_INTEGER,0,MPI_COMM_WORLD,code)
-    		
 
-!================================================================================================    
-	
-    		IF(rank /= 0) then
-      			call MPI_SEND(COUNTER_leave(1,rank),NB_NEIGHBOURS,MPI_INTEGER,0,7,MPI_COMM_WORLD,code)
-    		else
-      			do ID = 1,nb_proc - 1
-
-       				call MPI_RECV(COUNTER_leave(1,ID),NB_NEIGHBOURS,MPI_INTEGER,ID,7,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
-      			END do
-    		END IF
-    		call MPI_BCAST(COUNTER_leave,NB_NEIGHBOURS*nb_proc,MPI_INTEGER,0,MPI_COMM_WORLD,code)
+!    		call MPI_BARRIER(MPI_COMM_WORLD,code)
+!!================================================================================================
 
 
-!================================================================================================
+!			IF(rank /= 0) then
+!      			call MPI_SEND(COUNTER_oversize(rank),NB_NEIGHBOURS,MPI_INTEGER,0,21,MPI_COMM_WORLD,code)
+!    		else
+!      			do ID = 1,nb_proc - 1
 
+!       				call MPI_RECV(COUNTER_oversize(ID),NB_NEIGHBOURS,MPI_INTEGER,ID,21,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
+!      			END do
+!    		END IF
+!    		call MPI_BCAST(COUNTER_oversize,nb_proc,MPI_INTEGER,0,MPI_COMM_WORLD,code)
 
-			IF(rank /= 0) then
-      			call MPI_SEND(COUNTER_oversize(rank),NB_NEIGHBOURS,MPI_INTEGER,0,77,MPI_COMM_WORLD,code)
-    		else
-      			do ID = 1,nb_proc - 1
-
-       				call MPI_RECV(COUNTER_oversize(ID),NB_NEIGHBOURS,MPI_INTEGER,ID,77,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
-      			END do
-    		END IF
-    		call MPI_BCAST(COUNTER_oversize,nb_proc,MPI_INTEGER,0,MPI_COMM_WORLD,code)
-
-
-!================================================================================================    		
-    		IF(rank /= 0) then
-      			call MPI_SEND(COUNTER_danger(1,rank),NB_NEIGHBOURS,MPI_INTEGER,0,8,MPI_COMM_WORLD,code)
-    		else
-      			do ID = 1,nb_proc - 1
-       				call MPI_RECV(COUNTER_danger(1,ID),NB_NEIGHBOURS,MPI_INTEGER,ID,8,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
-      			END do
-    		END IF
-    		call MPI_BCAST(COUNTER_danger,NB_NEIGHBOURS*nb_proc,MPI_INTEGER,0,MPI_COMM_WORLD,code)
-    			
-
-!================================================================================================		
-		
-			IF(rank /= 0) then
-      			call MPI_SEND(COUNTER_overlap(1,rank),NB_NEIGHBOURS,MPI_INTEGER,0,9,MPI_COMM_WORLD,code)
-    		else
-      			do ID = 1,nb_proc - 1				
-       				call MPI_RECV(COUNTER_overlap(1,ID),NB_NEIGHBOURS,MPI_INTEGER,ID,9,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
-      			END do	
-    		END IF
-    		call MPI_BCAST(COUNTER_overlap,NB_NEIGHBOURS*nb_proc,MPI_INTEGER,0,MPI_COMM_WORLD,code)
-
+!    		call MPI_BARRIER(MPI_COMM_WORLD,code)
+print*,rank,COUNTER_oversize(rank)
+!!================================================================================================    		
+!    		IF(rank /= 0) then
+!      			call MPI_SEND(COUNTER_danger(1,rank),NB_NEIGHBOURS,MPI_INTEGER,0,22,MPI_COMM_WORLD,code)
+!    		else
+!      			do ID = 1,nb_proc - 1
+!       				call MPI_RECV(COUNTER_danger(1,ID),NB_NEIGHBOURS,MPI_INTEGER,ID,22,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
+!      			END do
+!    		END IF
+!    		call MPI_BCAST(COUNTER_danger,NB_NEIGHBOURS*nb_proc,MPI_INTEGER,0,MPI_COMM_WORLD,code)
+!    			
+!    		call MPI_BARRIER(MPI_COMM_WORLD,code)
+!!================================================================================================		
+!		
+!			IF(rank /= 0) then
+!      			call MPI_SEND(COUNTER_overlap(1,rank),NB_NEIGHBOURS,MPI_INTEGER,0,23,MPI_COMM_WORLD,code)
+!    		else
+!      			do ID = 1,nb_proc - 1				
+!       				call MPI_RECV(COUNTER_overlap(1,ID),NB_NEIGHBOURS,MPI_INTEGER,ID,23,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
+!      			END do	
+!    		END IF
+!    		call MPI_BCAST(COUNTER_overlap,NB_NEIGHBOURS*nb_proc,MPI_INTEGER,0,MPI_COMM_WORLD,code)
+!    	    call MPI_BARRIER(MPI_COMM_WORLD,code)
 		END SUBROUTINE update_ALL_particles
-!===============================================================================================
-	
-		SUBROUTINE send_all_block_information_to_rank_0_and_broadcast
-		
-		integer                          :: neighloop
-		integer                          :: i,j,ID
-		integer,dimension(1:nb_proc-1)   ::address
-		
-		
-		address(:) = 0
 
-		call MPI_PART_TYPE
-
-
-!================================================================================================
-		IF (rank /= 0) then
-			DO i=1,COUNTER_inside(rank)
-				address(rank) = IND_inside(i)
-				call MPI_SEND(address(rank),1,MPI_INTEGER,0,11,MPI_COMM_WORLD,code)
-				call MPI_SEND(ALL_PARTICLES(address(rank)),1,MPI_PARTICLETYPE,0,12,MPI_COMM_WORLD,code)
-			END DO
-		else
-			DO ID =1,nb_proc-1
-				DO i=1,COUNTER_inside(ID)
-					call MPI_RECV(address(ID),1,MPI_INTEGER,ID,11,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
-					call MPI_RECV(ALL_PARTICLES(address(ID)),1,MPI_PARTICLETYPE,ID,12,MPI_COMM_WORLD,MPI_STATUS_IGNORE,code)
-				END DO
-			END DO
-		END IF	
-
-
-
-	call MPI_BCAST(ALL_PARTICLES,number_of_particles,MPI_PARTICLETYPE,0,MPI_COMM_WORLD,code)
-
-
-
-!================================================================================================	
-				
-
-		END SUBROUTINE send_all_block_information_to_rank_0_and_broadcast
 		
 !================================================================================================
 		SUBROUTINE update_all_particle_information
-
 		IF(rank==0) then
 			DO i=1,number_of_particles
 

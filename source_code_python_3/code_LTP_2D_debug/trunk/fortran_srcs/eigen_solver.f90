@@ -1,3 +1,20 @@
+!---------------------------------------------------------------------------  
+!> @author 
+!> HoangTrieuVy-LE.
+!
+! DESCRIPTION: 
+!> Name: deformation_eigen_solver
+!> Evaluate eigenvalues and eigenvectors of a real symmetric matrix a(n,n): a*x = lambda*x 
+!> Method: systeme d'ordre 2 or n, make the choice by uncomment and comment code block below
+!===========================================================================================
+!> Input:
+! a(n,n) - array of coefficients for matrix A
+! abserr - abs tolerance [sum of (off-diagonal elements)^2]
+!> Output:
+! a(i,i) - eigenvalues
+! x(i,j) - eigenvectors
+!============================================================================================
+
 module deformation_eigen_solver
 contains
 	subroutine eigen_solver(a,x,abserr,n)
@@ -11,18 +28,7 @@ contains
 	double precision :: trace
 	double precision :: lambda1,lambda2
 
-	!===========================================================
-	! Evaluate eigenvalues and eigenvectors
-	! of a real symmetric matrix a(2,2): a*x = lambda*x 
-	! method: systeme d'ordre 2
-	!-----------------------------------------------------------
-	! Input:
-	! a(n,n) - array of coefficients for matrix A
-	! abserr - abs tolerance [sum of (off-diagonal elements)^2]
-	! Output:
-	! a(i,i) - eigenvalues
-	! x(i,j) - eigenvectors
-	!===========================================================
+	
 
 	det =  a(1,1)*a(2,2)-a(1,2)*a(2,1)
 	trace = a(1,1) + a(2,2)
@@ -47,20 +53,6 @@ contains
  	a(2,2) = lambda2
 	!===========================================================
 
-
-
-	!===========================================================
-	! Evaluate eigenvalues and eigenvectors
-	! of a real symmetric matrix a(n,n): a*x = lambda*x 
-	! method: Jacoby method for symmetric matrices 
-	!-----------------------------------------------------------
-	! Input:
-	! a(n,n) - array of coefficients for matrix A
-	! abserr - abs tolerance [sum of (off-diagonal elements)^2]
-	! Output:
-	! a(i,i) - eigenvalues
-	! x(i,j) - eigenvectors
-	!===========================================================
 	! double precision ::  b2, bar
 	! double precision ::beta, coeff, c, s, cs, sc
 	! integer i, j, k

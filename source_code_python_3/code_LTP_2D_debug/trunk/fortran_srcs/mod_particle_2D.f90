@@ -3,7 +3,10 @@
 !> HoangTrieuVy-LE.
 !
 ! DESCRIPTION: 
-!> Particle model
+!> mod_particle_2D_modf90
+!> Contains: 
+!   1. Particle structure
+!   2. Subroutine MPI_PART_TYPE: Create particle type in MPI process
 !--------------------------------------------------------------------------- 
 
 MODULE mod_particle_2D_modf90
@@ -59,8 +62,9 @@ TYPE(PARTTYPE), dimension(:,:), allocatable :: PART
 
 
 CONTAINS
-
+	
 	SUBROUTINE MPI_PART_TYPE
+	! Create particle type in MPI
 
     INTEGER, DIMENSION(0:1) ::  oldtypes, blockcounts, offsets(0:1)
 !    integer(kind=MPI_OFFSET_KIND) :: extent
