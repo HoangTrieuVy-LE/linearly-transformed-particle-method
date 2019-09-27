@@ -638,7 +638,7 @@ if (config.problem == "diffusion") and (config.method == "LTP_casier"):
         if (config.time_scheme == 'euler_explicit') : 
             start_LTP_casier = time.time()
             
-            cmd = 'mpif90 -g -fopenmp trunk/fortran_srcs/tri_casier_method.f90 -o outfile \
+            cmd = 'mpif90 -g -fbacktrace -fdefault-real-8  -falign-commons -finit-local-zero -mcmodel=medium  -fopenmp trunk/fortran_srcs/tri_casier_method.f90 -o outfile \
                     trunk/fortran_srcs/launchfortran.o \
                     trunk/fortran_srcs/mod_particle_2D.o \
                     trunk/fortran_srcs/MPI_2D_spatialisation.o \
