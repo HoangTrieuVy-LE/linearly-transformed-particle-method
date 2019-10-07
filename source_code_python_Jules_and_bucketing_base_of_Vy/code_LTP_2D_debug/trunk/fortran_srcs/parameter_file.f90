@@ -3,11 +3,11 @@
 !> HoangTrieuVy-LE.
 !
 ! DESCRIPTION: 
-!> Name: PACKMPI
+!> Name: PARAMETERS
 !> Stored global variables, the detail informations are below
 !--------------------------------------------------------------------------- 
 
-MODULE PACKMPI
+MODULE PARAMETER_FILE
 
 USE MPI
 
@@ -59,5 +59,5 @@ IMPLICIT NONE
 	!INTEGER(kind=MPI_OFFSET_KIND)                 :: offset
 
 
-END MODULE PACKMPI
+END MODULE PARAMETER_FILE
 

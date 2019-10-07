@@ -599,44 +599,80 @@ while (round(t,13) <= (round((config.Tmax),13)) ) :
             
             
             
-#=========================================== DATA FORTRAN FOR LTP-tri-casier METHOD=======================================================
+#=========================================== BEGIN LTP-tri-casier METHOD=======================================================
+            
+        ############# DATA CONFIGURATION##############
 D_old = D.copy()
 X_old = X.copy()                
 
 #Nx, Ny, hx, hy, dt, deg_spline, radius_phi, bool_phi_radial 
 sizefile = open("trunk/fortran_srcs/size.data",'w')
+
+#Number of particles axe x
 sizefile.write(str(config.Nx)+'\n')
+
+#Number of particles axe y
 sizefile.write(str(config.Ny)+'\n')
+
+#h_remap
 sizefile.write(str(config.hx_remap)+'\n')
 sizefile.write(str(config.hy_remap)+'\n')
+
+#time step
 sizefile.write(str(config.dt)+'\n')
+
+#T initial
 sizefile.write(str(config.Tini)+'\n')
+
+#T end
 sizefile.write(str(config.Tmax)+'\n')
-sizefile.write(str(1)+'\n')  #update_d_scheme = 1
+
+ #update_d_scheme = 1
+sizefile.write(str(1)+'\n') 
+
+#Degree, radius phi of spline
 sizefile.write(str(config.deg_spline)+'\n')
 sizefile.write(str(config.radius_phi)+'\n')
 sizefile.write(str(config.bool_phi_radial))
+
 sizefile.close()
 
 
-#NOTEEEE: Lx1 = mesh(1,1), Lx2 = mesh(1,2),  Ly1 = mesh(2,1) , Ly2 = mesh(2,2)
+#Boundary limit: Lx1 = mesh(1,1), Lx2 = mesh(1,2),  Ly1 = mesh(2,1) , Ly2 = mesh(2,2)
 Lx = numpy.array([config.Lx1, config.Lx2])
 Ly = numpy.array([config.Ly1, config.Ly2])    
 mesh = numpy.array([Lx,Ly]) 
-#print('Im here',mesh)
 mesh.T.tofile('trunk/fortran_srcs/mesh.bin')
+
+
 # Coordinates, Deformation Matrix D, and matrix M
 X.T.tofile('trunk/fortran_srcs/coords4fortran.bin')
 D.T.tofile('trunk/fortran_srcs/deformmatrix4fortran.bin')  
 M.T.tofile('trunk/fortran_srcs/matrixM4fortran.bin')  
-#print(M)
-
 
 #=========================================================================================================================================
 
 if (config.problem == "diffusion") and (config.method == "LTP_casier"):
         if (config.time_scheme == 'euler_explicit') : 
             start_LTP_casier = time.time()
+            
+            cmd = 'mpif90 -g -c -fopenmp eigen_solver.f90 ' 
+            os.system(str(cmd))
+            
+            cmd = 'mpif90 -g -c -fopenmp parameter_file.f90 ' 
+            os.system(str(cmd))
+            
+            cmd = 'mpif90 -g -c -fopenmp data_launch.f90' 
+            os.system(str(cmd)) 
+            
+            cmd = 'mpif90 -g -c -fopenmp mod_particle_2D.f90' 
+            os.system(str(cmd))
+            
+            cmd = 'mpif90 -g -c -fopenmp MPI_2D_spatialisation.f90' 
+            os.system(str(cmd))
+            
+            cmd = 'mpif90 -g -c -fopenmp MPI_2D_structures.f90' 
+            os.system(str(cmd))
             
             cmd = 'mpif90 -g -fbacktrace -fdefault-real-8  -falign-commons -finit-local-zero -mcmodel=medium  -fopenmp trunk/fortran_srcs/tri_casier_method.f90 -o outfile \
                     trunk/fortran_srcs/launchfortran.o \
@@ -648,7 +684,8 @@ if (config.problem == "diffusion") and (config.method == "LTP_casier"):
                     trunk/fortran_srcs/calculsfortran_ini.o \
                      trunk/fortran_srcs/pack.o \
                      trunk/fortran_srcs/eigen_solver.o   '
-            os.system(str(cmd)) 
+            os.system(str(cmd))
+            
             cmd = 'mpiexec -n 25 ./outfile'
             os.system(str(cmd))
             
@@ -663,6 +700,11 @@ if (config.problem == "diffusion") and (config.method == "LTP_casier"):
             t  = float(fp.readline())
             npic = int(fp.readline())
             Nboucle = int(fp.readline())
+
+
+
+#=========================================== END OF LTP-tri-casier METHOD=======================================================
+
 
 if (config.method == 'LTP') or (config.method == 'part_avec_suivi_vol'): 
      start4 = time.clock()     

@@ -10,7 +10,8 @@
 !--------------------------------------------------------------------------- 
 
 MODULE mod_particle_2D_modf90
-USE PACKMPI
+
+USE PARAMETER_FILE
 
 type PARTTYPE
 
