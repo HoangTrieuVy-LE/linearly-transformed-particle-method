@@ -38,7 +38,7 @@ module data_launch
 
 
 CONTAINS
-SUBROUTINE setup_variables
+SUBROUTINE setup_parameters
 	!> Input: 	'trunk/fortran_srcs/size.data', size.data made from initialization fonction in "code_LTP_2D_diffusion.py"  
 	!> Output:  Assert values for: nxg, nyg, hx, time_step, T_start, T_end, time_scheme, degre_spline, radius_spline, phi_radial
 	
@@ -56,7 +56,7 @@ SUBROUTINE setup_variables
 	READ(1,*) phi_radial
 
 	CLOSE(1)
-END SUBROUTINE setup_variables
+END SUBROUTINE setup_parameters
 
 SUBROUTINE setup_particle_information_matrix
 	!> Allocation for:  mass_read, Xparticle_read, D_read, mesh

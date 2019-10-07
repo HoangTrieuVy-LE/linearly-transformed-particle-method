@@ -21,8 +21,8 @@ Nboucle = 0
 	!-------------------------------------------------------------------!
 
 CALL environnement_initialisation
-CALL setup_variables
-CALL setup_particle_information_matrix
+CALL setup_parameters
+CALL setup_particle_data
 CALL set_Mesh
 CALL particle_coordinates_initiation
 CALL mass_initiation
@@ -69,22 +69,23 @@ CALL neighbour_limit_finding
 
 CALL particle_distribution
 
+CALL send_overlap_and_danger_particle
+
 !	!-------------------------------------------------------------------!
 !	!!!LOOP ON PARTICLES INSIDE BLOCK AND THE OTHERS IN OVERLAP TABLES!!!
 !	!-------------------------------------------------------------------!
 
 
-if(rank==6.or.rank==7.or.rank==8.or.rank==11.or.rank==12.or.rank==13.or.rank==16.or.rank==17.or.rank==18) then
-print*,'----------------------------------'
-	write(*,*)'rank:',rank, 'COUNTER_inside', COUNTER_inside(rank)
-	write(*,*)'              				   UP	','	DOWN	','  RIGHT','       LEFT	',' UP-LEFT  ',' DOWN-RIGHT','    DOWN-LEFT','  UP-RIGHT'	
-	write(*,*)'rank:',rank, 'COUNTER_overlap', COUNTER_overlap(:,rank)
-	write(*,*)'rank:',rank, 'COUNTER_danger', COUNTER_danger(:,rank)
-	write(*,*)'rank:',rank, 'COUNTER_oversize', COUNTER_oversize(rank)
-end if
+! if(rank==6.or.rank==7.or.rank==8.or.rank==11.or.rank==12.or.rank==13.or.rank==16.or.rank==17.or.rank==18) then
+! print*,'----------------------------------'
+! 	write(*,*)'rank:',rank, 'COUNTER_inside', COUNTER_inside(rank)
+! 	write(*,*)'              				   UP	','	DOWN	','  RIGHT','       LEFT	',' UP-LEFT  ',' DOWN-RIGHT','    DOWN-LEFT','  UP-RIGHT'	
+! 	write(*,*)'rank:',rank, 'COUNTER_overlap', COUNTER_overlap(:,rank)
+! 	write(*,*)'rank:',rank, 'COUNTER_danger', COUNTER_danger(:,rank)
+! 	write(*,*)'rank:',rank, 'COUNTER_oversize', COUNTER_oversize(rank)
+! end if
 
 
-CALL send_overlap_and_danger_particle
 
 
 DO WHILE(T_start<=T_end)
@@ -98,15 +99,15 @@ DO WHILE(T_start<=T_end)
 	CALL update_ALL_particles
 
 
-if(rank==6.or.rank==7.or.rank==8.or.rank==11.or.rank==12.or.rank==13.or.rank==16.or.rank==17.or.rank==18) then
-print*,'STEP: ',Npic
-print*,'----------------------------------'
-	write(*,*)'rank:',rank, 'COUNTER_inside', COUNTER_inside(rank)
-	write(*,*)'              				   UP	','	DOWN	','  RIGHT','       LEFT	',' UP-LEFT  ',' DOWN-RIGHT','    DOWN-LEFT','  UP-RIGHT'	
-	write(*,*)'rank:',rank, 'COUNTER_overlap', COUNTER_overlap(:,rank)
-	write(*,*)'rank:',rank, 'COUNTER_danger', COUNTER_danger(:,rank)
-write(*,*)'rank:',rank, 'COUNTER_leave', COUNTER_leave(:,rank)
-end if
+! if(rank==6.or.rank==7.or.rank==8.or.rank==11.or.rank==12.or.rank==13.or.rank==16.or.rank==17.or.rank==18) then
+! print*,'STEP: ',Npic
+! print*,'----------------------------------'
+! 	write(*,*)'rank:',rank, 'COUNTER_inside', COUNTER_inside(rank)
+! 	write(*,*)'              				   UP	','	DOWN	','  RIGHT','       LEFT	',' UP-LEFT  ',' DOWN-RIGHT','    DOWN-LEFT','  UP-RIGHT'	
+! 	write(*,*)'rank:',rank, 'COUNTER_overlap', COUNTER_overlap(:,rank)
+! 	write(*,*)'rank:',rank, 'COUNTER_danger', COUNTER_danger(:,rank)
+! write(*,*)'rank:',rank, 'COUNTER_leave', COUNTER_leave(:,rank)
+! end if
 
 
 
@@ -121,7 +122,7 @@ END DO
 !	!-------------------------------------------------------------------!
 !	!!!                        UPDATE FILE IN                         !!!
 !	!-------------------------------------------------------------------!
-CALL update_all_particle_information
+CALL update_all_particle_output
 
 
 OPEN(unit= 4, FILE='trunk/fortran_srcs/temp_out.txt')			

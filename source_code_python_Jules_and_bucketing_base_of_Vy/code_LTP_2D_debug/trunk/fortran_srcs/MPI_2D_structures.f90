@@ -200,7 +200,7 @@ MODULE mpi_2d_structures_modf90
   			a(2,1) = D21
   			a(2,2) = D22
 
-			call eigen_solver(a,x,abserr,2)
+			call eigen_solver(a,x,abserr)
 
 			eigenvector_1 = x(1,:) 
 			eigenvector_2 = x(2,:)
@@ -1523,7 +1523,7 @@ end if
 
 		
 !================================================================================================
-		SUBROUTINE update_all_particle_information
+		SUBROUTINE update_all_particle_output
 		IF(rank==0) then
 			DO i=1,number_of_particles
 
@@ -1549,7 +1549,7 @@ end if
 			close(3)
 !================================================================================================			
 		END IF
-		END SUBROUTINE update_all_particle_information
+		END SUBROUTINE update_all_particle_output
 
 
 

@@ -17,13 +17,13 @@
 
 module deformation_eigen_solver
 contains
-	subroutine eigen_solver(a,x,abserr,n)
+	subroutine eigen_solver(a,x,abserr)
 	
 	implicit none
 	
-	integer, intent(in):: n
+	
 	double precision, intent(in):: abserr
-	double precision, intent(inout) :: a(n,n),x(n,n)
+	double precision, intent(inout) :: a(2,2),x(2,2)
 	double precision :: det
 	double precision :: trace
 	double precision :: lambda1,lambda2
@@ -52,7 +52,7 @@ contains
  	a(1,1) = lambda1
  	a(2,2) = lambda2
 	!===========================================================
-
+	! integer, intent(in):: n
 	! double precision ::  b2, bar
 	! double precision ::beta, coeff, c, s, cs, sc
 	! integer i, j, k
