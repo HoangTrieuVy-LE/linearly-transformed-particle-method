@@ -58,7 +58,7 @@ SUBROUTINE setup_parameters
 	CLOSE(1)
 END SUBROUTINE setup_parameters
 
-SUBROUTINE setup_particle_information_matrix
+SUBROUTINE setup_particle_data
 	!> Allocation for:  mass_read, Xparticle_read, D_read, mesh
 	number_of_particles = nxg*nyg
 	ALLOCATE(mass_read(number_of_particles))
@@ -69,7 +69,7 @@ SUBROUTINE setup_particle_information_matrix
 	
 	ALLOCATE(mesh(2,2))
 
-END SUBROUTINE setup_particle_information_matrix
+END SUBROUTINE setup_particle_data
 
 SUBROUTINE set_Mesh
 	!> Input: 'trunk/fortran_srcs/mesh.bin', made from initialization fonction in "code_LTP_2D_diffusion.py" 
