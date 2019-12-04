@@ -58,6 +58,8 @@ Them use "send_overlap_particle" to create the last important table:
 
 ========= LOOP ON PARTICLES INSIDE BLOCK AND THE OTHERS IN OVERLAP TABLES ============
 
+Take a loop all over the particles inside block and all neighbour block's particles.
+
 
 
 
